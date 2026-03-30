@@ -1,88 +1,152 @@
 {% extends "base.html" %}
-{% block title %}Raporlar{% endblock %}
-{% block page_title %}Raporlama & Paylaşım{% endblock %}
+{% block title %}Raporlar – Solento Mobilya{% endblock %}
+{% block page_title %}Raporlar{% endblock %}
+
 {% block content %}
-<div class="row g-3">
-  {% for tur, icon, label, desc, color in [
-    ('sevk','truck','Sevk Özeti','Tüm sevk kayıtları + mağaza + maliyet','primary'),
-    ('maliyet','bar-chart','Mağaza Maliyet','Mağaza bazlı nakliye/işçilik/gider toplamları','success'),
-    ('stok','archive','Stok Durumu','Güncel depo bakiyesi ürün bazlı','warning'),
-    ('ssh','exclamation-triangle','SSH Bildirimleri','Tüm kırık/eksik parça bildirimleri','danger')
-  ] %}
-  <div class="col-sm-6 col-xl-3">
-    <div class="card p-4 text-center h-100">
-      <i class="bi bi-{{ icon }} fs-2 text-{{ color }} mb-2"></i>
-      <h6 class="fw-bold">{{ label }}</h6>
-      <p class="text-muted small mb-3">{{ desc }}</p>
-      <div class="d-flex gap-2 justify-content-center mt-auto">
-        <a href="{{ url_for('admin.rapor_excel', tur=tur) }}" class="btn btn-{{ color }} btn-sm">
-          <i class="bi bi-download me-1"></i>Excel İndir
-        </a>
-        <button class="btn btn-success btn-sm" onclick="waRapor('{{ tur }}')" title="WhatsApp'ta Paylaş">
-          <i class="bi bi-whatsapp"></i>
-        </button>
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <h5 class="fw-bold mb-0"><i class="bi bi-bar-chart me-2 text-primary"></i>Raporlar</h5>
+</div>
+
+<div class="row g-4">
+
+  <!-- ===== SEVK ÖZETİ ===== -->
+  <div class="col-md-6">
+    <div class="card h-100">
+      <div class="card-header py-2 d-flex align-items-center justify-content-between">
+        <span class="fw-semibold"><i class="bi bi-truck me-2 text-primary"></i>Sevk Özeti</span>
+        <div class="d-flex gap-2">
+          <button class="btn btn-outline-success btn-sm" disabled title="Yakında">
+            <i class="bi bi-file-earmark-excel me-1"></i>Excel İndir
+          </button>
+          <a class="btn btn-outline-success btn-sm"
+             href="https://wa.me/?text={{ 'Sevk Özeti Raporu – Solento Mobilya' | urlencode }}"
+             target="_blank">
+            <i class="bi bi-whatsapp me-1"></i>WhatsApp
+          </a>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="alert alert-secondary py-2 small mb-3">
+          <i class="bi bi-info-circle me-1"></i>Excel indirme özelliği yakında aktif olacaktır.
+        </div>
+        <table class="table table-sm">
+          <thead class="table-light">
+            <tr><th>Mağaza</th><th class="text-end">Sevk Sayısı</th><th class="text-end">Toplam</th></tr>
+          </thead>
+          <tbody>
+            <tr><td colspan="3" class="text-center text-muted">Veri yükleniyor...</td></tr>
+          </tbody>
+        </table>
       </div>
     </div>
   </div>
-  {% endfor %}
-</div>
 
-<!-- WhatsApp Rapor Metni Modal -->
-<div class="modal fade" id="waModal" tabindex="-1">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title"><i class="bi bi-whatsapp text-success me-2"></i>WhatsApp Paylaşım</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+  <!-- ===== MALİYET RAPORU ===== -->
+  <div class="col-md-6">
+    <div class="card h-100">
+      <div class="card-header py-2 d-flex align-items-center justify-content-between">
+        <span class="fw-semibold"><i class="bi bi-currency-dollar me-2 text-warning"></i>Maliyet Raporu</span>
+        <div class="d-flex gap-2">
+          <button class="btn btn-outline-success btn-sm" disabled title="Yakında">
+            <i class="bi bi-file-earmark-excel me-1"></i>Excel İndir
+          </button>
+          <a class="btn btn-outline-success btn-sm"
+             href="https://wa.me/?text={{ 'Maliyet Raporu – Solento Mobilya' | urlencode }}"
+             target="_blank">
+            <i class="bi bi-whatsapp me-1"></i>WhatsApp
+          </a>
+        </div>
       </div>
-      <div class="modal-body">
-        <p class="text-muted small">Aşağıdaki bağlantıya tıklayarak mesajı WhatsApp'ta açın ve göndermek istediğiniz grubu seçin.</p>
-        <a id="waLink" href="#" target="_blank" class="btn btn-success w-100 py-3">
-          <i class="bi bi-whatsapp fs-4 me-2"></i>WhatsApp'ta Aç
-        </a>
+      <div class="card-body">
+        <div class="alert alert-secondary py-2 small mb-3">
+          <i class="bi bi-info-circle me-1"></i>Excel indirme özelliği yakında aktif olacaktır.
+        </div>
+        <table class="table table-sm">
+          <thead class="table-light">
+            <tr><th>Kalem</th><th class="text-end">Tutar (₺)</th></tr>
+          </thead>
+          <tbody>
+            <tr><td colspan="2" class="text-center text-muted">Veri yükleniyor...</td></tr>
+          </tbody>
+        </table>
       </div>
     </div>
   </div>
+
+  <!-- ===== STOK DURUMU ===== -->
+  <div class="col-md-6">
+    <div class="card h-100">
+      <div class="card-header py-2 d-flex align-items-center justify-content-between">
+        <span class="fw-semibold"><i class="bi bi-archive me-2 text-info"></i>Stok Durumu</span>
+        <div class="d-flex gap-2">
+          <button class="btn btn-outline-success btn-sm" disabled title="Yakında">
+            <i class="bi bi-file-earmark-excel me-1"></i>Excel İndir
+          </button>
+          <a class="btn btn-outline-success btn-sm"
+             href="https://wa.me/?text={{ 'Stok Durumu Raporu – Solento Mobilya' | urlencode }}"
+             target="_blank">
+            <i class="bi bi-whatsapp me-1"></i>WhatsApp
+          </a>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="alert alert-secondary py-2 small mb-3">
+          <i class="bi bi-info-circle me-1"></i>Excel indirme özelliği yakında aktif olacaktır.
+        </div>
+        <table class="table table-sm">
+          <thead class="table-light">
+            <tr><th>Ürün</th><th class="text-end">Bakiye</th><th class="text-end">Kullanılabilir</th></tr>
+          </thead>
+          <tbody>
+            <tr><td colspan="3" class="text-center text-muted">Veri yükleniyor...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SSH ÖZETİ ===== -->
+  <div class="col-md-6">
+    <div class="card h-100">
+      <div class="card-header py-2 d-flex align-items-center justify-content-between">
+        <span class="fw-semibold"><i class="bi bi-exclamation-triangle me-2 text-danger"></i>SSH Özeti</span>
+        <div class="d-flex gap-2">
+          <button class="btn btn-outline-success btn-sm" disabled title="Yakında">
+            <i class="bi bi-file-earmark-excel me-1"></i>Excel İndir
+          </button>
+          <a class="btn btn-outline-success btn-sm"
+             href="https://wa.me/?text={{ 'SSH Özeti – Solento Mobilya' | urlencode }}"
+             target="_blank">
+            <i class="bi bi-whatsapp me-1"></i>WhatsApp
+          </a>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="alert alert-secondary py-2 small mb-3">
+          <i class="bi bi-info-circle me-1"></i>Excel indirme özelliği yakında aktif olacaktır.
+        </div>
+        <table class="table table-sm">
+          <thead class="table-light">
+            <tr><th>Durum</th><th class="text-end">Adet</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="badge bg-warning text-dark">Beklemede</span></td>
+              <td class="text-end text-muted">—</td>
+            </tr>
+            <tr>
+              <td><span class="badge bg-primary">İşlemde</span></td>
+              <td class="text-end text-muted">—</td>
+            </tr>
+            <tr>
+              <td><span class="badge bg-success">Teslim Edildi</span></td>
+              <td class="text-end text-muted">—</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
 </div>
-{% endblock %}
-
-{% block extra_js %}
-<script>
-const raporVeriler = {{ rapor_ozet | tojson }};
-
-function waRapor(tur) {
-  const veri = raporVeriler[tur] || {};
-  let msg = '';
-
-  if (tur === 'sevk') {
-    msg = '🚛 *SOLENTO MOBİLYA - SEVKİYAT RAPORU*\n━━━━━━━━━━━━━━\n';
-    (veri.satirlar || []).forEach(s => {
-      msg += `📦 #${s.id} | ${s.tarih} | ${s.magaza}\n`;
-      (s.urunler || []).forEach(u => { msg += `   • ${u}\n`; });
-      if (s.toplam) msg += `   💰 Toplam: ${s.toplam}₺\n`;
-      msg += '\n';
-    });
-  } else if (tur === 'maliyet') {
-    msg = '💰 *SOLENTO MOBİLYA - MALİYET RAPORU*\n━━━━━━━━━━━━━━\n';
-    (veri.satirlar || []).forEach(s => {
-      msg += `🏪 ${s.magaza}: ${s.toplam}₺\n`;
-    });
-  } else if (tur === 'stok') {
-    msg = '📦 *SOLENTO MOBİLYA - STOK DURUMU*\n━━━━━━━━━━━━━━\n';
-    (veri.satirlar || []).forEach(s => {
-      msg += `${s.urun}: ${s.adet} adet\n`;
-    });
-  } else if (tur === 'ssh') {
-    msg = '🔧 *SOLENTO MOBİLYA - SSH BİLDİRİMLERİ*\n━━━━━━━━━━━━━━\n';
-    (veri.satirlar || []).forEach(s => {
-      msg += `• ${s.magaza} | ${s.urun} | ${s.durum}\n`;
-    });
-  }
-
-  msg += `\n📅 ${new Date().toLocaleDateString('tr-TR')} tarihli rapordur.`;
-  const url = 'https://wa.me/?text=' + encodeURIComponent(msg);
-  document.getElementById('waLink').href = url;
-  new bootstrap.Modal(document.getElementById('waModal')).show();
-}
-</script>
 {% endblock %}

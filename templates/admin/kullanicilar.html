@@ -1,141 +1,170 @@
 {% extends "base.html" %}
-{% block title %}Kullanıcılar{% endblock %}
-{% block page_title %}Kullanıcı Yönetimi{% endblock %}
+{% block title %}Kullanıcılar – Solento Mobilya{% endblock %}
+{% block page_title %}Kullanıcılar{% endblock %}
+
 {% block content %}
-
-{% if bekleyenler %}
-<div class="card p-3 mb-4 border border-warning" style="border-radius:12px;">
-  <h6 class="fw-bold mb-3 text-warning"><i class="bi bi-person-clock me-1"></i>Onay Bekleyen Kayıtlar
-    <span class="badge bg-warning text-dark ms-1">{{ bekleyenler|length }}</span>
-  </h6>
-  <table class="table table-sm mb-0">
-    <thead>
-      <tr><th>Ad Soyad</th><th>Kullanıcı Adı</th><th>Mağaza</th><th>Şehir</th><th>Kayıt Tarihi</th><th></th></tr>
-    </thead>
-    <tbody>
-    {% for u in bekleyenler %}
-    <tr>
-      <td><strong>{{ u.ad_soyad or '-' }}</strong></td>
-      <td><code>{{ u.kullanici_adi }}</code></td>
-      <td>{{ u.magaza.ad if u.magaza else '-' }}</td>
-      <td>{{ u.magaza.sehir.ad if u.magaza else '-' }}</td>
-      <td class="text-muted small">{{ u.kayit_tarihi or '-' }}</td>
-      <td>
-        <div class="d-flex gap-2">
-          <form method="POST" action="{{ url_for('admin.kullanici_onayla', id=u.id) }}">
-            <button class="btn btn-success btn-sm"><i class="bi bi-check-lg me-1"></i>Onayla</button>
-          </form>
-          <form method="POST" action="{{ url_for('admin.kullanici_reddet', id=u.id) }}"
-                onsubmit="return confirm('Bu kayıt talebi reddedilsin mi?')">
-            <button class="btn btn-outline-danger btn-sm"><i class="bi bi-x-lg me-1"></i>Reddet</button>
-          </form>
-        </div>
-      </td>
-    </tr>
-    {% endfor %}
-    </tbody>
-  </table>
+<div class="d-flex align-items-center justify-content-between mb-3">
+  <h5 class="fw-bold mb-0"><i class="bi bi-people me-2 text-primary"></i>Kullanıcı Yönetimi</h5>
 </div>
-{% endif %}
 
-<div class="row g-3">
-  <div class="col-xl-5">
-    <div class="card p-3">
-      <h6 class="fw-bold mb-3"><i class="bi bi-person-plus me-1 text-primary"></i>Yeni Kullanıcı Ekle</h6>
-      <form method="POST" action="{{ url_for('admin.kullanici_ekle') }}">
-        <div class="mb-2">
-          <label class="form-label small">Kullanıcı Adı</label>
-          <input type="text" name="kullanici_adi" class="form-control form-control-sm" required>
+{% set onayliler = kullanicilar | selectattr('onay_durumu', 'eq', 'onaylandi') | list %}
+{% set bekleyenler = kullanicilar | selectattr('onay_durumu', 'eq', 'beklemede') | list %}
+
+<ul class="nav nav-tabs mb-4" id="kulTabs">
+  <li class="nav-item">
+    <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-onaylilar" type="button">
+      <i class="bi bi-person-check me-1"></i>Onaylı
+      <span class="badge bg-primary ms-1">{{ onayliler|length }}</span>
+    </button>
+  </li>
+  <li class="nav-item">
+    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-bekleyenler" type="button">
+      <i class="bi bi-clock me-1"></i>Bekleyenler
+      {% if bekleyenler %}
+        <span class="badge bg-warning text-dark ms-1">{{ bekleyenler|length }}</span>
+      {% endif %}
+    </button>
+  </li>
+</ul>
+
+<div class="tab-content">
+
+  <!-- ===== ONAYLANANLAR ===== -->
+  <div class="tab-pane fade show active" id="tab-onaylilar">
+    <div class="card">
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>Ad Soyad</th>
+                <th>E-posta</th>
+                <th>Mağaza</th>
+                <th>Durum</th>
+                <th>İşlem</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for k in onayliler %}
+              <tr>
+                <td class="fw-semibold">{{ k.ad_soyad }}</td>
+                <td class="text-muted small">{{ k.email }}</td>
+                <td>{{ k.magaza.ad if k.magaza else '—' }}</td>
+                <td><span class="badge bg-success">Onaylı</span></td>
+                <td>
+                  <div class="d-flex gap-1 flex-wrap">
+                    <a href="{{ url_for('admin.kullanici_yetki', id=k.id) }}" class="btn btn-warning btn-sm">
+                      <i class="bi bi-shield-check me-1"></i>Yetki
+                    </a>
+                    <button class="btn btn-danger btn-sm" data-bs-toggle="modal"
+                            data-bs-target="#modalKulSil{{ k.id }}">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+
+              <!-- Sil modal -->
+              <div class="modal fade" id="modalKulSil{{ k.id }}" tabindex="-1">
+                <div class="modal-dialog modal-sm">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h6 class="modal-title">Kullanıcı Sil</h6>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                      <strong>{{ k.ad_soyad }}</strong> kullanıcısını silmek istiyor musunuz?
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Vazgeç</button>
+                      <form method="POST" action="{{ url_for('admin.kullanici_sil', id=k.id) }}" class="d-inline">
+                        <button type="submit" class="btn btn-danger btn-sm">Sil</button>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {% else %}
+              <tr><td colspan="5" class="text-center text-muted py-3">Onaylı kullanıcı yok.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
         </div>
-        <div class="mb-2">
-          <label class="form-label small">Ad Soyad</label>
-          <input type="text" name="ad_soyad" class="form-control form-control-sm">
-        </div>
-        <div class="mb-2">
-          <label class="form-label small">Şifre</label>
-          <input type="password" name="sifre" class="form-control form-control-sm" required>
-        </div>
-        <div class="mb-2">
-          <label class="form-label small">Rol</label>
-          <select name="rol" class="form-select form-select-sm" onchange="this.form.magaza_id.disabled = this.value!='magaza'">
-            <option value="magaza">Mağaza</option>
-            <option value="admin">Admin</option>
-          </select>
-        </div>
-        <div class="mb-3">
-          <label class="form-label small">Mağaza</label>
-          <select name="magaza_id" class="form-select form-select-sm">
-            <option value="">-- Mağaza Seç --</option>
-            {% for m in magazalar %}
-            <option value="{{ m.id }}">{{ m.sehir.ad }} / {{ m.ad }}</option>
-            {% endfor %}
-          </select>
-        </div>
-        <button type="submit" class="btn btn-primary btn-sm w-100">Ekle</button>
-      </form>
+      </div>
     </div>
   </div>
 
-  <div class="col-xl-7">
-    <div class="card p-3">
-      <h6 class="fw-bold mb-3"><i class="bi bi-people me-1 text-success"></i>Aktif Kullanıcılar</h6>
-      <table class="table table-sm table-hover">
-        <thead>
-          <tr><th>Kullanıcı</th><th>Rol</th><th>Mağaza</th><th>Durum</th><th></th></tr>
-        </thead>
-        <tbody>
-        {% for u in users %}
-        {% if u.onay_durumu == 'onaylandi' %}
-        <tr>
-          <td>
-            <strong>{{ u.ad_soyad or u.kullanici_adi }}</strong>
-            <div class="text-muted small">{{ u.kullanici_adi }}</div>
-          </td>
-          <td>
-            {% if u.rol == 'admin' %}
-              <span class="badge bg-primary">Admin</span>
-            {% else %}
-              <span class="badge bg-secondary">Mağaza</span>
-            {% endif %}
-          </td>
-          <td class="small">{{ u.magaza.sehir.ad + ' / ' + u.magaza.ad if u.magaza else '-' }}</td>
-          <td><span class="badge bg-success">Aktif</span></td>
-          <td>
-            <div class="d-flex gap-1 flex-wrap">
-              {% if u.rol == 'magaza' %}
-              <a href="{{ url_for('admin.kullanici_yetki', id=u.id) }}"
-                 class="btn btn-xs btn-outline-warning" style="font-size:11px;padding:2px 8px" title="Yetki Ayarla">
-                <i class="bi bi-shield"></i> Yetki
-              </a>
-              {% endif %}
-              <button class="btn btn-xs btn-outline-secondary" style="font-size:11px;padding:2px 8px"
-                      data-bs-toggle="collapse" data-bs-target="#sifre-{{ u.id }}">
-                <i class="bi bi-key"></i>
-              </button>
-              {% if not (u.rol == 'admin' and users|selectattr('rol','eq','admin')|list|length == 1) %}
-              <form method="POST" action="{{ url_for('admin.kullanici_sil', id=u.id) }}"
-                    onsubmit="return confirm('Kullanıcı silinsin mi?')">
-                <button class="btn btn-xs btn-outline-danger" style="font-size:11px;padding:2px 8px">
-                  <i class="bi bi-trash"></i>
-                </button>
-              </form>
-              {% endif %}
-            </div>
-            <div class="collapse mt-1" id="sifre-{{ u.id }}">
-              <form method="POST" action="{{ url_for('admin.kullanici_sifre', id=u.id) }}" class="d-flex gap-1">
-                <input type="password" name="yeni_sifre" class="form-control form-control-sm" placeholder="Yeni şifre" style="max-width:120px">
-                <button class="btn btn-warning btn-sm">Güncelle</button>
-              </form>
-            </div>
-          </td>
-        </tr>
-        {% endif %}
-        {% else %}
-        <tr><td colspan="5" class="text-muted">Aktif kullanıcı yok.</td></tr>
-        {% endfor %}
-        </tbody>
-      </table>
+  <!-- ===== BEKLEYENLERs ===== -->
+  <div class="tab-pane fade" id="tab-bekleyenler">
+    <div class="card">
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>Ad Soyad</th>
+                <th>E-posta</th>
+                <th>Mağaza</th>
+                <th>Durum</th>
+                <th>İşlem</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for k in bekleyenler %}
+              <tr>
+                <td class="fw-semibold">{{ k.ad_soyad }}</td>
+                <td class="text-muted small">{{ k.email }}</td>
+                <td>{{ k.magaza.ad if k.magaza else '—' }}</td>
+                <td><span class="badge bg-warning text-dark">Beklemede</span></td>
+                <td>
+                  <div class="d-flex gap-1 flex-wrap">
+                    <form method="POST" action="{{ url_for('admin.kullanici_onayla', id=k.id) }}" class="d-inline">
+                      <button type="submit" class="btn btn-success btn-sm">
+                        <i class="bi bi-check-lg me-1"></i>Onayla
+                      </button>
+                    </form>
+                    <form method="POST" action="{{ url_for('admin.kullanici_reddet', id=k.id) }}" class="d-inline">
+                      <button type="submit" class="btn btn-secondary btn-sm">
+                        <i class="bi bi-x-lg me-1"></i>Reddet
+                      </button>
+                    </form>
+                    <button class="btn btn-danger btn-sm" data-bs-toggle="modal"
+                            data-bs-target="#modalKulSilB{{ k.id }}">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+
+              <!-- Sil modal -->
+              <div class="modal fade" id="modalKulSilB{{ k.id }}" tabindex="-1">
+                <div class="modal-dialog modal-sm">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h6 class="modal-title">Kullanıcı Sil</h6>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                      <strong>{{ k.ad_soyad }}</strong> kullanıcısını silmek istiyor musunuz?
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Vazgeç</button>
+                      <form method="POST" action="{{ url_for('admin.kullanici_sil', id=k.id) }}" class="d-inline">
+                        <button type="submit" class="btn btn-danger btn-sm">Sil</button>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {% else %}
+              <tr><td colspan="5" class="text-center text-muted py-3">Bekleyen kayıt yok.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   </div>
+
 </div>
 {% endblock %}

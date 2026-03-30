@@ -1,166 +1,154 @@
 {% extends "base.html" %}
-{% block title %}SSH Bildirimleri{% endblock %}
+{% block title %}SSH Bildirimleri – Solento Mobilya{% endblock %}
 {% block page_title %}SSH Bildirimleri{% endblock %}
+
 {% block content %}
+<div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+  <h5 class="fw-bold mb-0 me-auto"><i class="bi bi-exclamation-triangle me-2 text-warning"></i>SSH Bildirimleri</h5>
 
-<!-- Özet sayaçlar -->
-{% set beklemede_sayi = bildirimleri | selectattr('durum','eq','beklemede') | list | length %}
-{% set uretiliyor_sayi = bildirimleri | selectattr('durum','eq','uretiliyor') | list | length %}
-{% set kargoda_sayi = bildirimleri | selectattr('durum','eq','kargoda') | list | length %}
-
-<!-- Filtre butonları -->
-<div class="mb-3 d-flex gap-2 flex-wrap align-items-center">
-  {% for d, label, cls in [
-      ('','Tümü','dark'),
-      ('beklemede','Beklemede','warning'),
-      ('uretiliyor','Üretiliyor','info'),
-      ('kargoda','Kargoda','primary'),
-      ('teslim_edildi','Teslim Edildi','success')
-  ] %}
-  <a href="?durum={{ d }}"
-     class="btn btn-sm {% if durum_filter==d %}btn-{{ cls }}{% else %}btn-outline-{{ cls }}{% endif %}">
-    {{ label }}
-    {% if d == 'beklemede' and beklemede_sayi %}
-      <span class="badge bg-danger ms-1">{{ beklemede_sayi }}</span>
-    {% elif d == 'uretiliyor' and uretiliyor_sayi %}
-      <span class="badge bg-dark ms-1">{{ uretiliyor_sayi }}</span>
-    {% elif d == 'kargoda' and kargoda_sayi %}
-      <span class="badge bg-dark ms-1">{{ kargoda_sayi }}</span>
-    {% endif %}
-  </a>
-  {% endfor %}
-</div>
-
-<div class="card p-0" style="overflow:hidden">
-  <table class="table table-hover mb-0">
-    <thead class="table-dark">
-      <tr>
-        <th class="ps-3">#</th>
-        <th>Tarih</th>
-        <th>Mağaza</th>
-        <th>Ürün / Paket</th>
-        <th>Hasar Açıklaması</th>
-        <th class="text-center">Talep</th>
-        <th>Durum</th>
-        <th class="text-center">İşlem</th>
-      </tr>
-    </thead>
-    <tbody>
-    {% for b in bildirimleri %}
-    <tr class="
-      {% if b.durum == 'beklemede' %}table-warning
-      {% elif b.durum == 'teslim_edildi' %}table-success
-      {% endif %}">
-      <td class="ps-3 text-muted small">{{ b.id }}</td>
-      <td class="small text-muted">{{ b.tarih }}</td>
-      <td>
-        <strong>{{ b.magaza.ad }}</strong>
-        <div class="text-muted" style="font-size:11px">{{ b.magaza.sehir.ad }}</div>
-      </td>
-      <td>
-        <span class="fw-bold small">{{ b.urun.ad }}</span>
-        {% if b.paket %}
-          <div class="text-muted" style="font-size:11px">
-            <i class="bi bi-box me-1"></i>{{ b.paket.paket_adi }}
-          </div>
-        {% endif %}
-      </td>
-      <td style="max-width:220px">
-        <span class="small">{{ b.hasar_aciklamasi }}</span>
-        {% if b.admin_notu %}
-          <div class="mt-1 p-1 rounded" style="background:#e8f5e9;font-size:11px">
-            <i class="bi bi-chat-left-text me-1 text-success"></i>{{ b.admin_notu }}
-          </div>
-        {% endif %}
-      </td>
-      <td class="text-center">
-        <span class="badge bg-dark fs-6">{{ b.talep_miktar|int }} adet</span>
-      </td>
-      <td>
-        {% if b.durum == 'beklemede' %}
-          <span class="badge bg-warning text-dark">
-            <i class="bi bi-clock me-1"></i>Beklemede
-          </span>
-        {% elif b.durum == 'uretiliyor' %}
-          <span class="badge bg-info text-dark">
-            <i class="bi bi-gear me-1"></i>Üretiliyor
-          </span>
-        {% elif b.durum == 'kargoda' %}
-          <span class="badge bg-primary">
-            <i class="bi bi-truck me-1"></i>Kargoda
-          </span>
-        {% elif b.durum == 'teslim_edildi' %}
-          <span class="badge bg-success">
-            <i class="bi bi-check-circle me-1"></i>Teslim Edildi
-          </span>
-        {% endif %}
-      </td>
-      <td class="text-center">
-        <button class="btn btn-sm btn-outline-primary py-0 px-2"
-                onclick="sshGuncelle({{ b.id }}, '{{ b.durum }}', `{{ (b.admin_notu or '')|replace('`','\\`')|e }}`)"
-                title="Durumu Güncelle">
-          <i class="bi bi-pencil"></i>
-        </button>
-      </td>
-    </tr>
-    {% else %}
-    <tr>
-      <td colspan="8" class="text-center text-muted py-4">
-        <i class="bi bi-check-circle fs-3 d-block mb-2 text-success"></i>
-        {% if durum_filter %}Bu durumda bildirim yok.{% else %}Henüz SSH bildirimi yok.{% endif %}
-      </td>
-    </tr>
-    {% endfor %}
-    </tbody>
-  </table>
-</div>
-
-<!-- Güncelleme Modal -->
-<div class="modal fade" id="sshModal" tabindex="-1">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">
-          <i class="bi bi-pencil-square me-2 text-primary"></i>SSH Bildirim Güncelle
-        </h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <form id="ssh-form" method="POST">
-        <div class="modal-body">
-          <div class="mb-3">
-            <label class="form-label fw-bold">Durum</label>
-            <select name="durum" id="ssh-durum" class="form-select">
-              <option value="beklemede">⏳ Beklemede</option>
-              <option value="uretiliyor">⚙️ Üretiliyor</option>
-              <option value="kargoda">🚚 Kargoda</option>
-              <option value="teslim_edildi">✅ Teslim Edildi</option>
-            </select>
-          </div>
-          <div class="mb-3">
-            <label class="form-label fw-bold">Admin Notu
-              <span class="text-muted fw-normal">(mağazaya görünür)</span>
-            </label>
-            <textarea name="admin_notu" id="ssh-not" class="form-control" rows="3"
-                      placeholder="Örn: Parça üretimde, 3-5 gün içinde kargoya verilecek..."></textarea>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
-          <button type="submit" class="btn btn-primary">
-            <i class="bi bi-check2 me-1"></i>Kaydet
-          </button>
-        </div>
-      </form>
-    </div>
+  <!-- Filtre -->
+  <div class="btn-group" role="group">
+    <a href="?durum=tumu"
+       class="btn btn-sm {{ 'btn-secondary' if durum_filter in ('tumu', None, '') else 'btn-outline-secondary' }}">
+      Tümü
+    </a>
+    <a href="?durum=beklemede"
+       class="btn btn-sm {{ 'btn-warning' if durum_filter == 'beklemede' else 'btn-outline-warning' }}">
+      Beklemede
+    </a>
+    <a href="?durum=islemde"
+       class="btn btn-sm {{ 'btn-primary' if durum_filter == 'islemde' else 'btn-outline-primary' }}">
+      İşlemde
+    </a>
+    <a href="?durum=teslim_edildi"
+       class="btn btn-sm {{ 'btn-success' if durum_filter == 'teslim_edildi' else 'btn-outline-success' }}">
+      Teslim Edildi
+    </a>
   </div>
 </div>
 
-<script>
-function sshGuncelle(id, durum, not) {
-  document.getElementById('ssh-form').action = '/admin/ssh/' + id + '/durum';
-  document.getElementById('ssh-durum').value = durum;
-  document.getElementById('ssh-not').value = not;
-  new bootstrap.Modal(document.getElementById('sshModal')).show();
-}
-</script>
+{% if bildirimleri %}
+<div class="row g-3">
+  {% for b in bildirimleri %}
+  <div class="col-md-6 col-xl-4">
+    <div class="card h-100 border-0 shadow-sm">
+      <div class="card-header py-2 d-flex align-items-center justify-content-between">
+        <div>
+          <span class="fw-semibold">{{ b.magaza.ad }}</span>
+          <span class="text-muted small ms-2">{{ b.tarih.strftime('%d.%m.%Y %H:%M') if b.tarih else '' }}</span>
+        </div>
+        {% if b.durum == 'beklemede' %}
+          <span class="badge bg-warning text-dark">Beklemede</span>
+        {% elif b.durum == 'islemde' %}
+          <span class="badge bg-primary">İşlemde</span>
+        {% elif b.durum == 'teslim_edildi' %}
+          <span class="badge bg-success">Teslim Edildi</span>
+        {% else %}
+          <span class="badge bg-secondary">{{ b.durum }}</span>
+        {% endif %}
+      </div>
+      <div class="card-body">
+        <table class="table table-sm table-borderless mb-2">
+          <tr>
+            <th class="text-muted" style="width:40%">Ürün</th>
+            <td>{{ b.urun.ad if b.urun else '—' }}</td>
+          </tr>
+          <tr>
+            <th class="text-muted">Paket</th>
+            <td>{{ b.paket.paket_adi if b.paket else '—' }}</td>
+          </tr>
+          <tr>
+            <th class="text-muted">Hasar</th>
+            <td>{{ b.hasar_aciklamasi }}</td>
+          </tr>
+          <tr>
+            <th class="text-muted">Talep Adet</th>
+            <td><span class="badge bg-secondary">{{ b.talep_miktar }}</span></td>
+          </tr>
+        </table>
+
+        {% if b.admin_notu %}
+        <div class="alert alert-info py-1 px-2 small mb-2">
+          <i class="bi bi-chat-left-text me-1"></i><strong>Admin Notu:</strong> {{ b.admin_notu }}
+        </div>
+        {% endif %}
+      </div>
+      <div class="card-footer bg-transparent py-2">
+        <div class="d-flex gap-2 flex-wrap">
+          <!-- Durum güncelle dropdown -->
+          <div class="dropdown">
+            <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+              <i class="bi bi-arrow-repeat me-1"></i>Durum Güncelle
+            </button>
+            <ul class="dropdown-menu">
+              <li>
+                <form method="POST" action="{{ url_for('admin.ssh_durum_guncelle', id=b.id) }}">
+                  <input type="hidden" name="durum" value="beklemede"/>
+                  <input type="hidden" name="admin_notu" value="{{ b.admin_notu or '' }}"/>
+                  <button class="dropdown-item" type="submit">
+                    <span class="badge bg-warning text-dark me-1">•</span>Beklemede
+                  </button>
+                </form>
+              </li>
+              <li>
+                <form method="POST" action="{{ url_for('admin.ssh_durum_guncelle', id=b.id) }}">
+                  <input type="hidden" name="durum" value="islemde"/>
+                  <input type="hidden" name="admin_notu" value="{{ b.admin_notu or '' }}"/>
+                  <button class="dropdown-item" type="submit">
+                    <span class="badge bg-primary me-1">•</span>İşlemde
+                  </button>
+                </form>
+              </li>
+              <li>
+                <form method="POST" action="{{ url_for('admin.ssh_durum_guncelle', id=b.id) }}">
+                  <input type="hidden" name="durum" value="teslim_edildi"/>
+                  <input type="hidden" name="admin_notu" value="{{ b.admin_notu or '' }}"/>
+                  <button class="dropdown-item" type="submit">
+                    <span class="badge bg-success me-1">•</span>Teslim Edildi
+                  </button>
+                </form>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Admin notu ekle -->
+          <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal"
+                  data-bs-target="#modalNot{{ b.id }}">
+            <i class="bi bi-chat-left-text me-1"></i>Not Ekle
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Admin Notu Modal -->
+    <div class="modal fade" id="modalNot{{ b.id }}" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <form method="POST" action="{{ url_for('admin.ssh_durum_guncelle', id=b.id) }}">
+            <input type="hidden" name="durum" value="{{ b.durum }}"/>
+            <div class="modal-header">
+              <h5 class="modal-title"><i class="bi bi-chat-left-text me-2"></i>Admin Notu</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+              <label class="form-label fw-semibold">Not</label>
+              <textarea class="form-control" name="admin_notu" rows="3" placeholder="Admin notu yazın...">{{ b.admin_notu or '' }}</textarea>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Vazgeç</button>
+              <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg me-1"></i>Kaydet</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="text-center text-muted py-5">
+  <i class="bi bi-check-circle fs-1 text-success mb-3 d-block"></i>
+  Bu filtrede SSH bildirimi bulunmuyor.
+</div>
+{% endif %}
 {% endblock %}

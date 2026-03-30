@@ -1,63 +1,99 @@
 {% extends "base.html" %}
-{% block title %}Sevklerim{% endblock %}
-{% block page_title %}{{ current_user.magaza.ad if current_user.magaza else 'Mağaza' }} — Gelen Sevkler{% endblock %}
+{% block title %}Sevklerim – Solento Mobilya{% endblock %}
+{% block page_title %}Sevklerim{% endblock %}
+
 {% block content %}
-<div class="card p-3">
-  <table class="table table-hover">
-    <thead>
-      <tr>
-        <th>#</th>
-        <th>Tarih</th>
-        <th>Ürünler</th>
-        <th>Nakliye</th>
-        <th class="text-center">Durum</th>
-        <th>Teslim Tarihi</th>
-        <th></th>
-      </tr>
-    </thead>
-    <tbody>
-    {% for s in sevkler %}
-    <tr>
-      <td>{{ s.id }}</td>
-      <td>{{ s.tarih }}</td>
-      <td>
-        {% for k in s.kalemler %}
-          <span class="badge bg-light text-dark border me-1">{{ k.urun.ad }} × {{ k.miktar|int }}</span>
-        {% endfor %}
-      </td>
-      <td>{% if s.nakliye_goster %}{{ s.nakliye_ucreti|int }}₺{% else %}—{% endif %}</td>
-      <td class="text-center">
-        {% if s.teslim_durumu == 'teslim_alindi' %}
-          <span class="badge bg-success">✓ Teslim Alındı</span>
-        {% else %}
-          <span class="badge bg-primary">Sevk Edildi</span>
-        {% endif %}
-        {% if s.nakliye_goster %}
-        {% set ara = (s.nakliye_ucreti or 0) + (s.iscilik or 0) %}
-        {% set kdv = ara * (s.kdv_oran or 0) / 100 %}
-        <div class="mt-1 small text-muted">
-          {% if s.nakliye_ucreti %}Nakliye: {{ s.nakliye_ucreti|int }}₺{% endif %}
-          {% if s.kdv_oran and s.kdv_oran > 0 %} | KDV %{{ s.kdv_oran }}: {{ kdv|int }}₺{% endif %}
-          <strong class="text-dark"> | Toplam: {{ (ara + kdv)|int }}₺</strong>
-        </div>
-        {% endif %}
-      </td>
-      <td class="text-muted small">{{ s.teslim_tarihi or '-' }}</td>
-      <td>
-        {% if s.teslim_durumu != 'teslim_alindi' %}
-        <form method="POST" action="{{ url_for('magaza.teslim_al', sevk_id=s.id) }}"
-              onsubmit="return confirm('Teslim alındı olarak işaretlensin mi?')">
-          <button class="btn btn-success btn-sm">
-            <i class="bi bi-check-circle me-1"></i>Teslim Aldım
-          </button>
-        </form>
-        {% endif %}
-      </td>
-    </tr>
-    {% else %}
-    <tr><td colspan="7" class="text-center text-muted">Henüz sevk kaydı yok.</td></tr>
-    {% endfor %}
-    </tbody>
-  </table>
+<div class="d-flex align-items-center justify-content-between mb-3">
+  <h5 class="fw-bold mb-0"><i class="bi bi-truck me-2 text-primary"></i>Sevklerim</h5>
+</div>
+
+<div class="card">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>#</th>
+            <th>Tarih</th>
+            <th>Ürünler</th>
+            <th>Nakliye</th>
+            <th>Durum</th>
+            <th>İşlem</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for sv in sevkler %}
+          <tr>
+            <td class="text-muted">{{ sv.id }}</td>
+            <td class="small">{{ sv.tarih.strftime('%d.%m.%Y') if sv.tarih else '—' }}</td>
+            <td class="small">
+              {% for k in sv.kalemler %}
+                <div>{{ k.urun.ad }} × {{ k.miktar }}</div>
+              {% endfor %}
+            </td>
+            <td class="small">
+              {% if sv.nakliye_goster %}
+                {{ '%.2f ₺'|format(sv.nakliye_ucreti or 0) }}
+              {% else %}
+                <span class="text-muted">—</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if sv.teslim_durumu == 'teslim_alindi' %}
+                <span class="badge bg-success">
+                  <i class="bi bi-check-lg me-1"></i>Teslim Alındı
+                </span>
+                {% if sv.teslim_tarihi %}
+                  <div class="text-muted small">{{ sv.teslim_tarihi.strftime('%d.%m.%Y') }}</div>
+                {% endif %}
+              {% else %}
+                <span class="badge bg-warning text-dark">Yolda</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if sv.teslim_durumu != 'teslim_alindi' %}
+              <button class="btn btn-success btn-sm" data-bs-toggle="modal"
+                      data-bs-target="#modalTeslim{{ sv.id }}">
+                <i class="bi bi-check-circle me-1"></i>Teslim Aldım
+              </button>
+              {% else %}
+              <span class="text-success small fw-semibold">
+                <i class="bi bi-check-circle-fill me-1"></i>Teslim Alındı
+              </span>
+              {% endif %}
+            </td>
+          </tr>
+
+          <!-- Teslim Al Confirm Modal -->
+          {% if sv.teslim_durumu != 'teslim_alindi' %}
+          <div class="modal fade" id="modalTeslim{{ sv.id }}" tabindex="-1">
+            <div class="modal-dialog modal-sm">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h6 class="modal-title">Teslim Onayla</h6>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                  Sevk #{{ sv.id }} teslimatını aldığınızı onaylıyor musunuz?
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Vazgeç</button>
+                  <form method="POST" action="{{ url_for('magaza.teslim_al', id=sv.id) }}" class="d-inline">
+                    <button type="submit" class="btn btn-success btn-sm">
+                      <i class="bi bi-check-lg me-1"></i>Evet, Teslim Aldım
+                    </button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+          {% endif %}
+          {% else %}
+          <tr><td colspan="6" class="text-center text-muted py-4">Sevk kaydı yok.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
 </div>
 {% endblock %}

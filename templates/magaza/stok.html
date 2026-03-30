@@ -1,258 +1,296 @@
 {% extends "base.html" %}
-{% block title %}Depo Stoku & Sipariş{% endblock %}
-{% block page_title %}Depo Stoku — Sipariş Ver{% endblock %}
+{% block title %}Stok & Sipariş – Solento Mobilya{% endblock %}
+{% block page_title %}Stok & Sipariş{% endblock %}
+
+{% block head %}
+<style>
+  #sepetContainer { min-height: 60px; }
+</style>
+{% endblock %}
+
 {% block content %}
+<div class="d-flex align-items-center justify-content-between mb-3">
+  <h5 class="fw-bold mb-0"><i class="bi bi-archive me-2 text-primary"></i>Stok Durumu &amp; Sipariş</h5>
+</div>
 
-<!-- ANA DEPO STOKU -->
+<!-- ===== 1. ANA DEPO STOK ===== -->
 <div class="card mb-4">
-  <div class="card-header d-flex justify-content-between align-items-center">
-    <div>
-      <h6 class="fw-bold mb-0"><i class="bi bi-boxes me-2 text-primary"></i>Ana Depo Stoku</h6>
-      <small class="text-muted">Kullanılabilir adet = toplam stok − diğer mağazaların bekleyen talepleri</small>
-    </div>
-    {% if bekleyen_talepler %}
-    <span class="badge bg-warning text-dark">
-      <i class="bi bi-clock me-1"></i>{{ bekleyen_talepler|length }} bekleyen talebim
-    </span>
-    {% endif %}
+  <div class="card-header py-2 d-flex align-items-center justify-content-between">
+    <span class="fw-semibold">Ana Depo Stok</span>
+    <input type="text" id="stokSearch" class="form-control form-control-sm" style="max-width:200px" placeholder="Ürün ara..."/>
   </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0" id="stokTable">
+        <thead class="table-light">
+          <tr>
+            <th>Ürün</th>
+            <th class="text-end">Bakiye</th>
+            <th class="text-end">Rezerve</th>
+            <th class="text-end">Kullanılabilir</th>
+            <th style="width:200px">Sipariş</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in depo_stok %}
+          <tr class="stok-row">
+            <td class="fw-semibold stok-name">{{ row.urun.ad }}</td>
+            <td class="text-end">{{ row.bakiye }}</td>
+            <td class="text-end text-warning">{{ row.rezerve }}</td>
+            <td class="text-end">
+              <span class="badge {{ 'bg-success' if row.kullanilabilir > 0 else 'bg-danger' }}">
+                {{ row.kullanilabilir }}
+              </span>
+            </td>
+            <td>
+              {% if row.kullanilabilir > 0 %}
+              <div class="d-flex gap-1">
+                <input type="number" class="form-control form-control-sm" style="width:70px"
+                       id="adet_{{ row.urun.id }}" min="1" max="{{ row.kullanilabilir }}" value="1" placeholder="Adet"/>
+                <button class="btn btn-primary btn-sm btn-sepete-ekle"
+                        data-id="{{ row.urun.id }}" data-ad="{{ row.urun.ad }}"
+                        data-max="{{ row.kullanilabilir }}">
+                  <i class="bi bi-cart-plus"></i>
+                </button>
+              </div>
+              {% else %}
+              <button class="btn btn-outline-secondary btn-sm w-100" data-bs-toggle="modal"
+                      data-bs-target="#modalOnSiparis{{ row.urun.id }}">
+                <i class="bi bi-clock me-1"></i>Ön Sipariş
+              </button>
+              {% endif %}
+            </td>
+          </tr>
 
-  {% if not depo_stok and not stok_yok %}
-  <div class="card-body text-center text-muted py-5">
-    <i class="bi bi-inbox fs-1 d-block mb-2"></i>
-    Depoda şu an stok bulunmuyor.
+          <!-- Ön Sipariş Modal -->
+          {% if row.kullanilabilir <= 0 %}
+          <div class="modal fade" id="modalOnSiparis{{ row.urun.id }}" tabindex="-1">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <form method="POST" action="{{ url_for('magaza.stok_talep') }}">
+                  <input type="hidden" name="urun_id" value="{{ row.urun.id }}"/>
+                  <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-clock me-2"></i>Ön Sipariş</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                  </div>
+                  <div class="modal-body">
+                    <div class="alert alert-warning py-2 small">
+                      <strong>{{ row.urun.ad }}</strong> şu an stokta yok. Ön sipariş oluşturabilirsiniz.
+                    </div>
+                    <div class="mb-3">
+                      <label class="form-label fw-semibold">Miktar</label>
+                      <input type="number" class="form-control" name="miktar" min="1" value="1" required/>
+                    </div>
+                    <div class="mb-3">
+                      <label class="form-label fw-semibold">Not</label>
+                      <textarea class="form-control" name="notlar" rows="2" placeholder="Opsiyonel not..."></textarea>
+                    </div>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Vazgeç</button>
+                    <button type="submit" class="btn btn-primary">Ön Sipariş Gönder</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+          {% endif %}
+          {% else %}
+          <tr><td colspan="5" class="text-center text-muted py-3">Stok verisi yok.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   </div>
-  {% else %}
-  <form method="POST" action="{{ url_for('magaza.hizli_siparis') }}">
-    <table class="table table-hover mb-0">
-      <thead class="table-dark">
-        <tr>
-          <th class="ps-4">Ürün</th>
-          <th class="text-center">Toplam Stok</th>
-          <th class="text-center text-warning">Rezerve</th>
-          <th class="text-center text-success fw-bold">Kullanılabilir</th>
-          <th class="text-center" style="width:160px">Sipariş Adeti</th>
-        </tr>
+</div>
+
+<!-- ===== 2. SEPETİM ===== -->
+<div class="card mb-4">
+  <div class="card-header py-2 fw-semibold d-flex align-items-center justify-content-between">
+    <span><i class="bi bi-cart me-2 text-primary"></i>Sepetim</span>
+    <span class="badge bg-primary rounded-pill" id="sepetSayac">0</span>
+  </div>
+  <div class="card-body">
+    <div id="sepetContainer" class="mb-3">
+      <div id="sepetBos" class="text-muted text-center py-2">
+        <i class="bi bi-cart-x fs-4 d-block mb-1"></i>Sepet boş — yukarıdan ürün ekleyin.
+      </div>
+      <div id="sepetItems"></div>
+    </div>
+    <form method="POST" action="{{ url_for('magaza.hizli_siparis') }}" id="sepetForm">
+      <input type="hidden" name="sepet_json" id="sepet_json"/>
+      <div class="mb-3">
+        <label class="form-label fw-semibold">Sipariş Notu</label>
+        <textarea class="form-control" name="notlar" rows="2" placeholder="Genel sipariş notu..."></textarea>
+      </div>
+      <button type="submit" class="btn btn-success w-100 py-2 fw-semibold" id="btnSiparisGonder" disabled>
+        <i class="bi bi-send me-2"></i>Sipariş Gönder
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- ===== 3. BEKLEYENLERİM ===== -->
+{% if bekleyen_talepler %}
+<div class="card mb-4">
+  <div class="card-header py-2 fw-semibold">
+    <i class="bi bi-clock me-2 text-warning"></i>Bekleyen Siparişlerim
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-sm mb-0">
+        <thead class="table-light">
+          <tr><th>#</th><th>Tarih</th><th>Ürünler</th><th>Durum</th><th>İşlem</th></tr>
+        </thead>
+        <tbody>
+          {% for t in bekleyen_talepler %}
+          <tr>
+            <td class="text-muted">{{ t.id }}</td>
+            <td class="small">{{ t.tarih.strftime('%d.%m.%Y') if t.tarih else '—' }}</td>
+            <td class="small">
+              {% for k in t.kalemler %}
+                <div>{{ k.urun.ad }} × {{ k.miktar }}</div>
+              {% endfor %}
+            </td>
+            <td><span class="badge bg-warning text-dark">Beklemede</span></td>
+            <td>
+              <button class="btn btn-secondary btn-sm" data-bs-toggle="modal"
+                      data-bs-target="#modalIptal{{ t.id }}">
+                <i class="bi bi-x-circle me-1"></i>İptal Et
+              </button>
+            </td>
+          </tr>
+
+          <!-- İptal modal -->
+          <div class="modal fade" id="modalIptal{{ t.id }}" tabindex="-1">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <form method="POST" action="{{ url_for('magaza.siparis_iptal', id=t.id) }}">
+                  <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-x-circle me-2"></i>Sipariş İptal</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                  </div>
+                  <div class="modal-body">
+                    <div class="mb-3">
+                      <label class="form-label fw-semibold">İptal Sebebi</label>
+                      <textarea class="form-control" name="iptal_sebebi" rows="2" placeholder="Sebep yazın..." required></textarea>
+                    </div>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Vazgeç</button>
+                    <button type="submit" class="btn btn-danger">İptal Et</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<!-- ===== 4. ELİMDEKİ STOK ===== -->
+{% if kendi_stok %}
+<div class="card">
+  <div class="card-header py-2 fw-semibold">
+    <i class="bi bi-shop me-2 text-primary"></i>Elimdeki Stok
+  </div>
+  <div class="card-body p-0">
+    <table class="table table-sm mb-0">
+      <thead class="table-light">
+        <tr><th>Ürün</th><th class="text-end">Miktar</th></tr>
       </thead>
       <tbody>
-      {% for item in depo_stok %}
-      <tr {% if item.kullanilabilir == 0 %}class="table-warning"{% endif %}>
-        <td class="ps-4">
-          <strong>{{ item.urun.ad }}</strong>
-          {% if item.urun.kod %}<div class="text-muted" style="font-size:11px">{{ item.urun.kod }}</div>{% endif %}
-        </td>
-        <td class="text-center text-muted">{{ item.bakiye }}</td>
-        <td class="text-center">
-          {% if item.rezerve > 0 %}
-            <span class="badge bg-warning text-dark">{{ item.rezerve }}</span>
-          {% else %}
-            <span class="text-muted">—</span>
-          {% endif %}
-        </td>
-        <td class="text-center">
-          {% if item.kullanilabilir > 0 %}
-            <span class="badge bg-success fs-6">{{ item.kullanilabilir }}</span>
-          {% else %}
-            <span class="badge bg-danger">Stok Yok</span>
-          {% endif %}
-        </td>
-        <td class="text-center">
-          {% if item.kullanilabilir > 0 %}
-          <div class="d-flex align-items-center gap-1 justify-content-center">
-            <input type="number" name="miktar_{{ item.urun.id }}"
-                   min="0" max="{{ item.kullanilabilir }}" value="0"
-                   class="form-control form-control-sm text-center siparis-input"
-                   data-max="{{ item.kullanilabilir }}"
-                   style="width:80px;font-weight:bold"
-                   oninput="checkMax(this)">
-            <small class="text-muted">/ {{ item.kullanilabilir }}</small>
-          </div>
-          {% else %}
-          <button type="button" class="btn btn-sm btn-outline-warning"
-                  onclick="stokTalepAc({{ item.urun.id }}, '{{ item.urun.ad|replace("'","\\'")|e }}')">
-            <i class="bi bi-bell me-1"></i>Talep Et
-          </button>
-          {% endif %}
-        </td>
-      </tr>
-      {% endfor %}
-
-      {% for item in stok_yok %}
-      <tr class="table-secondary">
-        <td class="ps-4">
-          <strong>{{ item.urun.ad }}</strong>
-          <span class="badge bg-secondary ms-1 small">Üretimde</span>
-        </td>
-        <td class="text-center text-muted">0</td>
-        <td class="text-center text-muted">—</td>
-        <td class="text-center"><span class="badge bg-danger">Stokta Yok</span></td>
-        <td class="text-center">
-          <button type="button" class="btn btn-sm btn-outline-warning"
-                  onclick="stokTalepAc({{ item.urun.id }}, '{{ item.urun.ad|replace("'","\\'")|e }}')">
-            <i class="bi bi-bell me-1"></i>Talep Et
-          </button>
-        </td>
-      </tr>
-      {% endfor %}
+        {% for row in kendi_stok %}
+        <tr>
+          <td>{{ row.urun.ad }}</td>
+          <td class="text-end fw-semibold">{{ row.miktar }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="2" class="text-center text-muted py-2">Stok yok.</td></tr>
+        {% endfor %}
       </tbody>
     </table>
-    <div class="p-3 d-flex gap-2 align-items-center border-top">
-      <textarea name="notlar" class="form-control form-control-sm"
-                placeholder="Not (opsiyonel)..." rows="1" style="resize:none;max-width:300px"></textarea>
-      <button type="submit" class="btn btn-primary px-4" id="siparis-btn" disabled>
-        <i class="bi bi-send me-1"></i>Sipariş Talebi Gönder
-      </button>
-      <span class="text-muted small" id="secim-info">En az 1 ürün seçin</span>
-    </div>
-  </form>
-  {% endif %}
-</div>
-
-<!-- BEKLEYEN TALEPLERİM -->
-{% if bekleyen_talepler %}
-<div class="card p-3 mb-4">
-  <h6 class="fw-bold mb-3 text-warning"><i class="bi bi-clock me-1"></i>Bekleyen Taleplerim</h6>
-  {% for t in bekleyen_talepler %}
-  <div class="d-flex justify-content-between align-items-start border-bottom py-2">
-    <div>
-      <small class="text-muted">{{ t.tarih }}</small>
-      {% for k in t.kalemler %}
-      <div class="small">{{ k.urun.ad }} — <strong>{{ k.miktar|int }} adet</strong></div>
-      {% endfor %}
-      {% if t.notlar %}<div class="text-muted small mt-1">Not: {{ t.notlar }}</div>{% endif %}
-    </div>
-    <div class="d-flex flex-column align-items-end gap-1">
-      {% if t.durum == 'beklemede' %}
-        <span class="badge bg-warning text-dark">Onay Bekleniyor</span>
-        <button class="btn btn-outline-danger btn-sm"
-                onclick="iptalAc({{ t.id }})">
-          <i class="bi bi-x-circle me-1"></i>İptal Et
-        </button>
-      {% else %}
-        <span class="badge bg-primary">Onaylandı — Sevk Bekleniyor</span>
-      {% endif %}
-    </div>
   </div>
-  {% endfor %}
 </div>
 {% endif %}
 
-<!-- MAĞAZAMDA OLAN STOK -->
-{% if kendi_stok %}
-<div class="card p-3">
-  <h6 class="fw-bold mb-3"><i class="bi bi-shop me-1 text-success"></i>Mağazamdaki Stok</h6>
-  <table class="table table-sm mb-0">
-    <thead class="table-light">
-      <tr><th>Ürün</th><th class="text-end">Adet</th></tr>
-    </thead>
-    <tbody>
-    {% for item in kendi_stok %}
-    <tr>
-      <td>{{ item.urun.ad }}</td>
-      <td class="text-end fw-bold text-success">{{ item.eldeki|int }}</td>
-    </tr>
-    {% endfor %}
-    </tbody>
-  </table>
+<!-- Stok yok bildirimi -->
+{% if stok_yok %}
+<div class="alert alert-warning mt-3">
+  <i class="bi bi-exclamation-triangle me-2"></i>
+  Bazı ürünler stokta yok veya yetersiz: {{ stok_yok | join(', ') }}
 </div>
 {% endif %}
+{% endblock %}
 
-<!-- Stok Talep Modal (stokta yok ama istiyorum) -->
-<div class="modal fade" id="stokTalepModal" tabindex="-1">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header border-0">
-        <h5 class="modal-title text-warning"><i class="bi bi-bell me-2"></i>Ön Sipariş Talebi</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <form id="stok-talep-form" method="POST" action="{{ url_for('magaza.stok_talep') }}">
-        <div class="modal-body">
-          <input type="hidden" name="urun_id" id="st-urun-id">
-          <div class="alert alert-warning py-2 small">
-            <i class="bi bi-info-circle me-1"></i>
-            <strong id="st-urun-ad"></strong> şu an depoda yok.
-            Talebiniz yöneticiye iletilecek, ürün hazır olduğunda sevk edilecek.
-          </div>
-          <div class="mb-3">
-            <label class="form-label fw-bold">İstediğiniz Adet</label>
-            <input type="number" name="miktar" class="form-control" value="1" min="1" required>
-          </div>
-          <div class="mb-3">
-            <label class="form-label fw-bold">Not <span class="text-muted fw-normal">(opsiyonel)</span></label>
-            <textarea name="notlar" class="form-control" rows="2"
-                      placeholder="Acil mi? Belirli tarihte lazım mı?"></textarea>
-          </div>
-        </div>
-        <div class="modal-footer border-0">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
-          <button type="submit" class="btn btn-warning text-dark">
-            <i class="bi bi-send me-1"></i>Talep Gönder
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
-
-<!-- İptal Modal -->
-<div class="modal fade" id="iptalModal" tabindex="-1">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header border-0">
-        <h5 class="modal-title text-danger"><i class="bi bi-x-circle me-2"></i>Sipariş İptal</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <form id="iptal-form" method="POST">
-        <div class="modal-body">
-          <p class="text-muted small mb-3">İptal sebebini yazın:</p>
-          <textarea id="iptal-sebep" name="iptal_sebebi" class="form-control" rows="3"
-                    placeholder="Örn: Ürüne ihtiyaç kalmadı..." required></textarea>
-        </div>
-        <div class="modal-footer border-0">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Vazgeç</button>
-          <button type="submit" class="btn btn-danger"><i class="bi bi-x-circle me-1"></i>İptal Et</button>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
-
+{% block scripts %}
 <script>
-document.querySelectorAll('.siparis-input').forEach(function(inp) {
-  inp.addEventListener('input', updateBtn);
-});
-function checkMax(el) {
-  var max = parseInt(el.dataset.max);
-  if (parseInt(el.value) > max) el.value = max;
-  if (parseInt(el.value) < 0) el.value = 0;
-  updateBtn();
-}
-function updateBtn() {
-  var toplam = 0;
-  document.querySelectorAll('.siparis-input').forEach(function(inp) {
-    toplam += parseInt(inp.value) || 0;
+const sepet = {};
+
+// Arama
+document.getElementById('stokSearch').addEventListener('input', function () {
+  const q = this.value.toLowerCase();
+  document.querySelectorAll('#stokTable .stok-row').forEach(r => {
+    r.style.display = (r.querySelector('.stok-name')?.textContent.toLowerCase() || '').includes(q) ? '' : 'none';
   });
-  var btn = document.getElementById('siparis-btn');
-  var info = document.getElementById('secim-info');
-  if (toplam > 0) {
-    btn.disabled = false;
-    info.textContent = 'Toplam ' + toplam + ' adet seçildi';
-    info.className = 'text-success small fw-bold';
-  } else {
-    btn.disabled = true;
-    info.textContent = 'En az 1 ürün seçin';
-    info.className = 'text-muted small';
+});
+
+// Sepete ekle
+document.querySelectorAll('.btn-sepete-ekle').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const id = btn.dataset.id;
+    const ad = btn.dataset.ad;
+    const max = parseInt(btn.dataset.max);
+    const adetInput = document.getElementById('adet_' + id);
+    let adet = parseInt(adetInput.value) || 1;
+    if (adet < 1) adet = 1;
+    if (adet > max) adet = max;
+    if (sepet[id]) {
+      sepet[id].miktar += adet;
+      if (sepet[id].miktar > max) sepet[id].miktar = max;
+    } else {
+      sepet[id] = { ad, miktar: adet, max };
+    }
+    renderSepet();
+  });
+});
+
+function renderSepet() {
+  const items = document.getElementById('sepetItems');
+  const bos = document.getElementById('sepetBos');
+  const sayac = document.getElementById('sepetSayac');
+  const btnGonder = document.getElementById('btnSiparisGonder');
+  const keys = Object.keys(sepet);
+
+  sayac.textContent = keys.length;
+  btnGonder.disabled = keys.length === 0;
+
+  if (keys.length === 0) {
+    bos.style.display = '';
+    items.innerHTML = '';
+    return;
   }
-}
-function stokTalepAc(urunId, urunAd) {
-  document.getElementById('st-urun-id').value = urunId;
-  document.getElementById('st-urun-ad').textContent = urunAd;
-  new bootstrap.Modal(document.getElementById('stokTalepModal')).show();
-}
-function iptalAc(talepId) {
-  document.getElementById('iptal-form').action = '/m/stok/iptal/' + talepId;
-  document.getElementById('iptal-sebep').value = '';
-  new bootstrap.Modal(document.getElementById('iptalModal')).show();
+  bos.style.display = 'none';
+  items.innerHTML = keys.map(id => `
+    <div class="d-flex align-items-center gap-2 mb-2 p-2 bg-light rounded">
+      <span class="flex-grow-1 fw-semibold">${sepet[id].ad}</span>
+      <input type="number" class="form-control form-control-sm" style="width:70px"
+             value="${sepet[id].miktar}" min="1" max="${sepet[id].max}"
+             onchange="sepet['${id}'].miktar=Math.min(parseInt(this.value)||1,${sepet[id].max}); renderSepet();"/>
+      <button class="btn btn-outline-danger btn-sm" onclick="delete sepet['${id}']; renderSepet();">
+        <i class="bi bi-x"></i>
+      </button>
+    </div>
+  `).join('');
+
+  // Update hidden input
+  document.getElementById('sepet_json').value = JSON.stringify(
+    keys.map(id => ({ urun_id: id, miktar: sepet[id].miktar }))
+  );
 }
 </script>
 {% endblock %}

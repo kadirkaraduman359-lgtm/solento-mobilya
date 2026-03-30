@@ -1,471 +1,442 @@
 {% extends "base.html" %}
-{% block title %}Sevkiyat{% endblock %}
-{% block page_title %}Sevkiyat Yönetimi{% endblock %}
-{% block content %}
+{% block title %}Sevkiyat – Solento Mobilya{% endblock %}
+{% block page_title %}Sevkiyat{% endblock %}
 
-{% if talep %}
-<div class="alert alert-info d-flex align-items-center gap-2 mb-3">
-  <i class="bi bi-info-circle fs-5"></i>
-  <div>
-    <strong>Talep #{{ talep.id }}</strong> için sevk oluşturuluyor —
-    <strong>{{ talep.magaza.ad }}</strong> ({{ talep.magaza.sehir.ad }})
-    <span class="ms-2 badge bg-primary">{{ talep.kalemler|length }} ürün</span>
-  </div>
-</div>
-{% endif %}
-
-<div class="row g-3">
-  <!-- YENİ SEVK FORMU -->
-  <div class="col-xl-5">
-    <div class="card p-3">
-      <h6 class="fw-bold mb-3"><i class="bi bi-plus-circle me-1 text-primary"></i>Yeni Sevk Oluştur</h6>
-      <form method="POST" action="{{ url_for('admin.sevk_yeni') }}" id="sevkForm">
-        {% if talep %}<input type="hidden" name="talep_id" value="{{ talep.id }}">{% endif %}
-
-        <div class="mb-3">
-          <label class="form-label fw-semibold">Alıcı Türü</label>
-          <div class="d-flex gap-3">
-            <div class="form-check">
-              <input class="form-check-input" type="radio" name="alici_turu" id="aliciMagaza"
-                     value="magaza" checked onchange="aliciDegis()">
-              <label class="form-check-label" for="aliciMagaza">
-                <i class="bi bi-shop me-1"></i>Kayıtlı Mağaza
-              </label>
-            </div>
-            <div class="form-check">
-              <input class="form-check-input" type="radio" name="alici_turu" id="aliciSerbest"
-                     value="serbest" onchange="aliciDegis()">
-              <label class="form-check-label" for="aliciSerbest">
-                <i class="bi bi-person me-1"></i>Serbest / Perakende
-              </label>
-            </div>
-          </div>
-        </div>
-
-        <div id="bolumMagaza" class="mb-2">
-          <label class="form-label fw-semibold">Mağaza</label>
-          <select name="magaza_id" id="magaza_id" class="form-select form-select-sm">
-            <option value="">-- Mağaza Seçin --</option>
-            {% for m in magazalar %}
-            <option value="{{ m.id }}"
-              {% if talep and talep.magaza_id == m.id %}selected{% endif %}>
-              {{ m.sehir.ad }} / {{ m.ad }}
-            </option>
-            {% endfor %}
-          </select>
-        </div>
-
-        <div id="bolumSerbest" class="mb-2" style="display:none">
-          <label class="form-label fw-semibold">Alıcı Adı <span class="text-muted small">(Şahıs / Firma)</span></label>
-          <input type="text" name="alici_adi" id="alici_adi" class="form-control form-control-sm"
-                 placeholder="Örn: Ahmet Yılmaz / ABC Mobilya">
-        </div>
-
-        <div class="row g-2 mb-2">
-          <div class="col">
-            <label class="form-label fw-semibold">Tarih</label>
-            <input type="date" name="tarih" class="form-control form-control-sm"
-                   value="{{ now.strftime('%Y-%m-%d') }}">
-          </div>
-          <div class="col">
-            <label class="form-label fw-semibold">Nakliye (₺)</label>
-            <input type="number" name="nakliye_ucreti" id="nakliye" class="form-control form-control-sm"
-                   step="0.01" value="0" min="0" oninput="kdvHesapla()">
-          </div>
-          <div class="col">
-            <label class="form-label fw-semibold">İşçilik (₺)</label>
-            <input type="number" name="iscilik" id="iscilik" class="form-control form-control-sm"
-                   step="0.01" value="0" min="0" oninput="kdvHesapla()">
-          </div>
-        </div>
-
-        <!-- KDV -->
-        <div class="row g-2 mb-3">
-          <div class="col-6">
-            <label class="form-label fw-semibold">KDV Oranı</label>
-            <select name="kdv_oran" id="kdvOran" class="form-select form-select-sm" onchange="kdvHesapla()">
-              <option value="0">KDV Yok (%0)</option>
-              <option value="10">%10 KDV</option>
-              <option value="20">%20 KDV</option>
-            </select>
-          </div>
-          <div class="col-6 d-flex flex-column justify-content-end">
-            <div class="p-2 rounded border bg-light small">
-              <div class="d-flex justify-content-between">
-                <span class="text-muted">KDV Tutarı:</span>
-                <strong id="kdvTutar">0 ₺</strong>
-              </div>
-              <div class="d-flex justify-content-between border-top mt-1 pt-1">
-                <span class="text-muted fw-semibold">Genel Toplam:</span>
-                <strong id="genelToplam" class="text-primary">0 ₺</strong>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <label class="form-label fw-semibold mt-1">Ürünler</label>
-        <div id="urunContainer">
-          {% if talep %}
-            {% for k in talep.kalemler %}
-            <div class="d-flex gap-2 align-items-center mb-2 p-2 rounded border bg-light">
-              <select name="urun_id[]" class="form-select form-select-sm" required>
-                <option value="">-- Ürün --</option>
-                {% for u in urunler %}
-                <option value="{{ u.id }}" {% if u.id == k.urun_id %}selected{% endif %}>{{ u.ad }}</option>
-                {% endfor %}
-              </select>
-              <input type="number" name="miktar[]" class="form-control form-control-sm"
-                     value="{{ k.miktar|int }}" min="1" style="max-width:90px" required>
-              <button type="button" class="btn btn-sm btn-outline-danger"
-                      onclick="this.parentElement.remove()"><i class="bi bi-x"></i></button>
-            </div>
-            {% endfor %}
-          {% endif %}
-        </div>
-        <button type="button" class="btn btn-outline-primary btn-sm mb-3" onclick="urunEkle()">
-          <i class="bi bi-plus"></i> Ürün Satırı Ekle
-        </button>
-
-        <label class="form-label fw-semibold">Genel Giderler</label>
-        <div id="giderContainer"></div>
-        <button type="button" class="btn btn-outline-secondary btn-sm mb-3" onclick="giderEkle()">
-          <i class="bi bi-plus"></i> Gider Ekle (Mazot, Fortiaj vb.)
-        </button>
-
-        <div class="mb-3">
-          <label class="form-label fw-semibold">Not</label>
-          <textarea name="notlar" class="form-control form-control-sm" rows="2"
-                    placeholder="Opsiyonel not..."></textarea>
-        </div>
-        <button type="submit" class="btn btn-primary w-100">
-          <i class="bi bi-truck me-1"></i>Sevk Kaydet
-        </button>
-      </form>
-    </div>
-  </div>
-
-  <!-- SEVKİYAT LİSTESİ -->
-  <div class="col-xl-7">
-    <div class="card p-0" style="overflow:hidden">
-      <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
-        <h6 class="fw-bold mb-0">Sevk Listesi
-          <span class="badge bg-secondary ms-1">{{ sevkler|length }}</span>
-        </h6>
-      </div>
-      <table class="table table-hover table-sm mb-0">
-        <thead class="table-dark">
-          <tr>
-            <th class="ps-3">#</th>
-            <th>Tarih</th>
-            <th>Mağaza</th>
-            <th>Ürünler</th>
-            <th class="text-end">Nakliye</th>
-            <th class="text-end">İşçilik</th>
-            <th class="text-end">KDV</th>
-            <th class="text-center">Teslim</th>
-            <th class="text-center">İşlem</th>
-          </tr>
-        </thead>
-        <tbody>
-        {% for s in sevkler %}
-        {% set ara_toplam = (s.nakliye_ucreti or 0) + (s.iscilik or 0) + s.giderler|sum(attribute='tutar') %}
-        {% set kdv_tutar = (ara_toplam * (s.kdv_oran or 0) / 100) %}
-        {% set genel = ara_toplam + kdv_tutar %}
-        <tr>
-          <td class="ps-3 text-muted small">{{ s.id }}</td>
-          <td class="small">{{ s.tarih }}</td>
-          <td>
-            {% if s.alici_turu == 'serbest' %}
-              <span class="badge bg-secondary me-1" style="font-size:10px">Perakende</span>
-              <strong>{{ s.alici_adi }}</strong>
-            {% else %}
-              <strong>{{ s.magaza.ad if s.magaza else '—' }}</strong>
-              <div class="text-muted" style="font-size:11px">{{ s.magaza.sehir.ad if s.magaza else '' }}</div>
-            {% endif %}
-          </td>
-          <td style="max-width:180px">
-            {% for k in s.kalemler %}
-              <span class="badge bg-light text-dark border me-1 mb-1" style="font-size:11px">
-                {{ k.urun.ad }} <strong>×{{ k.miktar|int }}</strong>
-              </span>
-            {% endfor %}
-            {% if s.giderler %}
-              <div class="mt-1">
-              {% for g in s.giderler %}
-                <span class="badge bg-warning text-dark me-1" style="font-size:10px">
-                  {{ g.gider_turu }}: {{ g.tutar|int }}₺
-                </span>
-              {% endfor %}
-              </div>
-            {% endif %}
-          </td>
-          <td class="text-end small">
-            {% if s.nakliye_ucreti %}{{ s.nakliye_ucreti|int }}₺{% else %}—{% endif %}
-          </td>
-          <td class="text-end small">
-            {% if s.iscilik %}{{ s.iscilik|int }}₺{% else %}—{% endif %}
-          </td>
-          <td class="text-end small">
-            {% if s.kdv_oran and s.kdv_oran > 0 %}
-              <span class="text-success">%{{ s.kdv_oran }}</span>
-              <div style="font-size:10px" class="text-muted">+{{ kdv_tutar|int }}₺</div>
-            {% else %}
-              <span class="text-muted">—</span>
-            {% endif %}
-          </td>
-          <td class="text-center">
-            {% if s.teslim_durumu == 'teslim_alindi' %}
-              <span class="badge bg-success">✓ Teslim Alındı</span>
-              {% if s.teslim_tarihi %}
-                <div class="text-muted" style="font-size:10px">{{ s.teslim_tarihi }}</div>
-              {% endif %}
-            {% else %}
-              <span class="badge bg-primary">Sevk Edildi</span>
-            {% endif %}
-          </td>
-          <td class="text-center">
-            <div class="d-flex gap-1 justify-content-center">
-              <!-- Düzenle -->
-              <button class="btn btn-sm btn-outline-primary py-0 px-2" title="Düzenle"
-                      onclick="sevkDuzenle({{ s.id }},
-                        {{ s.nakliye_ucreti or 0 }}, {{ s.iscilik or 0 }},
-                        {{ s.kdv_oran or 0 }}, '{{ s.notlar or '' }}',
-                        {{ s.nakliye_goster|int }},
-                        [{% for k in s.kalemler %}[{{ k.urun_id }}, {{ k.miktar|int }}]{% if not loop.last %},{% endif %}{% endfor %}])">
-                <i class="bi bi-pencil"></i>
-              </button>
-              <button class="btn btn-sm btn-success py-0 px-2" title="WhatsApp'ta Paylaş"
-                      onclick="whatsappPaylas({{ s.id }},
-                        '{% if s.alici_turu == "serbest" %}{{ s.alici_adi }}{% else %}{{ s.magaza.ad if s.magaza else "" }}{% endif %}',
-                        '{% if s.alici_turu == "serbest" %}Perakende{% else %}{{ s.magaza.sehir.ad if s.magaza else "" }}{% endif %}',
-                        '{{ s.tarih }}',
-                        '{{ s.kalemler|map(attribute="urun")|map(attribute="ad")|list|join(",") }}',
-                        '{{ s.kalemler|map(attribute="miktar")|list|join(",") }}',
-                        {{ s.nakliye_ucreti or 0 }}, {{ s.iscilik or 0 }},
-                        {{ s.kdv_oran or 0 }}, {{ genel|int }},
-                        '{{ s.notlar or "" }}')">
-                <i class="bi bi-whatsapp"></i>
-              </button>
-              <!-- Sil -->
-              <form method="POST" action="{{ url_for('admin.sevk_sil', id=s.id) }}"
-                    onsubmit="return confirm('Bu sevki silmek istediğinize emin misiniz?\nStok hareketleri de silinecek!')">
-                <button class="btn btn-sm btn-outline-danger py-0 px-2" title="Sil">
-                  <i class="bi bi-trash"></i>
-                </button>
-              </form>
-            </div>
-          </td>
-        </tr>
-        {% else %}
-        <tr>
-          <td colspan="9" class="text-center text-muted py-4">
-            <i class="bi bi-truck fs-3 d-block mb-2"></i>Henüz sevk kaydı yok.
-          </td>
-        </tr>
-        {% endfor %}
-        </tbody>
-      </table>
-    </div>
-  </div>
-</div>
-
-<!-- DÜZENLEME MODALİ -->
-<div class="modal fade" id="sevkDuzenleModal" tabindex="-1">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title"><i class="bi bi-pencil me-2 text-primary"></i>Sevk Düzenle <span id="dModalBaslik"></span></h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <form method="POST" id="sevkDuzenleForm">
-        <div class="modal-body">
-          <div class="row g-2 mb-3">
-            <div class="col-md-4">
-              <label class="form-label fw-semibold">Nakliye (₺)</label>
-              <input type="number" name="nakliye_ucreti" id="dNavliye" class="form-control form-control-sm"
-                     step="0.01" min="0" oninput="dKdvHesapla()">
-            </div>
-            <div class="col-md-4">
-              <label class="form-label fw-semibold">İşçilik (₺)</label>
-              <input type="number" name="iscilik" id="dIscilik" class="form-control form-control-sm"
-                     step="0.01" min="0" oninput="dKdvHesapla()">
-            </div>
-            <div class="col-md-4">
-              <label class="form-label fw-semibold">KDV Oranı</label>
-              <select name="kdv_oran" id="dKdv" class="form-select form-select-sm" onchange="dKdvHesapla()">
-                <option value="0">KDV Yok (%0)</option>
-                <option value="10">%10 KDV</option>
-                <option value="20">%20 KDV</option>
-              </select>
-            </div>
-          </div>
-          <div class="mb-2 p-2 rounded border bg-light small d-flex justify-content-between">
-            <span class="text-muted">KDV Tutarı: <strong id="dKdvTutar">0 ₺</strong></span>
-            <span class="text-muted">Genel Toplam: <strong id="dGenelToplam" class="text-primary">0 ₺</strong></span>
-          </div>
-          <div class="mb-3 form-check">
-            <input class="form-check-input" type="checkbox" name="nakliye_goster" id="dNavliyeGoster" value="1">
-            <label class="form-check-label" for="dNavliyeGoster">
-              Nakliye ve KDV bilgisini mağazaya göster
-            </label>
-          </div>
-          <label class="form-label fw-semibold">Ürünler</label>
-          <div id="dUrunContainer" class="mb-2"></div>
-          <button type="button" class="btn btn-outline-primary btn-sm mb-3" onclick="dUrunEkle()">
-            <i class="bi bi-plus"></i> Ürün Ekle
-          </button>
-          <div class="mb-2">
-            <label class="form-label fw-semibold">Not</label>
-            <textarea name="notlar" id="dNotlar" class="form-control form-control-sm" rows="2"></textarea>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Vazgeç</button>
-          <button type="submit" class="btn btn-primary"><i class="bi bi-save me-1"></i>Kaydet</button>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
+{% block head %}
+<style>
+  .urun-row .btn-remove-row { cursor: pointer; }
+  #kdv-bilgi { font-size: .85rem; }
+</style>
 {% endblock %}
 
-{% block extra_js %}
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-3">
+  <h5 class="fw-bold mb-0"><i class="bi bi-truck me-2 text-primary"></i>Sevkiyat Yönetimi</h5>
+</div>
+
+<div class="row g-3">
+
+  <!-- ===== LEFT: Yeni Sevk Formu ===== -->
+  <div class="col-lg-5">
+    <div class="card h-100">
+      <div class="card-header py-2 fw-semibold">
+        <i class="bi bi-plus-circle me-1 text-primary"></i>Yeni Sevk Oluştur
+      </div>
+      <div class="card-body">
+        <form method="POST" action="{{ url_for('admin.sevk_yeni') }}" id="sevkForm">
+          <!-- Talep ön-doldurma -->
+          {% if talep %}
+          <div class="alert alert-info py-2 small mb-3">
+            <i class="bi bi-info-circle me-1"></i>Talep #{{ talep.id }} esas alınarak önceden dolduruldu.
+            <input type="hidden" name="talep_id" value="{{ talep.id }}"/>
+          </div>
+          {% endif %}
+
+          <!-- Alıcı Tipi -->
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Alıcı Tipi</label>
+            <div class="d-flex gap-3">
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="alici_turu" id="tipMagaza" value="magaza" checked/>
+                <label class="form-check-label" for="tipMagaza">Kayıtlı Mağaza</label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="alici_turu" id="tipSerbest" value="serbest"/>
+                <label class="form-check-label" for="tipSerbest">Serbest Alıcı</label>
+              </div>
+            </div>
+          </div>
+
+          <div id="magazaSecimi" class="mb-3">
+            <label class="form-label fw-semibold">Mağaza</label>
+            <select class="form-select" name="magaza_id">
+              <option value="">— Mağaza seçin —</option>
+              {% for m in magazalar %}
+              <option value="{{ m.id }}" {% if talep and talep.magaza and talep.magaza.id == m.id %}selected{% endif %}>
+                {{ m.ad }} ({{ m.sehir.ad if m.sehir else '' }})
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div id="serbestAlici" class="mb-3 d-none">
+            <label class="form-label fw-semibold">Alıcı Adı</label>
+            <input type="text" class="form-control" name="alici_adi" placeholder="Alıcı adı / firma"/>
+          </div>
+
+          <!-- Tarih -->
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Tarih</label>
+            <input type="date" class="form-control" name="tarih" value="{{ '' }}" required/>
+          </div>
+
+          <!-- Ürün Satırları -->
+          <div class="mb-2 fw-semibold">Ürün Kalemleri</div>
+          <div id="urunRows">
+            {% if talep and talep.kalemler %}
+              {% for k in talep.kalemler %}
+              <div class="row g-2 mb-2 urun-row">
+                <div class="col">
+                  <select class="form-select form-select-sm" name="urun_id[]" required>
+                    <option value="">Ürün seç</option>
+                    {% for u in urunler %}
+                    <option value="{{ u.id }}" {% if k.urun.id == u.id %}selected{% endif %}>{{ u.ad }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class="col-3">
+                  <input type="number" class="form-control form-control-sm" name="miktar[]"
+                         placeholder="Adet" min="1" value="{{ k.miktar }}" required/>
+                </div>
+                <div class="col-auto">
+                  <button type="button" class="btn btn-outline-danger btn-sm btn-remove-row">
+                    <i class="bi bi-x"></i>
+                  </button>
+                </div>
+              </div>
+              {% endfor %}
+            {% else %}
+            <div class="row g-2 mb-2 urun-row">
+              <div class="col">
+                <select class="form-select form-select-sm" name="urun_id[]" required>
+                  <option value="">Ürün seç</option>
+                  {% for u in urunler %}
+                  <option value="{{ u.id }}">{{ u.ad }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="col-3">
+                <input type="number" class="form-control form-control-sm" name="miktar[]" placeholder="Adet" min="1" required/>
+              </div>
+              <div class="col-auto">
+                <button type="button" class="btn btn-outline-danger btn-sm btn-remove-row">
+                  <i class="bi bi-x"></i>
+                </button>
+              </div>
+            </div>
+            {% endif %}
+          </div>
+          <button type="button" id="addUrunRow" class="btn btn-outline-primary btn-sm mb-3">
+            <i class="bi bi-plus me-1"></i>Satır Ekle
+          </button>
+
+          <!-- Nakliye / İşçilik -->
+          <div class="row g-2 mb-3">
+            <div class="col">
+              <label class="form-label fw-semibold">Nakliye Ücreti (₺)</label>
+              <input type="number" class="form-control" name="nakliye_ucreti" id="nakliye_ucreti" min="0" value="0" step="0.01"/>
+            </div>
+            <div class="col">
+              <label class="form-label fw-semibold">İşçilik (₺)</label>
+              <input type="number" class="form-control" name="iscilik" id="iscilik" min="0" value="0" step="0.01"/>
+            </div>
+          </div>
+
+          <!-- KDV -->
+          <div class="mb-3">
+            <label class="form-label fw-semibold">KDV Oranı</label>
+            <select class="form-select" name="kdv_oran" id="kdv_oran">
+              <option value="0">%0 (KDV Yok)</option>
+              <option value="10">%10</option>
+              <option value="20">%20</option>
+            </select>
+          </div>
+          <div class="alert alert-secondary py-2 mb-3" id="kdv-bilgi">
+            <div class="row">
+              <div class="col">Ara Toplam: <strong id="araToplam">0,00 ₺</strong></div>
+              <div class="col">KDV: <strong id="kdvTutar">0,00 ₺</strong></div>
+              <div class="col fw-bold">Toplam: <strong id="genelToplam">0,00 ₺</strong></div>
+            </div>
+          </div>
+
+          <!-- Nakliyeyi mağazaya göster -->
+          <div class="form-check mb-3">
+            <input class="form-check-input" type="checkbox" name="nakliye_goster" id="nakliye_goster" value="1"/>
+            <label class="form-check-label" for="nakliye_goster">Nakliyeyi mağazaya göster</label>
+          </div>
+
+          <!-- Genel Gider Satırları -->
+          <div class="mb-2 fw-semibold">Genel Giderler <small class="text-muted fw-normal">(opsiyonel)</small></div>
+          <div id="giderRows"></div>
+          <button type="button" id="addGiderRow" class="btn btn-outline-secondary btn-sm mb-3">
+            <i class="bi bi-plus me-1"></i>Gider Ekle
+          </button>
+
+          <!-- Not -->
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Not</label>
+            <textarea class="form-control" name="notlar" rows="2" placeholder="Opsiyonel not..."></textarea>
+          </div>
+
+          <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">
+            <i class="bi bi-send me-2"></i>Sevk Oluştur
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== RIGHT: Sevk Listesi ===== -->
+  <div class="col-lg-7">
+    <div class="card">
+      <div class="card-header py-2 fw-semibold">
+        <i class="bi bi-list-ul me-1 text-primary"></i>Sevk Listesi
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover mb-0 table-sm">
+            <thead class="table-light">
+              <tr>
+                <th>#</th>
+                <th>Tarih</th>
+                <th>Alıcı</th>
+                <th>Ürünler</th>
+                <th>Nakliye</th>
+                <th>KDV</th>
+                <th>Durum</th>
+                <th>İşlem</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for sv in sevkler %}
+              <tr>
+                <td class="text-muted">{{ sv.id }}</td>
+                <td class="small">{{ sv.tarih.strftime('%d.%m.%Y') if sv.tarih else '—' }}</td>
+                <td>
+                  {% if sv.alici_turu == 'magaza' %}
+                    <span class="badge bg-primary">{{ sv.magaza.ad if sv.magaza else '?' }}</span>
+                  {% else %}
+                    <span class="text-muted small">{{ sv.alici_adi }}</span>
+                  {% endif %}
+                </td>
+                <td class="small">
+                  {% for k in sv.kalemler %}
+                    <div>{{ k.urun.ad }} × {{ k.miktar }}</div>
+                  {% endfor %}
+                </td>
+                <td class="small">{{ '%.2f ₺'|format(sv.nakliye_ucreti or 0) }}</td>
+                <td class="small">%{{ sv.kdv_oran or 0 }}</td>
+                <td>
+                  {% if sv.teslim_durumu == 'teslim_alindi' %}
+                    <span class="badge bg-success">Teslim Alındı</span>
+                  {% else %}
+                    <span class="badge bg-warning text-dark">Bekliyor</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <div class="d-flex gap-1 flex-wrap">
+                    <button class="btn btn-warning btn-sm" data-bs-toggle="modal"
+                            data-bs-target="#modalSevkDuzenle{{ sv.id }}" title="Düzenle">
+                      <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="btn btn-danger btn-sm" data-bs-toggle="modal"
+                            data-bs-target="#modalSevkSil{{ sv.id }}" title="Sil">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                    <a class="btn btn-success btn-sm"
+                       href="https://wa.me/?text={{ ('Sevk%20%23' + sv.id|string + '%0ATarih%3A%20' + (sv.tarih.strftime('%d.%m.%Y') if sv.tarih else '') + '%0AAlıcı%3A%20' + (sv.magaza.ad if sv.magaza else sv.alici_adi or '')) | urlencode }}"
+                       target="_blank" title="WhatsApp">
+                      <i class="bi bi-whatsapp"></i>
+                    </a>
+                  </div>
+                </td>
+              </tr>
+
+              <!-- Düzenle modal -->
+              <div class="modal fade" id="modalSevkDuzenle{{ sv.id }}" tabindex="-1">
+                <div class="modal-dialog modal-lg">
+                  <div class="modal-content">
+                    <form method="POST" action="{{ url_for('admin.sevk_duzenle', id=sv.id) }}">
+                      <div class="modal-header">
+                        <h5 class="modal-title"><i class="bi bi-pencil me-2"></i>Sevk #{{ sv.id }} Düzenle</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                      </div>
+                      <div class="modal-body">
+                        <!-- Ürün kalemleri -->
+                        <div class="mb-3">
+                          <label class="form-label fw-semibold">Ürün Kalemleri</label>
+                          <div class="edit-urun-rows-{{ sv.id }}">
+                            {% for k in sv.kalemler %}
+                            <div class="row g-2 mb-2 urun-row">
+                              <div class="col">
+                                <select class="form-select form-select-sm" name="urun_id[]" required>
+                                  {% for u in urunler %}
+                                  <option value="{{ u.id }}" {% if k.urun.id == u.id %}selected{% endif %}>{{ u.ad }}</option>
+                                  {% endfor %}
+                                </select>
+                              </div>
+                              <div class="col-3">
+                                <input type="number" class="form-control form-control-sm" name="miktar[]"
+                                       value="{{ k.miktar }}" min="1" required/>
+                              </div>
+                              <div class="col-auto">
+                                <button type="button" class="btn btn-outline-danger btn-sm btn-remove-row">
+                                  <i class="bi bi-x"></i>
+                                </button>
+                              </div>
+                            </div>
+                            {% endfor %}
+                          </div>
+                          <button type="button" class="btn btn-outline-primary btn-sm btn-add-edit-row"
+                                  data-target="edit-urun-rows-{{ sv.id }}"
+                                  data-urunler='{{ urunler | map(attribute="id") | list | tojson }}'>
+                            <i class="bi bi-plus me-1"></i>Satır Ekle
+                          </button>
+                        </div>
+                        <div class="row g-2 mb-3">
+                          <div class="col">
+                            <label class="form-label fw-semibold">Nakliye (₺)</label>
+                            <input type="number" class="form-control" name="nakliye_ucreti"
+                                   value="{{ sv.nakliye_ucreti or 0 }}" min="0" step="0.01"/>
+                          </div>
+                          <div class="col">
+                            <label class="form-label fw-semibold">İşçilik (₺)</label>
+                            <input type="number" class="form-control" name="iscilik"
+                                   value="{{ sv.iscilik or 0 }}" min="0" step="0.01"/>
+                          </div>
+                          <div class="col">
+                            <label class="form-label fw-semibold">KDV Oranı</label>
+                            <select class="form-select" name="kdv_oran">
+                              <option value="0" {% if (sv.kdv_oran or 0) == 0 %}selected{% endif %}>%0</option>
+                              <option value="10" {% if sv.kdv_oran == 10 %}selected{% endif %}>%10</option>
+                              <option value="20" {% if sv.kdv_oran == 20 %}selected{% endif %}>%20</option>
+                            </select>
+                          </div>
+                        </div>
+                        <div class="form-check mb-3">
+                          <input class="form-check-input" type="checkbox" name="nakliye_goster"
+                                 id="ng{{ sv.id }}" value="1" {% if sv.nakliye_goster %}checked{% endif %}/>
+                          <label class="form-check-label" for="ng{{ sv.id }}">Nakliyeyi mağazaya göster</label>
+                        </div>
+                        <div class="mb-3">
+                          <label class="form-label fw-semibold">Not</label>
+                          <textarea class="form-control" name="notlar" rows="2">{{ sv.notlar or '' }}</textarea>
+                        </div>
+                      </div>
+                      <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Vazgeç</button>
+                        <button type="submit" class="btn btn-warning"><i class="bi bi-check-lg me-1"></i>Kaydet</button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Sil confirm modal -->
+              <div class="modal fade" id="modalSevkSil{{ sv.id }}" tabindex="-1">
+                <div class="modal-dialog modal-sm">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h6 class="modal-title">Sevk Sil</h6>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">Sevk #{{ sv.id }} kaydını silmek istiyor musunuz?</div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Vazgeç</button>
+                      <form method="POST" action="{{ url_for('admin.sevk_sil', id=sv.id) }}" class="d-inline">
+                        <button type="submit" class="btn btn-danger btn-sm">Sil</button>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {% else %}
+              <tr><td colspan="8" class="text-center text-muted py-4">Sevk kaydı yok.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /row -->
+
+
+<!-- Hidden row template -->
+<template id="urunRowTemplate">
+  <div class="row g-2 mb-2 urun-row">
+    <div class="col">
+      <select class="form-select form-select-sm" name="urun_id[]" required>
+        <option value="">Ürün seç</option>
+        {% for u in urunler %}
+        <option value="{{ u.id }}">{{ u.ad }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-3">
+      <input type="number" class="form-control form-control-sm" name="miktar[]" placeholder="Adet" min="1" required/>
+    </div>
+    <div class="col-auto">
+      <button type="button" class="btn btn-outline-danger btn-sm btn-remove-row"><i class="bi bi-x"></i></button>
+    </div>
+  </div>
+</template>
+
+<template id="giderRowTemplate">
+  <div class="row g-2 mb-2 gider-row">
+    <div class="col">
+      <input type="text" class="form-control form-control-sm" name="gider_tur[]" placeholder="Gider türü"/>
+    </div>
+    <div class="col-3">
+      <input type="number" class="form-control form-control-sm" name="gider_tutar[]" placeholder="Tutar" min="0" step="0.01"/>
+    </div>
+    <div class="col-auto">
+      <button type="button" class="btn btn-outline-danger btn-sm btn-remove-gider"><i class="bi bi-x"></i></button>
+    </div>
+  </div>
+</template>
+{% endblock %}
+
+{% block scripts %}
 <script>
-const urunOptions = `{% for u in urunler %}<option value="{{ u.id }}">{{ u.ad }}</option>{% endfor %}`;
-
-function aliciDegis() {
-  const serbest = document.getElementById('aliciSerbest').checked;
-  document.getElementById('bolumMagaza').style.display = serbest ? 'none' : '';
-  document.getElementById('bolumSerbest').style.display = serbest ? '' : 'none';
-  document.getElementById('magaza_id').required = !serbest;
-  document.getElementById('alici_adi').required = serbest;
-}
-
-function urunEkle() {
-  const c = document.getElementById("urunContainer");
-  const div = document.createElement("div");
-  div.className = "d-flex gap-2 align-items-center mb-2 p-2 rounded border bg-light";
-  div.innerHTML = `
-    <select name="urun_id[]" class="form-select form-select-sm" required>
-      <option value="">-- Ürün Seçin --</option>
-      ${urunOptions}
-    </select>
-    <input type="number" name="miktar[]" class="form-control form-control-sm"
-           placeholder="Adet" min="1" style="max-width:90px" required>
-    <button type="button" class="btn btn-sm btn-outline-danger"
-            onclick="this.parentElement.remove()"><i class="bi bi-x"></i></button>
-  `;
-  c.appendChild(div);
-  c.lastElementChild.querySelector('select').focus();
-}
-
-function giderEkle() {
-  const c = document.getElementById("giderContainer");
-  const div = document.createElement("div");
-  div.className = "d-flex gap-2 align-items-center mb-2 p-2 rounded border bg-light";
-  div.innerHTML = `
-    <input type="text" name="gider_tur[]" class="form-control form-control-sm"
-           placeholder="Tür (Mazot, Fortiaj...)" list="giderListesi">
-    <input type="number" name="gider_tutar[]" class="form-control form-control-sm"
-           placeholder="₺" min="0" step="0.01" style="max-width:100px">
-    <input type="text" name="gider_aciklama[]" class="form-control form-control-sm"
-           placeholder="Açıklama">
-    <button type="button" class="btn btn-sm btn-outline-danger"
-            onclick="this.parentElement.remove()"><i class="bi bi-x"></i></button>
-  `;
-  c.appendChild(div);
-}
-
-function dKdvHesapla() {
-  const n = parseFloat(document.getElementById('dNavliye').value) || 0;
-  const i = parseFloat(document.getElementById('dIscilik').value) || 0;
-  const oran = parseInt(document.getElementById('dKdv').value) || 0;
-  const ara = n + i;
-  const kdv = ara * oran / 100;
-  document.getElementById('dKdvTutar').textContent = kdv.toLocaleString('tr-TR', {maximumFractionDigits:2}) + ' ₺';
-  document.getElementById('dGenelToplam').textContent = (ara + kdv).toLocaleString('tr-TR', {maximumFractionDigits:2}) + ' ₺';
-}
-
-function dUrunEkle(uid, mkt) {
-  const c = document.getElementById('dUrunContainer');
-  const div = document.createElement('div');
-  div.className = 'd-flex gap-2 align-items-center mb-2';
-  div.innerHTML = `
-    <select name="urun_id[]" class="form-select form-select-sm" required>
-      <option value="">-- Ürün --</option>
-      ${urunOptions}
-    </select>
-    <input type="number" name="miktar[]" class="form-control form-control-sm"
-           value="${mkt || ''}" min="1" style="max-width:90px" placeholder="Adet" required>
-    <button type="button" class="btn btn-sm btn-outline-danger"
-            onclick="this.parentElement.remove()"><i class="bi bi-x"></i></button>
-  `;
-  c.appendChild(div);
-  if (uid) div.querySelector('select').value = uid;
-}
-
-function sevkDuzenle(id, nakliye, iscilik, kdv, notlar, ngoster, kalemler) {
-  document.getElementById('dModalBaslik').textContent = '#' + id;
-  document.getElementById('sevkDuzenleForm').action = '/admin/sevk/' + id + '/duzenle';
-  document.getElementById('dNavliye').value = nakliye;
-  document.getElementById('dIscilik').value = iscilik;
-  document.getElementById('dKdv').value = kdv;
-  document.getElementById('dNotlar').value = notlar;
-  document.getElementById('dNavliyeGoster').checked = ngoster == 1;
-  document.getElementById('dUrunContainer').innerHTML = '';
-  kalemler.forEach(k => dUrunEkle(k[0], k[1]));
-  dKdvHesapla();
-  new bootstrap.Modal(document.getElementById('sevkDuzenleModal')).show();
-}
-
-function kdvHesapla() {
-  const nakliye = parseFloat(document.getElementById('nakliye').value) || 0;
-  const iscilik = parseFloat(document.getElementById('iscilik').value) || 0;
-  const oran = parseInt(document.getElementById('kdvOran').value) || 0;
-  const ara = nakliye + iscilik;
-  const kdv = ara * oran / 100;
-  const toplam = ara + kdv;
-  document.getElementById('kdvTutar').textContent = kdv.toLocaleString('tr-TR', {maximumFractionDigits:2}) + ' ₺';
-  document.getElementById('genelToplam').textContent = toplam.toLocaleString('tr-TR', {maximumFractionDigits:2}) + ' ₺';
-}
-
-function whatsappPaylas(id, magaza, sehir, tarih, urunler, miktarlar, nakliye, iscilik, kdvOran, toplam, notlar) {
-  const urunList = urunler.split(',');
-  const miktarList = miktarlar.split(',');
-  let urunSatir = '';
-  for (let i = 0; i < urunList.length; i++) {
-    if (urunList[i]) {
-      urunSatir += `  • ${urunList[i].trim()}: ${Math.round(parseFloat(miktarList[i] || 0))} adet\n`;
-    }
-  }
-  let msg = `🚛 *SOLENTO MOBİLYA - SEVKİYAT BİLGİSİ*\n`;
-  msg += `━━━━━━━━━━━━━━━━━━━━\n`;
-  msg += `📦 Sevk No: #${id}\n`;
-  msg += `📅 Tarih: ${tarih}\n`;
-  msg += `🏪 Mağaza: ${magaza} / ${sehir}\n`;
-  msg += `━━━━━━━━━━━━━━━━━━━━\n`;
-  msg += `*ÜRÜNLER:*\n${urunSatir}`;
-  msg += `━━━━━━━━━━━━━━━━━━━━\n`;
-  if (nakliye > 0) msg += `🚛 Nakliye: ${nakliye.toLocaleString('tr-TR')} ₺\n`;
-  if (iscilik > 0) msg += `👷 İşçilik: ${iscilik.toLocaleString('tr-TR')} ₺\n`;
-  if (kdvOran > 0) msg += `🧾 KDV (%${kdvOran}) dahil\n`;
-  if (notlar) msg += `📝 Not: ${notlar}\n`;
-  msg += `━━━━━━━━━━━━━━━━━━━━\n`;
-  msg += `✅ Lütfen teslim alındığında sistemi güncelleyiniz.`;
-
-  const url = 'https://wa.me/?text=' + encodeURIComponent(msg);
-  window.open(url, '_blank');
-}
-
-const dl2 = document.createElement("datalist");
-dl2.id = "giderListesi";
-["Mazot","Fortiaj","İşçilik","Ambalaj","Sigorta","Diğer"].forEach(t => {
-  const opt = document.createElement("option"); opt.value = t; dl2.appendChild(opt);
+// Alıcı tipi toggle
+document.querySelectorAll('input[name="alici_turu"]').forEach(r => {
+  r.addEventListener('change', () => {
+    const isMagaza = document.getElementById('tipMagaza').checked;
+    document.getElementById('magazaSecimi').classList.toggle('d-none', !isMagaza);
+    document.getElementById('serbestAlici').classList.toggle('d-none', isMagaza);
+  });
 });
-document.body.appendChild(dl2);
 
-{% if not talep %}
-urunEkle();
-{% endif %}
+// Ürün satırı ekle
+document.getElementById('addUrunRow').addEventListener('click', () => {
+  const tpl = document.getElementById('urunRowTemplate').content.cloneNode(true);
+  document.getElementById('urunRows').appendChild(tpl);
+});
+
+// Satır sil (delegated)
+document.addEventListener('click', e => {
+  if (e.target.closest('.btn-remove-row')) {
+    const row = e.target.closest('.urun-row');
+    if (row) row.remove();
+  }
+  if (e.target.closest('.btn-remove-gider')) {
+    const row = e.target.closest('.gider-row');
+    if (row) row.remove();
+  }
+});
+
+// Gider satırı ekle
+document.getElementById('addGiderRow').addEventListener('click', () => {
+  const tpl = document.getElementById('giderRowTemplate').content.cloneNode(true);
+  document.getElementById('giderRows').appendChild(tpl);
+});
+
+// KDV hesapla
+function hesaplaKdv() {
+  const nakliye = parseFloat(document.getElementById('nakliye_ucreti').value) || 0;
+  const iscilik = parseFloat(document.getElementById('iscilik').value) || 0;
+  const kdvOran = parseFloat(document.getElementById('kdv_oran').value) || 0;
+  const araToplam = nakliye + iscilik;
+  const kdvTutar = araToplam * kdvOran / 100;
+  const genelToplam = araToplam + kdvTutar;
+  document.getElementById('araToplam').textContent = araToplam.toLocaleString('tr-TR', {minimumFractionDigits:2}) + ' ₺';
+  document.getElementById('kdvTutar').textContent = kdvTutar.toLocaleString('tr-TR', {minimumFractionDigits:2}) + ' ₺';
+  document.getElementById('genelToplam').textContent = genelToplam.toLocaleString('tr-TR', {minimumFractionDigits:2}) + ' ₺';
+}
+['nakliye_ucreti','iscilik','kdv_oran'].forEach(id => {
+  document.getElementById(id)?.addEventListener('input', hesaplaKdv);
+});
 </script>
 {% endblock %}

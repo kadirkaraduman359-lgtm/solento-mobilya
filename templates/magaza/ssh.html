@@ -1,64 +1,118 @@
 {% extends "base.html" %}
-{% block title %}SSH Bildir{% endblock %}
-{% block page_title %}SSH — Hasar/Eksik Parça Bildirimi{% endblock %}
+{% block title %}SSH Bildir – Solento Mobilya{% endblock %}
+{% block page_title %}SSH Bildir{% endblock %}
+
 {% block content %}
+<div class="d-flex align-items-center justify-content-between mb-3">
+  <h5 class="fw-bold mb-0"><i class="bi bi-exclamation-circle me-2 text-warning"></i>SSH Bildirimi Gönder</h5>
+</div>
+
 <div class="row justify-content-center">
-  <div class="col-xl-7">
-    <div class="card p-4">
-      <div class="alert alert-warning py-2 mb-4">
-        <i class="bi bi-info-circle me-1"></i>
-        Teslim aldığınız üründe hasar, eksik veya kırık parça varsa buradan bildirin.
-        Yönetici inceleyip size geri dönecektir.
+  <div class="col-md-7 col-lg-6">
+    <div class="card">
+      <div class="card-header py-2 fw-semibold">
+        Hasar / SSH Bildir
       </div>
-      <form method="POST" id="sshForm">
-        <div class="mb-3">
-          <label class="form-label fw-semibold">Ürün</label>
-          <select name="urun_id" id="urunSelect" class="form-select" required onchange="paketleriYukle(this.value)">
-            <option value="">-- Ürün Seçin --</option>
-            {% for u in urunler %}<option value="{{ u.id }}">{{ u.ad }}</option>{% endfor %}
-          </select>
-        </div>
-        <div class="mb-3" id="paketDiv" style="display:none">
-          <label class="form-label fw-semibold">İlgili Paket (opsiyonel)</label>
-          <select name="paket_id" id="paketSelect" class="form-select">
-            <option value="">-- Paket Seçin (opsiyonel) --</option>
-          </select>
-        </div>
-        <div class="mb-3">
-          <label class="form-label fw-semibold">Hasar / Eksik Açıklaması</label>
-          <textarea name="hasar_aciklamasi" class="form-control" rows="3"
-                    placeholder="Örn: Sağ kapak kırık, menteşe eksik, boya hasarlı..." required></textarea>
-        </div>
-        <div class="mb-4">
-          <label class="form-label fw-semibold">Talep Edilen Parça Adedi</label>
-          <input type="number" name="talep_miktar" class="form-control" value="1" min="1" required>
-        </div>
-        <div class="d-flex gap-2">
-          <button type="submit" class="btn btn-danger px-4"><i class="bi bi-send me-1"></i>Bildirimi Gönder</button>
-          <a href="{{ url_for('magaza.dashboard') }}" class="btn btn-secondary">İptal</a>
-        </div>
-      </form>
+      <div class="card-body">
+        <form method="POST" action="{{ url_for('magaza.ssh_bildir') }}" id="sshForm">
+
+          <!-- Adım 1: Ürün Seç -->
+          <div class="mb-4">
+            <label class="form-label fw-semibold">
+              <span class="badge bg-primary rounded-circle me-1">1</span>Ürün Seçin
+            </label>
+            <select class="form-select" name="urun_id" id="urunSelect" required>
+              <option value="">— Ürün seçin —</option>
+              {% for u in urunler %}
+              <option value="{{ u.id }}">{{ u.ad }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <!-- Adım 2: Paket Seç -->
+          <div class="mb-4">
+            <label class="form-label fw-semibold">
+              <span class="badge bg-primary rounded-circle me-1">2</span>Paket Seçin
+            </label>
+            <select class="form-select" name="paket_id" id="paketSelect" required disabled>
+              <option value="">— Önce ürün seçin —</option>
+            </select>
+            <div class="form-text" id="paketYukleniyor" style="display:none">
+              <i class="bi bi-hourglass-split me-1"></i>Paketler yükleniyor...
+            </div>
+          </div>
+
+          <!-- Adım 3: Hasar Açıklaması -->
+          <div class="mb-4">
+            <label class="form-label fw-semibold">
+              <span class="badge bg-primary rounded-circle me-1">3</span>Hasar Açıklaması
+            </label>
+            <textarea class="form-control" name="hasar_aciklamasi" rows="3"
+                      placeholder="Hasarı detaylı açıklayın..." required></textarea>
+          </div>
+
+          <!-- Adım 4: Adet -->
+          <div class="mb-4">
+            <label class="form-label fw-semibold">
+              <span class="badge bg-primary rounded-circle me-1">4</span>Talep Edilen Adet
+            </label>
+            <input type="number" class="form-control" name="talep_miktar" min="1" value="1" required/>
+          </div>
+
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary flex-grow-1 py-2 fw-semibold">
+              <i class="bi bi-send me-2"></i>Gönder
+            </button>
+            <button type="reset" class="btn btn-secondary py-2" id="btnSifirla">
+              <i class="bi bi-arrow-counterclockwise me-1"></i>Sıfırla
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   </div>
 </div>
 {% endblock %}
-{% block extra_js %}
+
+{% block scripts %}
 <script>
-function paketleriYukle(urunId) {
-  const div = document.getElementById("paketDiv");
-  const sel = document.getElementById("paketSelect");
-  if (!urunId) { div.style.display = "none"; return; }
+const urunSelect = document.getElementById('urunSelect');
+const paketSelect = document.getElementById('paketSelect');
+const paketYukleniyor = document.getElementById('paketYukleniyor');
+
+urunSelect.addEventListener('change', function () {
+  const urunId = this.value;
+  paketSelect.innerHTML = '<option value="">— Paket seçin —</option>';
+  paketSelect.disabled = true;
+
+  if (!urunId) return;
+
+  paketYukleniyor.style.display = '';
   fetch(`/m/api/urun-paketleri/${urunId}`)
     .then(r => r.json())
     .then(data => {
-      sel.innerHTML = '<option value="">-- Paket Seçin (opsiyonel) --</option>';
-      data.forEach(p => {
-        const opt = document.createElement("option");
-        opt.value = p.id; opt.textContent = p.ad;
-        sel.appendChild(opt);
-      });
-      div.style.display = data.length > 0 ? "" : "none";
+      paketYukleniyor.style.display = 'none';
+      if (data && data.length > 0) {
+        data.forEach(p => {
+          const opt = document.createElement('option');
+          opt.value = p.id;
+          opt.textContent = p.paket_adi;
+          paketSelect.appendChild(opt);
+        });
+        paketSelect.disabled = false;
+      } else {
+        paketSelect.innerHTML = '<option value="">Bu ürüne ait paket yok</option>';
+      }
+    })
+    .catch(() => {
+      paketYukleniyor.style.display = 'none';
+      paketSelect.innerHTML = '<option value="">Yüklenemedi, tekrar deneyin</option>';
     });
-}
+});
+
+document.getElementById('btnSifirla').addEventListener('click', () => {
+  paketSelect.innerHTML = '<option value="">— Önce ürün seçin —</option>';
+  paketSelect.disabled = true;
+});
 </script>
 {% endblock %}
