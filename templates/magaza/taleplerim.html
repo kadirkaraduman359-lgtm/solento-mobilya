@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Taleplerim{% endblock %}
+{% block page_title %}Sipariş Taleplerim{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <span class="text-muted">Toplam {{ talepler|length }} talep</span>
+  <a href="{{ url_for('magaza.talep_olustur') }}" class="btn btn-primary btn-sm">+ Yeni Talep</a>
+</div>
+<div class="card p-3">
+  <table class="table table-hover">
+    <thead><tr><th>Tarih</th><th>Ürünler</th><th>Not</th><th>Durum</th></tr></thead>
+    <tbody>
+    {% for t in talepler %}
+    <tr>
+      <td>{{ t.tarih }}</td>
+      <td>
+        {% for k in t.kalemler %}
+          <div class="small">{{ k.urun.ad }} — <strong>{{ k.miktar|int }}</strong></div>
+        {% endfor %}
+      </td>
+      <td class="text-muted small">{{ t.notlar or '-' }}</td>
+      <td>
+        {% if t.durum == 'beklemede' %}<span class="badge bg-warning text-dark">Beklemede</span>
+        {% elif t.durum == 'onaylandi' %}<span class="badge bg-primary">Onaylandı</span>
+        {% elif t.durum == 'sevk_edildi' %}<span class="badge bg-success">Sevk Edildi</span>
+        {% else %}<span class="badge bg-secondary">İptal</span>{% endif %}
+      </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="4" class="text-center text-muted">Talep bulunamadı.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

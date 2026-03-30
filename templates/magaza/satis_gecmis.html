@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Satış Geçmişi{% endblock %}
+{% block page_title %}Satış Geçmişi{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <span class="text-muted">Toplam {{ satirlar|length }} satış kaydı</span>
+  <a href="{{ url_for('magaza.satis_gir') }}" class="btn btn-success btn-sm">
+    <i class="bi bi-plus"></i> Yeni Satış Gir
+  </a>
+</div>
+<div class="card p-3">
+  <table class="table table-hover">
+    <thead>
+      <tr><th>Tarih</th><th>Ürün</th><th class="text-end">Adet</th><th>Not</th></tr>
+    </thead>
+    <tbody>
+    {% for s in satirlar %}
+    <tr>
+      <td>{{ s.tarih }}</td>
+      <td><strong>{{ s.urun.ad }}</strong></td>
+      <td class="text-end fw-bold text-success">{{ s.miktar|int }}</td>
+      <td class="text-muted small">{{ s.notlar or '-' }}</td>
+    </tr>
+    {% else %}
+    <tr><td colspan="4" class="text-center text-muted">Satış kaydı bulunamadı.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

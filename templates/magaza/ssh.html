@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}SSH Bildir{% endblock %}
+{% block page_title %}SSH — Hasar/Eksik Parça Bildirimi{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-xl-7">
+    <div class="card p-4">
+      <div class="alert alert-warning py-2 mb-4">
+        <i class="bi bi-info-circle me-1"></i>
+        Teslim aldığınız üründe hasar, eksik veya kırık parça varsa buradan bildirin.
+        Yönetici inceleyip size geri dönecektir.
+      </div>
+      <form method="POST" id="sshForm">
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Ürün</label>
+          <select name="urun_id" id="urunSelect" class="form-select" required onchange="paketleriYukle(this.value)">
+            <option value="">-- Ürün Seçin --</option>
+            {% for u in urunler %}<option value="{{ u.id }}">{{ u.ad }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="mb-3" id="paketDiv" style="display:none">
+          <label class="form-label fw-semibold">İlgili Paket (opsiyonel)</label>
+          <select name="paket_id" id="paketSelect" class="form-select">
+            <option value="">-- Paket Seçin (opsiyonel) --</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Hasar / Eksik Açıklaması</label>
+          <textarea name="hasar_aciklamasi" class="form-control" rows="3"
+                    placeholder="Örn: Sağ kapak kırık, menteşe eksik, boya hasarlı..." required></textarea>
+        </div>
+        <div class="mb-4">
+          <label class="form-label fw-semibold">Talep Edilen Parça Adedi</label>
+          <input type="number" name="talep_miktar" class="form-control" value="1" min="1" required>
+        </div>
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-danger px-4"><i class="bi bi-send me-1"></i>Bildirimi Gönder</button>
+          <a href="{{ url_for('magaza.dashboard') }}" class="btn btn-secondary">İptal</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+function paketleriYukle(urunId) {
+  const div = document.getElementById("paketDiv");
+  const sel = document.getElementById("paketSelect");
+  if (!urunId) { div.style.display = "none"; return; }
+  fetch(`/m/api/urun-paketleri/${urunId}`)
+    .then(r => r.json())
+    .then(data => {
+      sel.innerHTML = '<option value="">-- Paket Seçin (opsiyonel) --</option>';
+      data.forEach(p => {
+        const opt = document.createElement("option");
+        opt.value = p.id; opt.textContent = p.ad;
+        sel.appendChild(opt);
+      });
+      div.style.display = data.length > 0 ? "" : "none";
+    });
+}
+</script>
+{% endblock %}

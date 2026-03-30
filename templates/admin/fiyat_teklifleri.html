@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+{% block title %}Fiyat Teklifleri{% endblock %}
+{% block page_title %}Fiyat Teklifi Talepleri{% endblock %}
+{% block content %}
+
+<div class="mb-3 d-flex gap-2 flex-wrap align-items-center">
+  {% for d, label, cls in [('beklemede','Beklemede','warning'),('yanitlandi','Yanıtlandı','success'),('tumu','Tümü','dark')] %}
+  <a href="?durum={{ d }}"
+     class="btn btn-sm {% if durum_filter==d %}btn-{{ cls }}{% else %}btn-outline-{{ cls }}{% endif %}">
+    {{ label }}
+    {% if d == 'beklemede' and bekleyen_sayi %}
+      <span class="badge bg-danger ms-1">{{ bekleyen_sayi }}</span>
+    {% endif %}
+  </a>
+  {% endfor %}
+</div>
+
+<div class="card p-0" style="overflow:hidden">
+  <table class="table table-hover mb-0">
+    <thead class="table-dark">
+      <tr>
+        <th class="ps-3">#</th>
+        <th>Tarih</th>
+        <th>Mağaza</th>
+        <th>Ürün</th>
+        <th class="text-center">Adet</th>
+        <th>Müşteri Notu</th>
+        <th>Durum</th>
+        <th class="text-center">İşlem</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for ft in teklifler %}
+    <tr class="{% if ft.durum == 'beklemede' %}table-warning{% elif ft.durum == 'yanitlandi' %}table-success{% endif %}">
+      <td class="ps-3 text-muted small">{{ ft.id }}</td>
+      <td class="small text-muted">{{ ft.tarih }}</td>
+      <td>
+        <strong>{{ ft.magaza.ad }}</strong>
+        <div class="text-muted" style="font-size:11px">{{ ft.magaza.sehir.ad }}</div>
+      </td>
+      <td>
+        <strong>{{ ft.urun.ad }}</strong>
+        {% if ft.urun.kategori %}
+          <div class="text-muted" style="font-size:11px">{{ ft.urun.kategori }}</div>
+        {% endif %}
+      </td>
+      <td class="text-center"><span class="badge bg-dark">{{ ft.miktar }} adet</span></td>
+      <td class="small text-muted" style="max-width:200px">
+        {{ ft.not_ or '—' }}
+        {% if ft.durum == 'yanitlandi' %}
+          <div class="mt-1 p-1 rounded bg-light">
+            <strong>Teklif:</strong>
+            {% if ft.admin_teklif_fiyati %}
+              <span class="text-success fw-bold">{{ "{:,.0f}".format(ft.admin_teklif_fiyati) }} ₺</span>
+            {% endif %}
+            {% if ft.admin_notu %} — {{ ft.admin_notu }}{% endif %}
+          </div>
+          <div class="text-muted" style="font-size:10px">{{ ft.yanitlama_tarihi }}</div>
+        {% endif %}
+      </td>
+      <td>
+        {% if ft.durum == 'beklemede' %}
+          <span class="badge bg-warning text-dark">Beklemede</span>
+        {% else %}
+          <span class="badge bg-success">Yanıtlandı</span>
+        {% endif %}
+      </td>
+      <td class="text-center">
+        {% if ft.durum == 'beklemede' %}
+        <button class="btn btn-sm btn-primary py-0 px-2"
+                onclick="yanitlaAc({{ ft.id }}, '{{ ft.urun.ad|replace("'","\\'")|e }}', {{ ft.urun.fiyat or 'null' }})">
+          <i class="bi bi-reply me-1"></i>Yanıtla
+        </button>
+        {% else %}
+        <span class="text-muted small">—</span>
+        {% endif %}
+      </td>
+    </tr>
+    {% else %}
+    <tr>
+      <td colspan="8" class="text-center text-muted py-4">
+        <i class="bi bi-tag fs-3 d-block mb-2"></i>
+        {% if durum_filter == 'beklemede' %}Bekleyen teklif talebi yok.{% else %}Teklif bulunamadı.{% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- Yanıtla Modal -->
+<div class="modal fade" id="yanitModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="bi bi-reply me-2 text-primary"></i>Fiyat Teklifi Yanıtla</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form id="yanit-form" method="POST">
+        <div class="modal-body">
+          <p class="fw-bold mb-3" id="yanit-urun-ad"></p>
+          <div class="mb-3">
+            <label class="form-label fw-bold">Teklif Fiyatı (₺)</label>
+            <input type="number" name="admin_teklif_fiyati" id="yanit-fiyat"
+                   class="form-control" step="0.01" min="0"
+                   placeholder="0.00">
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold">Notunuz <span class="text-muted fw-normal">(mağaza görecek)</span></label>
+            <textarea name="admin_notu" class="form-control" rows="3"
+                      placeholder="Fiyat geçerlilik süresi, teslimat bilgisi..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+          <button type="submit" class="btn btn-primary">
+            <i class="bi bi-send me-1"></i>Yanıtı Gönder
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+function yanitlaAc(id, ad, katalogFiyat) {
+  document.getElementById('yanit-form').action = '/admin/katalog/fiyat-teklifleri/' + id + '/yanitla';
+  document.getElementById('yanit-urun-ad').textContent = ad;
+  document.getElementById('yanit-fiyat').value = katalogFiyat || '';
+  new bootstrap.Modal(document.getElementById('yanitModal')).show();
+}
+</script>
+{% endblock %}

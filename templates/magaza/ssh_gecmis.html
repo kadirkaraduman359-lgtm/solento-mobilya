@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}SSH Takibi{% endblock %}
+{% block page_title %}SSH Bildirim Takibi{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <span class="text-muted">Toplam {{ bildirimleri|length }} bildirim</span>
+  <a href="{{ url_for('magaza.ssh_bildir') }}" class="btn btn-danger btn-sm">+ Yeni Bildirim</a>
+</div>
+<div class="card p-3">
+  <table class="table table-hover">
+    <thead><tr><th>Tarih</th><th>Ürün</th><th>Paket</th><th>Açıklama</th><th>Adet</th><th>Durum</th><th>Admin Notu</th></tr></thead>
+    <tbody>
+    {% for b in bildirimleri %}
+    <tr>
+      <td>{{ b.tarih }}</td>
+      <td><strong>{{ b.urun.ad }}</strong></td>
+      <td>{{ b.paket.paket_adi if b.paket else '-' }}</td>
+      <td>{{ b.hasar_aciklamasi }}</td>
+      <td>{{ b.talep_miktar|int }}</td>
+      <td>
+        {% if b.durum == 'beklemede' %}<span class="badge bg-warning text-dark">Beklemede</span>
+        {% elif b.durum == 'uretiliyor' %}<span class="badge bg-info">Üretiliyor</span>
+        {% elif b.durum == 'kargoda' %}<span class="badge bg-primary">Kargoda</span>
+        {% else %}<span class="badge bg-success">✓ Teslim Edildi</span>{% endif %}
+      </td>
+      <td class="text-info small">{{ b.admin_notu or '-' }}</td>
+    </tr>
+    {% else %}
+    <tr><td colspan="7" class="text-center text-muted">Bildirim bulunamadı.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

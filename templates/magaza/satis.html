@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}Satış Girişi{% endblock %}
+{% block page_title %}Satış Girişi{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-xl-8">
+    <div class="card p-4">
+      <p class="text-muted mb-4">
+        <i class="bi bi-info-circle me-1"></i>
+        Bugün sattığınız ürünleri girin. Sistem stokunuzdan otomatik düşer.
+      </p>
+      <form method="POST">
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Satış Tarihi</label>
+          <input type="date" name="tarih" class="form-control"
+                 value="{{ now.strftime('%Y-%m-%d') if now else '' }}" required>
+        </div>
+
+        <label class="form-label fw-semibold">Satılan Ürünler</label>
+        <div id="satisContainer"></div>
+        <button type="button" class="btn btn-outline-primary mb-4" onclick="satirEkle()">
+          <i class="bi bi-plus"></i> Ürün Ekle
+        </button>
+
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-success px-4">
+            <i class="bi bi-check-lg me-1"></i>Satışı Kaydet
+          </button>
+          <a href="{{ url_for('magaza.dashboard') }}" class="btn btn-secondary">İptal</a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="col-xl-4">
+    <div class="card p-3">
+      <h6 class="fw-bold mb-3"><i class="bi bi-archive me-1 text-success"></i>Mevcut Stoğunuz</h6>
+      <table class="table table-sm mb-0">
+        <thead><tr><th>Ürün</th><th class="text-end">Eldeki</th></tr></thead>
+        <tbody>
+        {% for s in stok %}
+        <tr>
+          <td class="small">{{ s.urun.ad }}</td>
+          <td class="text-end fw-bold {% if s.eldeki <= 0 %}text-danger{% endif %}">
+            {{ s.eldeki|int }}
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="2" class="text-muted">Stok yok.</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+const urunler = [
+  {% for s in urunler_eldeki %}
+  {"id": {{ s.urun.id }}, "ad": "{{ s.urun.ad }}", "eldeki": {{ s.eldeki|int }}},
+  {% endfor %}
+];
+
+function satirEkle() {
+  const c = document.getElementById("satisContainer");
+  const div = document.createElement("div");
+  div.className = "row g-2 mb-2 align-items-center";
+  let opts = '<option value="">-- Ürün Seçin --</option>';
+  urunler.forEach(u => opts += `<option value="${u.id}">${u.ad} (Eldeki: ${u.eldeki})</option>`);
+  div.innerHTML = `
+    <div class="col-5">
+      <select name="urun_id[]" class="form-select" required>${opts}</select>
+    </div>
+    <div class="col-2">
+      <input type="number" name="miktar[]" class="form-control"
+             placeholder="Adet" min="1" required>
+    </div>
+    <div class="col-4">
+      <input type="text" name="notlar[]" class="form-control" placeholder="Not (opsiyonel)">
+    </div>
+    <div class="col-1">
+      <button type="button" class="btn btn-outline-danger"
+              onclick="this.closest('.row').remove()">
+        <i class="bi bi-x"></i>
+      </button>
+    </div>
+  `;
+  c.appendChild(div);
+}
+
+satirEkle();
+</script>
+{% endblock %}
