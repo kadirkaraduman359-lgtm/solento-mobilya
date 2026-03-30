@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+{% block title %}Tanımlar{% endblock %}
+{% block page_title %}Tanımlar{% endblock %}
+{% block content %}
+<ul class="nav nav-tabs mb-3" id="tabNav">
+  <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#sehirTab">Şehirler</button></li>
+  <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#magazaTab">Mağazalar</button></li>
+  <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#urunTab">Ürünler</button></li>
+</ul>
+<div class="tab-content">
+
+  <!-- ŞEHİRLER -->
+  <div class="tab-pane fade show active" id="sehirTab">
+    <div class="row g-3">
+      <div class="col-md-4">
+        <div class="card p-3">
+          <h6 class="fw-bold mb-3">Yeni Şehir</h6>
+          <form method="POST" action="{{ url_for('admin.sehir_ekle') }}" class="d-flex gap-2">
+            <input type="text" name="ad" class="form-control" placeholder="Şehir adı" required>
+            <button class="btn btn-primary">Ekle</button>
+          </form>
+        </div>
+      </div>
+      <div class="col-md-8">
+        <div class="card p-3">
+          <table class="table table-sm table-hover">
+            <thead><tr><th>#</th><th>Şehir</th><th>Mağaza Sayısı</th><th></th></tr></thead>
+            <tbody>
+            {% for s in sehirler %}
+            <tr>
+              <td>{{ s.id }}</td><td>{{ s.ad }}</td><td>{{ s.magazalar|length }}</td>
+              <td>
+                <form method="POST" action="{{ url_for('admin.sehir_sil', id=s.id) }}"
+                      onsubmit="return confirm('Şehir silinsin mi?')">
+                  <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                </form>
+              </td>
+            </tr>
+            {% else %}<tr><td colspan="4" class="text-muted">Şehir yok.</td></tr>{% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAĞAZALAR -->
+  <div class="tab-pane fade" id="magazaTab">
+    <div class="row g-3">
+      <div class="col-md-4">
+        <div class="card p-3">
+          <h6 class="fw-bold mb-3">Yeni Mağaza</h6>
+          <form method="POST" action="{{ url_for('admin.magaza_ekle') }}">
+            <div class="mb-2"><input type="text" name="ad" class="form-control form-control-sm" placeholder="Mağaza Adı" required></div>
+            <div class="mb-2">
+              <input type="text" name="sehir_ad" class="form-control form-control-sm" placeholder="Şehir (örn: ANKARA)" required>
+            </div>
+            <div class="mb-2"><input type="text" name="adres" class="form-control form-control-sm" placeholder="Adres"></div>
+            <div class="mb-2"><input type="text" name="telefon" class="form-control form-control-sm" placeholder="Telefon"></div>
+            <button class="btn btn-primary btn-sm w-100">Ekle</button>
+          </form>
+        </div>
+      </div>
+      <div class="col-md-8">
+        <div class="card p-3">
+          <table class="table table-sm table-hover">
+            <thead><tr><th>Mağaza</th><th>Şehir</th><th>Telefon</th><th></th></tr></thead>
+            <tbody>
+            {% for m in magazalar %}
+            <tr>
+              <td>{{ m.ad }}</td><td>{{ m.sehir.ad }}</td><td>{{ m.telefon or '-' }}</td>
+              <td>
+                <form method="POST" action="{{ url_for('admin.magaza_sil', id=m.id) }}"
+                      onsubmit="return confirm('Mağaza silinsin mi?')">
+                  <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                </form>
+              </td>
+            </tr>
+            {% else %}<tr><td colspan="4" class="text-muted">Mağaza yok.</td></tr>{% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ÜRÜNLER -->
+  <div class="tab-pane fade" id="urunTab">
+    <div class="row g-3">
+      <div class="col-md-4">
+        <div class="card p-3">
+          <h6 class="fw-bold mb-3">Yeni Ürün</h6>
+          <form method="POST" action="{{ url_for('admin.urun_ekle') }}">
+            <div class="mb-2"><input type="text" name="kod" class="form-control form-control-sm" placeholder="Ürün Kodu" required></div>
+            <div class="mb-2"><input type="text" name="ad" class="form-control form-control-sm" placeholder="Ürün Adı" required></div>
+            <div class="mb-2">
+              <select name="birim" class="form-select form-select-sm">
+                <option value="takim">takım</option><option value="adet">adet</option>
+                <option value="koli">koli</option><option value="paket">paket</option>
+              </select>
+            </div>
+            <div class="mb-2">
+              <label class="form-label small">Kaç Paketten Oluşuyor?</label>
+              <input type="number" name="paket_sayisi" class="form-control form-control-sm" value="1" min="1" max="50" required>
+            </div>
+            <button class="btn btn-primary btn-sm w-100">Ekle</button>
+          </form>
+        </div>
+      </div>
+      <div class="col-md-8">
+        <div class="card p-3">
+          <table class="table table-sm table-hover">
+            <thead><tr><th>Kod</th><th>Ürün</th><th>Paket Sayısı</th><th></th></tr></thead>
+            <tbody>
+            {% for u in urunler %}
+            <tr>
+              <td><code>{{ u.kod }}</code></td>
+              <td>{{ u.ad }}</td>
+              <td>
+                <span class="badge bg-secondary">{{ u.paketler|length }} paket</span>
+                {% for p in u.paketler %}
+                  <small class="text-muted d-block">P{{ p.paket_no }}: {{ p.paket_adi }}</small>
+                {% endfor %}
+              </td>
+              <td>
+                <a href="{{ url_for('admin.paket_duzenle', id=u.id) }}" class="btn btn-sm btn-outline-primary me-1">
+                  <i class="bi bi-pencil"></i> Paket Adları
+                </a>
+                <form method="POST" action="{{ url_for('admin.urun_sil', id=u.id) }}"
+                      class="d-inline" onsubmit="return confirm('Ürün silinsin mi?')">
+                  <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                </form>
+              </td>
+            </tr>
+            {% else %}<tr><td colspan="4" class="text-muted">Ürün yok.</td></tr>{% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

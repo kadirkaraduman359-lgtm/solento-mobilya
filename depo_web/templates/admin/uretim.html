@@ -1,0 +1,244 @@
+{% extends "base.html" %}
+{% block title %}Üretim Takibi{% endblock %}
+{% block page_title %}Üretim Takibi{% endblock %}
+{% block content %}
+
+<div class="row g-3">
+  <div class="col-xl-9">
+
+    <!-- Sekme butonları + Arama + Yeni Sipariş -->
+    <div class="d-flex gap-2 align-items-center mb-3 flex-wrap">
+      <a href="?durum=aktif"
+         class="btn btn-sm {% if durum_filter=='aktif' %}btn-primary{% else %}btn-outline-secondary{% endif %}">
+        <i class="bi bi-activity me-1"></i>Aktif
+        {% if aktif_sayi %}<span class="badge bg-light text-dark ms-1">{{ aktif_sayi }}</span>{% endif %}
+      </a>
+      <a href="?durum=tamamlandi"
+         class="btn btn-sm {% if durum_filter=='tamamlandi' %}btn-success{% else %}btn-outline-secondary{% endif %}">
+        <i class="bi bi-check-all me-1"></i>Tamamlananlar
+        {% if tamamlandi_sayi %}<span class="badge bg-light text-dark ms-1">{{ tamamlandi_sayi }}</span>{% endif %}
+      </a>
+      <a href="?durum=tumu"
+         class="btn btn-sm {% if durum_filter=='tumu' %}btn-dark{% else %}btn-outline-secondary{% endif %}">
+        Tümü
+      </a>
+      <div class="flex-grow-1">
+        <div class="input-group input-group-sm">
+          <span class="input-group-text"><i class="bi bi-search"></i></span>
+          <input type="text" id="uretimArama" class="form-control"
+                 placeholder="Ürün adı ile ara..." oninput="uretimFiltrele()">
+          <button class="btn btn-outline-secondary" type="button" onclick="aramaSifirla()">
+            <i class="bi bi-x"></i>
+          </button>
+        </div>
+      </div>
+      <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#yeniSiparisModal">
+        <i class="bi bi-plus-lg me-1"></i>Yeni Sipariş
+      </button>
+    </div>
+
+    <div class="card p-0" style="overflow:hidden">
+      <table class="table table-hover mb-0" id="uretimTablo">
+        <thead class="table-dark">
+          <tr>
+            <th class="ps-3">#</th>
+            <th>Tarih</th>
+            <th>Ürün</th>
+            <th class="text-center">Sipariş</th>
+            <th class="text-center">Sevk Hazır</th>
+            <th>Paket Durumu</th>
+            <th class="text-center">İşlem</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for s in siparisler %}
+        <tr class="uretim-satir {% if s.durum == 'tamamlandi' %}table-success{% endif %}"
+            data-urun="{{ s.urun.ad|lower }}">
+          <td class="ps-3 text-muted small">{{ s.id }}</td>
+          <td class="small text-muted">{{ s.tarih }}</td>
+          <td><strong>{{ s.urun.ad }}</strong></td>
+          <td class="text-center fw-bold">{{ s.siparis_adeti|int }}</td>
+          <td class="text-center">
+            {% set hazir = s._sevk_edilebilir %}
+            <span class="fw-bold fs-6
+              {% if hazir >= s.siparis_adeti %}text-success
+              {% elif hazir > 0 %}text-warning
+              {% else %}text-danger{% endif %}">
+              {{ hazir|int }}
+            </span>
+            <div style="font-size:10px;color:#888">/ {{ s.siparis_adeti|int }}</div>
+          </td>
+          <td>
+            {% if s.durum == 'tamamlandi' %}
+              <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Tamamlandı</span>
+            {% elif s._eksikler %}
+              {% for e in s._eksikler %}
+                <span class="badge bg-warning text-dark d-block mb-1" style="font-size:11px">
+                  ⚠ {{ e.paket.paket_adi }}: {{ e.mevcut|int }}/{{ s.siparis_adeti|int }}
+                </span>
+              {% endfor %}
+            {% else %}
+              <span class="badge bg-success">✓ Tam Hazır</span>
+            {% endif %}
+          </td>
+          <td class="text-center">
+            <div class="d-flex gap-1 justify-content-center">
+              {% if s.durum != 'tamamlandi' %}
+              <a href="{{ url_for('admin.paket_gir', id=s.id) }}"
+                 class="btn btn-sm btn-outline-primary py-0 px-2" title="Paket Miktarı Gir">
+                <i class="bi bi-pencil"></i>
+              </a>
+              <form method="POST" action="{{ url_for('admin.uretim_tamamla', id=s.id) }}"
+                    onsubmit="return confirm('Bu üretim siparişi tamamlandı olarak işaretlensin mi?\nPaket miktarları sıfırlanacak.')">
+                <button class="btn btn-sm btn-outline-success py-0 px-2" title="Tamamlandı İşaretle">
+                  <i class="bi bi-check-lg"></i>
+                </button>
+              </form>
+              {% else %}
+              <form method="POST" action="{{ url_for('admin.uretim_tekrar_ac', id=s.id) }}">
+                <button class="btn btn-sm btn-outline-warning py-0 px-2" title="Tekrar Aç">
+                  <i class="bi bi-arrow-counterclockwise"></i>
+                </button>
+              </form>
+              {% endif %}
+              <form method="POST" action="{{ url_for('admin.uretim_sil', id=s.id) }}"
+                    onsubmit="return confirm('Bu sipariş silinsin mi?')">
+                <button class="btn btn-sm btn-outline-danger py-0 px-2" title="Sil">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="7" class="text-center text-muted py-4">
+            <i class="bi bi-inbox fs-3 d-block mb-2"></i>
+            {% if durum_filter == 'tamamlandi' %}Tamamlanan sipariş yok.
+            {% else %}Sipariş kaydı yok.{% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div id="aramaSonuc" class="text-muted small mt-2" style="display:none"></div>
+  </div>
+
+  <div class="col-xl-3">
+    <div class="card p-3 border-info">
+      <h6 class="fw-bold mb-2 text-info"><i class="bi bi-info-circle me-1"></i>Paket Mantığı</h6>
+      <p class="small text-muted mb-1">
+        <strong>Sevk Hazır = MIN(tüm paket miktarları)</strong>
+      </p>
+      <p class="small text-muted mb-0">
+        Örn: 4 paket → 100, 98, 0, 100 ise
+        <strong class="text-danger">Hazır: 0</strong> (Paket 3 eksik)
+      </p>
+      <hr class="my-2">
+      <p class="small text-muted mb-0">
+        <i class="bi bi-check-circle text-success me-1"></i>
+        Sipariş tamamlanınca paket sayıları sıfırlanır, tekrar aynı ürünü üretince sadece adet girersiniz.
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Yeni Sipariş -->
+<div class="modal fade" id="yeniSiparisModal" tabindex="-1">
+  <div class="modal-dialog">
+    <form method="POST" action="{{ url_for('admin.uretim_yeni') }}">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="bi bi-plus-circle me-2 text-primary"></i>Yeni Üretim Siparişi</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label fw-bold">Ürün Adı</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-search"></i></span>
+              <input type="text" name="urun_ad" id="urunAdInput" class="form-control"
+                     placeholder="Ürün adı yazın veya seçin..."
+                     list="urunOneri" required autocomplete="off"
+                     oninput="urunSecildi()">
+            </div>
+            <datalist id="urunOneri">
+              {% for u in urunler %}<option value="{{ u.ad }}" data-paket="{{ u.paketler|length }}">{% endfor %}
+            </datalist>
+            <div class="form-text">Mevcut ürün seçilirse paket sayısı otomatik gelir.</div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold">Kaç Paketten Oluşuyor?</label>
+            <input type="number" name="paket_sayisi" id="paketSayisiInput"
+                   class="form-control" value="1" min="1" max="50" required>
+            <div class="form-text">Mevcut ürün seçilince bu alan otomatik dolar.</div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold">Sipariş Adeti (Takım)</label>
+            <input type="number" name="siparis_adeti" class="form-control" min="1" required
+                   placeholder="Kaç takım üretilecek?">
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold">Tarih</label>
+            <input type="date" name="tarih" class="form-control"
+                   value="{{ now.strftime('%Y-%m-%d') if now else '' }}">
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold">Not</label>
+            <textarea name="notlar" class="form-control" rows="2" placeholder="Opsiyonel not..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+          <button type="submit" class="btn btn-primary">
+            <i class="bi bi-arrow-right me-1"></i>Oluştur & Paket Gir
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+// Mevcut ürünlerin paket sayıları
+const urunPaketler = {
+  {% for u in urunler %}"{{ u.ad }}": {{ u.paketler|length }},{% endfor %}
+};
+
+function urunSecildi() {
+  var ad = document.getElementById('urunAdInput').value.trim();
+  var paket = urunPaketler[ad];
+  if (paket && paket > 0) {
+    document.getElementById('paketSayisiInput').value = paket;
+  }
+}
+
+function uretimFiltrele() {
+  var q = document.getElementById('uretimArama').value.toLowerCase().trim();
+  var satirlar = document.querySelectorAll('.uretim-satir');
+  var gorunen = 0;
+  satirlar.forEach(function(tr) {
+    var urun = tr.dataset.urun || '';
+    if (!q || urun.includes(q)) {
+      tr.style.display = '';
+      gorunen++;
+    } else {
+      tr.style.display = 'none';
+    }
+  });
+  var sonuc = document.getElementById('aramaSonuc');
+  if (q) {
+    sonuc.style.display = '';
+    sonuc.textContent = gorunen + ' sonuç bulundu: "' + q + '"';
+  } else {
+    sonuc.style.display = 'none';
+  }
+}
+
+function aramaSifirla() {
+  document.getElementById('uretimArama').value = '';
+  uretimFiltrele();
+}
+</script>
+{% endblock %}

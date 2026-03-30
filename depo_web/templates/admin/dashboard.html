@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard{% endblock %}
+{% block page_title %}Ana Dashboard{% endblock %}
+{% block content %}
+<div class="row g-3 mb-4">
+  <div class="col-sm-6 col-xl-3">
+    <div class="card stat-card blue p-3">
+      <div class="text-muted small">Bekleyen Talepler</div>
+      <div class="fs-3 fw-bold text-primary">{{ bekleyen_talepler }}</div>
+      <a href="{{ url_for('admin.talepler') }}" class="text-primary small">Görüntüle →</a>
+    </div>
+  </div>
+  <div class="col-sm-6 col-xl-3">
+    <div class="card stat-card red p-3">
+      <div class="text-muted small">Açık SSH Bildirimleri</div>
+      <div class="fs-3 fw-bold text-danger">{{ acik_ssh }}</div>
+      <a href="{{ url_for('admin.ssh_listesi') }}" class="text-danger small">Görüntüle →</a>
+    </div>
+  </div>
+  <div class="col-sm-6 col-xl-3">
+    <div class="card stat-card green p-3">
+      <div class="text-muted small">Aktif Siparişler</div>
+      <div class="fs-3 fw-bold text-success">{{ aktif_siparisler|length }}</div>
+      <a href="{{ url_for('admin.uretim') }}" class="text-success small">Görüntüle →</a>
+    </div>
+  </div>
+  <div class="col-sm-6 col-xl-3">
+    <div class="card stat-card orange p-3">
+      <div class="text-muted small">Toplam Ürün Çeşidi</div>
+      <div class="fs-3 fw-bold text-warning">{{ stok_ozet|length }}</div>
+      <a href="{{ url_for('admin.stok') }}" class="text-warning small">Stok →</a>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-xl-7">
+    <div class="card p-3">
+      <h6 class="fw-bold mb-3"><i class="bi bi-gear me-1 text-primary"></i>Aktif Üretim Siparişleri</h6>
+      {% if aktif_siparisler %}
+      <table class="table table-sm table-hover mb-0">
+        <thead><tr><th>Ürün</th><th>Sipariş</th><th>Sevk Hazır</th><th>Durum</th></tr></thead>
+        <tbody>
+        {% for s in aktif_siparisler %}
+        <tr>
+          <td>{{ s.urun.ad }}</td>
+          <td>{{ s.siparis_adeti|int }}</td>
+          <td>
+            {% set hazir = s._sevk_edilebilir %}
+            <span class="fw-bold {% if hazir >= s.siparis_adeti %}text-success{% elif hazir > 0 %}text-warning{% else %}text-danger{% endif %}">
+              {{ hazir|int }}
+            </span>
+          </td>
+          <td>
+            {% if s._eksikler %}
+              <span class="badge bg-warning text-dark">
+                <i class="bi bi-exclamation-triangle"></i> {{ s._eksikler|length }} paket eksik
+              </span>
+            {% else %}
+              <span class="badge bg-success">Hazır</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+        <p class="text-muted mb-0">Aktif sipariş yok.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="col-xl-5">
+    <div class="card p-3">
+      <h6 class="fw-bold mb-3"><i class="bi bi-archive me-1 text-success"></i>Depo Stok Özeti</h6>
+      <table class="table table-sm mb-0">
+        <thead><tr><th>Ürün</th><th class="text-end">Bakiye</th></tr></thead>
+        <tbody>
+        {% for item in stok_ozet %}
+        <tr>
+          <td>{{ item.urun.ad }}</td>
+          <td class="text-end fw-bold {% if item.bakiye <= 0 %}text-danger{% endif %}">
+            {{ item.bakiye|int }} {{ item.urun.birim }}
+          </td>
+        </tr>
+        {% endfor %}
+        {% if not stok_ozet %}<tr><td colspan="2" class="text-muted">Stok kaydı yok.</td></tr>{% endif %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card p-3 mt-3">
+      <h6 class="fw-bold mb-3"><i class="bi bi-truck me-1 text-info"></i>Son Sevkler</h6>
+      {% for s in son_sevkler %}
+      <div class="d-flex justify-content-between border-bottom py-1">
+        <span>{{ s.magaza.ad }}</span>
+        <small class="text-muted">{{ s.tarih }}</small>
+      </div>
+      {% else %}<p class="text-muted mb-0">Henüz sevk yok.</p>{% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

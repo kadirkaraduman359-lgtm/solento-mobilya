@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title %}Mağaza Stok Durumu{% endblock %}
+{% block page_title %}Mağaza Stok Durumu{% endblock %}
+{% block content %}
+
+<!-- Filtre -->
+<form method="GET" class="card p-3 mb-4">
+  <div class="row g-2 align-items-end">
+    <div class="col-md-3">
+      <label class="form-label small fw-semibold">Şehir</label>
+      <select name="sehir_id" class="form-select form-select-sm">
+        <option value="">Tüm Şehirler</option>
+        {% for s in sehirler %}
+        <option value="{{ s.id }}" {% if secili_sehir_id==s.id %}selected{% endif %}>{{ s.ad }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-4">
+      <label class="form-label small fw-semibold">Mağaza</label>
+      <select name="magaza_id" class="form-select form-select-sm">
+        <option value="">Tüm Mağazalar</option>
+        {% for m in magazalar %}
+        <option value="{{ m.id }}" {% if secili_magaza_id==m.id %}selected{% endif %}>
+          {{ m.sehir.ad }} / {{ m.ad }}
+        </option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-2">
+      <button type="submit" class="btn btn-primary btn-sm w-100">Filtrele</button>
+    </div>
+    <div class="col-md-2">
+      <a href="{{ url_for('admin.magaza_stok') }}" class="btn btn-secondary btn-sm w-100">Temizle</a>
+    </div>
+  </div>
+</form>
+
+{% if not magaza_ozetleri %}
+  <div class="alert alert-info">Görüntülenecek mağaza bulunamadı.</div>
+{% endif %}
+
+{% for item in magaza_ozetleri %}
+<div class="card mb-3">
+  <div class="card-header d-flex justify-content-between align-items-center py-2">
+    <div>
+      <strong>{{ item.magaza.ad }}</strong>
+      <span class="text-muted ms-2 small">{{ item.magaza.sehir.ad }}</span>
+    </div>
+    <div class="small text-muted">
+      {{ item.stok|length }} ürün çeşidi
+      &nbsp;|&nbsp;
+      Toplam Eldeki:
+      <strong class="text-success">{{ item.stok|sum(attribute='eldeki')|int }}</strong>
+      &nbsp;|&nbsp;
+      Toplam Satılan:
+      <strong class="text-danger">{{ item.stok|sum(attribute='satilan')|int }}</strong>
+    </div>
+  </div>
+  {% if item.stok %}
+  <div class="card-body p-0">
+    <table class="table table-sm table-hover mb-0">
+      <thead class="table-light">
+        <tr>
+          <th class="ps-3">Ürün</th>
+          <th class="text-end text-primary">Toplam Gelen</th>
+          <th class="text-end text-danger">Satılan</th>
+          <th class="text-end text-success">Eldeki</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for s in item.stok %}
+      <tr>
+        <td class="ps-3">{{ s.urun.ad }}</td>
+        <td class="text-end">{{ s.gelen|int }}</td>
+        <td class="text-end text-danger">{{ s.satilan|int }}</td>
+        <td class="text-end fw-bold {% if s.eldeki <= 0 %}text-danger{% elif s.eldeki < 5 %}text-warning{% else %}text-success{% endif %}">
+          {{ s.eldeki|int }}
+        </td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="card-body text-muted small">Bu mağazaya henüz sevk yapılmamış.</div>
+  {% endif %}
+</div>
+{% endfor %}
+{% endblock %}
