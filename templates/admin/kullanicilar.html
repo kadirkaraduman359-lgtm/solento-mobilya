@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 {% block title %}Kullanıcılar – Solento Mobilya{% endblock %}
 {% block page_title %}Kullanıcılar{% endblock %}
 {% block content %}
@@ -22,7 +22,7 @@
           </tr>
         </thead>
         <tbody>
-          {% for k in kullanicilar %}
+          {% for k in users %}
           <tr>
             <td class="text-muted small">{{ loop.index }}</td>
             <td class="fw-semibold">{{ k.ad_soyad or k.kullanici_adi }}</td>

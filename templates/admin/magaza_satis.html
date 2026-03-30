@@ -1,6 +1,6 @@
 {% extends "base.html" %}
-{% block title %}MaÄŸaza SatÄ±ÅŸlarÄ±{% endblock %}
-{% block page_title %}MaÄŸaza SatÄ±ÅŸ Takibi{% endblock %}
+{% block title %}Mağaza Satışları{% endblock %}
+{% block page_title %}Mağaza Satış Takibi{% endblock %}
 {% block content %}
 
 <form method="GET" class="card p-3 mb-4">
@@ -8,16 +8,16 @@
     <div class="col-md-2">
       <label class="form-label small fw-semibold">Åehir</label>
       <select name="sehir_id" class="form-select form-select-sm">
-        <option value="">TÃ¼m Åehirler</option>
+        <option value="">Tüm Åehirler</option>
         {% for s in sehirler %}
         <option value="{{ s.id }}" {% if sehir_id==s.id %}selected{% endif %}>{{ s.ad }}</option>
         {% endfor %}
       </select>
     </div>
     <div class="col-md-3">
-      <label class="form-label small fw-semibold">MaÄŸaza</label>
+      <label class="form-label small fw-semibold">Mağaza</label>
       <select name="magaza_id" class="form-select form-select-sm">
-        <option value="">TÃ¼m MaÄŸazalar</option>
+        <option value="">Tüm Mağazalar</option>
         {% for m in magazalar %}
         <option value="{{ m.id }}" {% if magaza_id==m.id %}selected{% endif %}>
           {{ m.sehir.ad }} / {{ m.ad }}
@@ -26,11 +26,11 @@
       </select>
     </div>
     <div class="col-md-2">
-      <label class="form-label small fw-semibold">BaÅŸlangÄ±Ã§</label>
+      <label class="form-label small fw-semibold">Başlangıç</label>
       <input type="date" name="tarih_bas" class="form-control form-control-sm" value="{{ tarih_bas }}">
     </div>
     <div class="col-md-2">
-      <label class="form-label small fw-semibold">BitiÅŸ</label>
+      <label class="form-label small fw-semibold">Bitiş</label>
       <input type="date" name="tarih_bit" class="form-control form-control-sm" value="{{ tarih_bit }}">
     </div>
     <div class="col-md-1">
@@ -44,14 +44,14 @@
 
 <div class="card p-3">
   <div class="d-flex justify-content-between align-items-center mb-2">
-    <span class="text-muted small">{{ satirlar|length }} kayÄ±t</span>
+    <span class="text-muted small">{{ satirlar|length }} kayıt</span>
     {% if satirlar %}
-    <strong>Toplam SatÄ±lan: {{ satirlar|sum(attribute='miktar')|int }} adet</strong>
+    <strong>Toplam Satılan: {{ satirlar|sum(attribute='miktar')|int }} adet</strong>
     {% endif %}
   </div>
   <table class="table table-hover">
     <thead>
-      <tr><th>Tarih</th><th>Åehir</th><th>MaÄŸaza</th><th>ÃœrÃ¼n</th><th class="text-end">Adet</th><th>Not</th></tr>
+      <tr><th>Tarih</th><th>Åehir</th><th>Mağaza</th><th>�rün</th><th class="text-end">Adet</th><th>Not</th></tr>
     </thead>
     <tbody>
     {% for s in satirlar %}
@@ -64,7 +64,7 @@
       <td class="text-muted small">{{ s.notlar or '-' }}</td>
     </tr>
     {% else %}
-    <tr><td colspan="6" class="text-center text-muted">KayÄ±t bulunamadÄ±.</td></tr>
+    <tr><td colspan="6" class="text-center text-muted">Kayıt bulunamadı.</td></tr>
     {% endfor %}
     </tbody>
   </table>

@@ -1,17 +1,17 @@
 {% extends "base.html" %}
-{% block title %}SatÄ±ÅŸ GeÃ§miÅŸi{% endblock %}
-{% block page_title %}SatÄ±ÅŸ GeÃ§miÅŸi{% endblock %}
+{% block title %}Satış Geçmişi{% endblock %}
+{% block page_title %}Satış Geçmişi{% endblock %}
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-3">
-  <span class="text-muted">Toplam {{ satirlar|length }} satÄ±ÅŸ kaydÄ±</span>
+  <span class="text-muted">Toplam {{ satirlar|length }} satış kaydı</span>
   <a href="{{ url_for('magaza.satis_gir') }}" class="btn btn-success btn-sm">
-    <i class="bi bi-plus"></i> Yeni SatÄ±ÅŸ Gir
+    <i class="bi bi-plus"></i> Yeni Satış Gir
   </a>
 </div>
 <div class="card p-3">
   <table class="table table-hover">
     <thead>
-      <tr><th>Tarih</th><th>ÃœrÃ¼n</th><th class="text-end">Adet</th><th>Not</th></tr>
+      <tr><th>Tarih</th><th>�rün</th><th class="text-end">Adet</th><th>Not</th></tr>
     </thead>
     <tbody>
     {% for s in satirlar %}
@@ -22,7 +22,7 @@
       <td class="text-muted small">{{ s.notlar or '-' }}</td>
     </tr>
     {% else %}
-    <tr><td colspan="4" class="text-center text-muted">SatÄ±ÅŸ kaydÄ± bulunamadÄ±.</td></tr>
+    <tr><td colspan="4" class="text-center text-muted">Satış kaydı bulunamadı.</td></tr>
     {% endfor %}
     </tbody>
   </table>

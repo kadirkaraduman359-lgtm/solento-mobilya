@@ -4,7 +4,7 @@
 {% block content %}
 
 <div class="mb-3 d-flex gap-2 flex-wrap align-items-center">
-  {% for d, label, cls in [('beklemede','Beklemede','warning'),('yanitlandi','YanÄ±tlandÄ±','success'),('tumu','TÃ¼mÃ¼','dark')] %}
+  {% for d, label, cls in [('beklemede','Beklemede','warning'),('yanitlandi','Yanıtlandı','success'),('tumu','Tümü','dark')] %}
   <a href="?durum={{ d }}"
      class="btn btn-sm {% if durum_filter==d %}btn-{{ cls }}{% else %}btn-outline-{{ cls }}{% endif %}">
     {{ label }}
@@ -21,12 +21,12 @@
       <tr>
         <th class="ps-3">#</th>
         <th>Tarih</th>
-        <th>MaÄŸaza</th>
-        <th>ÃœrÃ¼n</th>
+        <th>Mağaza</th>
+        <th>�rün</th>
         <th class="text-center">Adet</th>
-        <th>MÃ¼ÅŸteri Notu</th>
+        <th>Müşteri Notu</th>
         <th>Durum</th>
-        <th class="text-center">Ä°ÅŸlem</th>
+        <th class="text-center">İşlem</th>
       </tr>
     </thead>
     <tbody>
@@ -62,14 +62,14 @@
         {% if ft.durum == 'beklemede' %}
           <span class="badge bg-warning text-dark">Beklemede</span>
         {% else %}
-          <span class="badge bg-success">YanÄ±tlandÄ±</span>
+          <span class="badge bg-success">Yanıtlandı</span>
         {% endif %}
       </td>
       <td class="text-center">
         {% if ft.durum == 'beklemede' %}
         <button class="btn btn-sm btn-primary py-0 px-2"
                 onclick="yanitlaAc({{ ft.id }}, '{{ ft.urun.ad|replace("'","\\'")|e }}', {{ ft.urun.fiyat or 'null' }})">
-          <i class="bi bi-reply me-1"></i>YanÄ±tla
+          <i class="bi bi-reply me-1"></i>Yanıtla
         </button>
         {% else %}
         <span class="text-muted small">â€”</span>
@@ -80,7 +80,7 @@
     <tr>
       <td colspan="8" class="text-center text-muted py-4">
         <i class="bi bi-tag fs-3 d-block mb-2"></i>
-        {% if durum_filter == 'beklemede' %}Bekleyen teklif talebi yok.{% else %}Teklif bulunamadÄ±.{% endif %}
+        {% if durum_filter == 'beklemede' %}Bekleyen teklif talebi yok.{% else %}Teklif bulunamadı.{% endif %}
       </td>
     </tr>
     {% endfor %}
@@ -88,33 +88,33 @@
   </table>
 </div>
 
-<!-- YanÄ±tla Modal -->
+<!-- Yanıtla Modal -->
 <div class="modal fade" id="yanitModal" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title"><i class="bi bi-reply me-2 text-primary"></i>Fiyat Teklifi YanÄ±tla</h5>
+        <h5 class="modal-title"><i class="bi bi-reply me-2 text-primary"></i>Fiyat Teklifi Yanıtla</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <form id="yanit-form" method="POST">
         <div class="modal-body">
           <p class="fw-bold mb-3" id="yanit-urun-ad"></p>
           <div class="mb-3">
-            <label class="form-label fw-bold">Teklif FiyatÄ± (â‚º)</label>
+            <label class="form-label fw-bold">Teklif Fiyatı (â‚º)</label>
             <input type="number" name="admin_teklif_fiyati" id="yanit-fiyat"
                    class="form-control" step="0.01" min="0"
                    placeholder="0.00">
           </div>
           <div class="mb-3">
-            <label class="form-label fw-bold">Notunuz <span class="text-muted fw-normal">(maÄŸaza gÃ¶recek)</span></label>
+            <label class="form-label fw-bold">Notunuz <span class="text-muted fw-normal">(mağaza görecek)</span></label>
             <textarea name="admin_notu" class="form-control" rows="3"
-                      placeholder="Fiyat geÃ§erlilik sÃ¼resi, teslimat bilgisi..."></textarea>
+                      placeholder="Fiyat geçerlilik süresi, teslimat bilgisi..."></textarea>
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Ä°ptal</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
           <button type="submit" class="btn btn-primary">
-            <i class="bi bi-send me-1"></i>YanÄ±tÄ± GÃ¶nder
+            <i class="bi bi-send me-1"></i>Yanıtı Gönder
           </button>
         </div>
       </form>

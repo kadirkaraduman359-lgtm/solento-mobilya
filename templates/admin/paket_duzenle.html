@@ -1,26 +1,26 @@
-{% extends "base.html" %}
-{% block title %}Paket AdlarÄ± DÃ¼zenle{% endblock %}
-{% block page_title %}Paket AdlarÄ±nÄ± DÃ¼zenle{% endblock %}
-{% block content %}
-<div class="row justify-content-center">
-  <div class="col-xl-6">
-    <div class="card p-4">
-      <h5 class="fw-bold mb-1">{{ urun.ad }}</h5>
-      <p class="text-muted mb-4">{{ urun.paketler|length }} paket</p>
-      <form method="POST">
-        {% for p in urun.paketler %}
-        <div class="mb-3">
-          <label class="form-label">Paket {{ p.paket_no }} AdÄ±</label>
-          <input type="text" name="paket_{{ p.id }}" class="form-control" value="{{ p.paket_adi }}" required>
-        </div>
-        {% endfor %}
-        <div class="d-flex gap-2 mt-2">
-          <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> Kaydet</button>
-          <a href="{{ url_for('admin.tanimlar') }}" class="btn btn-secondary">Geri</a>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
-{% endblock %}
-
+{% extends "base.html" %}
+{% block title %}Paket Adları Düzenle{% endblock %}
+{% block page_title %}Paket Adlarını Düzenle{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-xl-6">
+    <div class="card p-4">
+      <h5 class="fw-bold mb-1">{{ urun.ad }}</h5>
+      <p class="text-muted mb-4">{{ urun.paketler|length }} paket</p>
+      <form method="POST">
+        {% for p in urun.paketler %}
+        <div class="mb-3">
+          <label class="form-label">Paket {{ p.paket_no }} Adı</label>
+          <input type="text" name="paket_{{ p.id }}" class="form-control" value="{{ p.paket_adi }}" required>
+        </div>
+        {% endfor %}
+        <div class="d-flex gap-2 mt-2">
+          <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> Kaydet</button>
+          <a href="{{ url_for('admin.tanimlar') }}" class="btn btn-secondary">Geri</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
