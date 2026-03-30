@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 {% block title %}Stok & Sipariş – Solento Mobilya{% endblock %}
 {% block page_title %}Stok & Sipariş{% endblock %}
 {% block content %}
@@ -52,7 +52,7 @@
           <div class="modal fade" id="modalSiparis{{ item.urun.id }}" tabindex="-1">
             <div class="modal-dialog">
               <div class="modal-content">
-                <form method="post" action="{{ url_for('magaza.stok_siparis') }}">
+                <form method="post" action="{{ url_for('magaza.hizli_siparis') }}">
                   <input type="hidden" name="urun_id" value="{{ item.urun.id }}">
                   <div class="modal-header">
                     <h6 class="modal-title"><i class="bi bi-cart-plus me-2"></i>Sipariş Ver – {{ item.urun.ad }}</h6>
@@ -173,7 +173,7 @@
                     <div class="modal-body">Bu siparişi iptal etmek istediğinize emin misiniz?</div>
                     <div class="modal-footer">
                       <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Vazgeç</button>
-                      <form method="post" action="{{ url_for('magaza.stok_iptal', id=t.id) }}" class="d-inline">
+                      <form method="post" action="{{ url_for('magaza.siparis_iptal', id=t.id) }}" class="d-inline">
                         <button type="submit" class="btn btn-danger btn-sm">İptal Et</button>
                       </form>
                     </div>
