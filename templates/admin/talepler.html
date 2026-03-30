@@ -1,250 +1,167 @@
-﻿{% extends "base.html" %}
-{% block title %}SipariÅŸ Talepleri{% endblock %}
-{% block page_title %}SipariÅŸ Talepleri{% endblock %}
+{% extends "base.html" %}
+{% block title %}Sipariş Talepleri – Solento Mobilya{% endblock %}
+{% block page_title %}Sipariş Talepleri{% endblock %}
 {% block content %}
 
-<!-- Filtre butonlarÄ± -->
-<div class="mb-3 d-flex gap-2 flex-wrap align-items-center">
-  {% for d, label, cls in [
-      ('beklemede','Beklemede','warning'),
-      ('onaylandi','OnaylandÄ±','primary'),
-      ('sevk_edildi','Sevk Edildi','success'),
-      ('iptal','Ä°ptal','secondary'),
-      ('tumu','TÃ¼mÃ¼','dark')
-  ] %}
-  <a href="?durum={{ d }}"
-     class="btn btn-sm {% if durum_filter==d %}btn-{{ cls }}{% else %}btn-outline-{{ cls }}{% endif %}">
-    {{ label }}
-    {% if d == 'beklemede' and beklemede_sayi %}
-      <span class="badge bg-danger ms-1">{{ beklemede_sayi }}</span>
-    {% endif %}
+<!-- Filtre Tabları -->
+<div class="d-flex gap-2 mb-4 flex-wrap">
+  <a href="{{ url_for('admin.talepler') }}" class="btn btn-sm {% if not durum_filter %}btn-primary{% else %}btn-outline-secondary{% endif %}">
+    Tümü
   </a>
-  {% endfor %}
+  <a href="{{ url_for('admin.talepler', durum='beklemede') }}" class="btn btn-sm {% if durum_filter == 'beklemede' %}btn-warning{% else %}btn-outline-secondary{% endif %}">
+    Beklemede
+  </a>
+  <a href="{{ url_for('admin.talepler', durum='onaylandi') }}" class="btn btn-sm {% if durum_filter == 'onaylandi' %}btn-success{% else %}btn-outline-secondary{% endif %}">
+    Onaylandı
+  </a>
+  <a href="{{ url_for('admin.talepler', durum='sevk_edildi') }}" class="btn btn-sm {% if durum_filter == 'sevk_edildi' %}btn-info{% else %}btn-outline-secondary{% endif %}">
+    Sevk Edildi
+  </a>
+  <a href="{{ url_for('admin.talepler', durum='iptal') }}" class="btn btn-sm {% if durum_filter == 'iptal' %}btn-secondary{% else %}btn-outline-secondary{% endif %}">
+    İptal
+  </a>
 </div>
 
-<div class="card p-0" style="overflow:hidden">
-  <table class="table table-hover mb-0">
-    <thead class="table-dark">
-      <tr>
-        <th class="ps-3">#</th>
-        <th>Tarih</th>
-        <th>MaÄŸaza</th>
-        <th>ÃœrÃ¼nler &amp; Stok Durumu</th>
-        <th>Not</th>
-        <th>Durum</th>
-        <th class="text-center">Ä°ÅŸlem</th>
-      </tr>
-    </thead>
-    <tbody>
-    {% for t in talepler %}
-    <tr class="{% if t.durum == 'beklemede' %}table-warning{% elif t.durum == 'iptal' %}table-secondary{% endif %}">
-      <td class="ps-3 fw-bold">{{ t.id }}</td>
-      <td class="small text-muted">{{ t.tarih }}</td>
-      <td>
-        <strong>{{ t.magaza.ad }}</strong>
-        <div class="text-muted small">{{ t.magaza.sehir.ad }}</div>
-      </td>
-      <td style="min-width:260px">
-        {% for k in t.kalemler %}
-          {% set mevcut = stok.get(k.urun_id, 0) %}
-          {% set rez = rezerve.get(k.urun_id, 0) %}
-          {% set kull = kullanilabilir.get(k.urun_id, 0) %}
-          <div class="mb-1 p-2 rounded border">
-            <div class="d-flex justify-content-between align-items-center gap-2">
-              <span class="small fw-bold">{{ k.urun.ad }}</span>
-              <span class="badge bg-dark fs-6">Ã— {{ k.miktar|int }}</span>
-            </div>
-            <div class="d-flex gap-1 mt-1 flex-wrap">
-              <span class="badge bg-secondary" style="font-size:10px">
-                Depoda: {{ mevcut|int }}
-              </span>
-              {% if rez > 0 %}
-              <span class="badge bg-warning text-dark" style="font-size:10px">
-                <i class="bi bi-clock"></i> Rezerve: {{ rez|int }}
-              </span>
-              {% endif %}
-              {% if kull >= k.miktar %}
-                <span class="badge bg-success" style="font-size:10px">
-                  <i class="bi bi-check"></i> Yeterli: {{ kull|int }}
-                </span>
-              {% elif kull > 0 %}
-                <span class="badge bg-warning text-dark" style="font-size:10px">
-                  <i class="bi bi-exclamation"></i> KÄ±smi: {{ kull|int }}
-                </span>
+<div class="card border-0 shadow-sm">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>#</th>
+            <th>Mağaza</th>
+            <th>Ürün</th>
+            <th class="text-end">Miktar</th>
+            <th>Tarih</th>
+            <th>Durum</th>
+            <th>Notlar</th>
+            <th class="text-end">İşlem</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for t in talepler %}
+          <tr>
+            <td class="text-muted small">{{ loop.index }}</td>
+            <td class="fw-semibold small">{{ t.magaza.ad if t.magaza else '—' }}</td>
+            <td class="small">{{ t.urun.ad if t.urun else '—' }}</td>
+            <td class="text-end">{{ t.miktar|int }}</td>
+            <td class="small text-muted">{{ t.tarih }}</td>
+            <td>
+              {% if t.durum == 'beklemede' %}
+                <span class="badge durum-beklemede">Beklemede</span>
+              {% elif t.durum == 'onaylandi' %}
+                <span class="badge durum-onaylandi">Onaylandı</span>
+              {% elif t.durum == 'sevk_edildi' %}
+                <span class="badge durum-sevk_edildi">Sevk Edildi</span>
+              {% elif t.durum == 'iptal' %}
+                <span class="badge durum-iptal">İptal</span>
               {% else %}
-                <span class="badge bg-danger" style="font-size:10px">
-                  <i class="bi bi-x"></i> Stok yok
-                </span>
+                <span class="badge bg-secondary">{{ t.durum }}</span>
               {% endif %}
-            </div>
-          </div>
-        {% endfor %}
-      </td>
-      <td class="small text-muted" style="max-width:180px">
-        {{ t.notlar or 'â€”' }}
-        {% if t.durum == 'iptal' and t.iptal_sebebi %}
-          <div class="text-danger mt-1"><i class="bi bi-x-circle me-1"></i>Ä°ptal: {{ t.iptal_sebebi }}</div>
-        {% endif %}
-      </td>
-      <td>
-        {% if t.durum == 'beklemede' %}
-          <span class="badge bg-warning text-dark">Beklemede</span>
-        {% elif t.durum == 'onaylandi' %}
-          <span class="badge bg-primary">OnaylandÄ±</span>
-        {% elif t.durum == 'sevk_edildi' %}
-          <span class="badge bg-success">Sevk Edildi</span>
-        {% elif t.durum == 'iptal' %}
-          <span class="badge bg-secondary">Ä°ptal</span>
-        {% endif %}
-      </td>
-      <td class="text-center">
-        <div class="d-flex flex-column gap-1 align-items-center">
-        {% if t.durum == 'beklemede' %}
-          <form method="POST" action="{{ url_for('admin.talep_onayla', id=t.id) }}">
-            <button class="btn btn-sm btn-success px-3">
-              <i class="bi bi-check-lg me-1"></i>Onayla
-            </button>
-          </form>
-          <form method="POST" action="{{ url_for('admin.talep_reddet', id=t.id) }}"
-                onsubmit="return confirm('Talep reddedilsin mi?')">
-            <button class="btn btn-sm btn-outline-danger px-3">
-              <i class="bi bi-x-lg me-1"></i>Reddet
-            </button>
-          </form>
-          <button class="btn btn-sm btn-outline-secondary px-3"
-                  onclick="iptalAc({{ t.id }})">
-            <i class="bi bi-slash-circle me-1"></i>Ä°ptal Et
-          </button>
-        {% elif t.durum == 'onaylandi' %}
-          <button class="btn btn-sm btn-primary px-3"
-                  onclick="sevkAc({{ t.id }}, '{{ t.magaza.ad }}')">
-            <i class="bi bi-truck me-1"></i>Sevk Et
-          </button>
-          <button class="btn btn-sm btn-outline-secondary px-3"
-                  onclick="iptalAc({{ t.id }})">
-            <i class="bi bi-slash-circle me-1"></i>Ä°ptal Et
-          </button>
-        {% else %}
-          <span class="text-muted small">â€”</span>
-        {% endif %}
-        </div>
-      </td>
-    </tr>
-    {% else %}
-    <tr><td colspan="7" class="text-center text-muted py-4">
-      <i class="bi bi-inbox fs-3 d-block mb-2"></i>Talep bulunamadÄ±.
-    </td></tr>
-    {% endfor %}
-    </tbody>
-  </table>
-</div>
+            </td>
+            <td class="small text-muted">{{ t.notlar or '—' }}</td>
+            <td class="text-end">
+              {% if t.durum == 'beklemede' %}
+              <form method="post" action="{{ url_for('admin.talep_onayla', id=t.id) }}" class="d-inline">
+                <button type="submit" class="btn btn-sm btn-success" onclick="return confirm('Bu talebi onaylamak istiyor musunuz?')">
+                  <i class="bi bi-check-lg"></i> Onayla
+                </button>
+              </form>
+              <form method="post" action="{{ url_for('admin.talep_reddet', id=t.id) }}" class="d-inline">
+                <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Bu talebi reddetmek istiyor musunuz?')">
+                  <i class="bi bi-x-lg"></i> Reddet
+                </button>
+              </form>
+              {% endif %}
+              {% if t.durum in ['beklemede', 'onaylandi'] %}
+              <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#modalSevkEt{{ t.id }}">
+                <i class="bi bi-truck"></i> Sevk Et
+              </button>
+              <button class="btn btn-sm btn-secondary" data-bs-toggle="modal" data-bs-target="#modalIptal{{ t.id }}">
+                <i class="bi bi-x-circle"></i> İptal
+              </button>
+              {% endif %}
+            </td>
+          </tr>
 
-<!-- Ä°PTAL MODALÄ° -->
-<div class="modal fade" id="iptalModal" tabindex="-1">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title"><i class="bi bi-slash-circle me-2 text-danger"></i>Talep Ä°ptal Et</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <form method="POST" id="iptalForm">
-        <div class="modal-body">
-          <label class="form-label fw-semibold">Ä°ptal Sebebi</label>
-          <textarea name="sebep" class="form-control" rows="3"
-                    placeholder="Ã–rn: MÃ¼ÅŸteri iptal etti, nakliye almadÄ±..."></textarea>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">VazgeÃ§</button>
-          <button type="submit" class="btn btn-danger"><i class="bi bi-slash-circle me-1"></i>Ä°ptal Et</button>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
+          <!-- Hızlı Sevk Et Modal -->
+          <div class="modal fade" id="modalSevkEt{{ t.id }}" tabindex="-1">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <form method="post" action="{{ url_for('admin.talep_sevk_hizli', id=t.id) }}">
+                  <div class="modal-header">
+                    <h6 class="modal-title"><i class="bi bi-truck me-2"></i>Hızlı Sevk – {{ t.urun.ad if t.urun else '' }}</h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                  </div>
+                  <div class="modal-body">
+                    <div class="row g-2 mb-3">
+                      <div class="col-6">
+                        <label class="form-label fw-semibold">Nakliye Ücreti (₺)</label>
+                        <input type="number" name="nakliye_ucreti" class="form-control" placeholder="0" min="0" step="0.01">
+                      </div>
+                      <div class="col-6">
+                        <label class="form-label fw-semibold">İşçilik (₺)</label>
+                        <input type="number" name="iscilik" class="form-control" placeholder="0" min="0" step="0.01">
+                      </div>
+                    </div>
+                    <div class="mb-3">
+                      <label class="form-label fw-semibold">KDV Oranı</label>
+                      <select name="kdv_oran" class="form-select">
+                        <option value="0">%0 KDV Yok</option>
+                        <option value="10">%10 KDV</option>
+                        <option value="20">%20 KDV</option>
+                      </select>
+                    </div>
+                    <div class="form-check mb-3">
+                      <input class="form-check-input" type="checkbox" name="nakliye_goster" value="1" id="ng_t{{ t.id }}">
+                      <label class="form-check-label" for="ng_t{{ t.id }}">Nakliyeyi faturada göster</label>
+                    </div>
+                    <div class="mb-3">
+                      <label class="form-label fw-semibold">Notlar</label>
+                      <textarea name="notlar" class="form-control" rows="2"></textarea>
+                    </div>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Vazgeç</button>
+                    <button type="submit" class="btn btn-primary">Sevk Et</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
 
-<!-- SEVK NAKLÄ°YE MODALÄ° -->
-<div class="modal fade" id="sevkModal" tabindex="-1">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title"><i class="bi bi-truck me-2 text-primary"></i>Sevk Et â€” <span id="sevkModalMagaza"></span></h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <form method="POST" id="sevkModalForm">
-        <div class="modal-body">
-          <div class="row g-2 mb-2">
-            <div class="col">
-              <label class="form-label fw-semibold">Nakliye (â‚º)</label>
-              <input type="number" name="nakliye_ucreti" class="form-control form-control-sm"
-                     step="0.01" min="0" value="0" id="sNavliye" oninput="sKdvHesapla()">
+          <!-- İptal Modal -->
+          <div class="modal fade" id="modalIptal{{ t.id }}" tabindex="-1">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <form method="post" action="{{ url_for('admin.talep_iptal', id=t.id) }}">
+                  <div class="modal-header">
+                    <h6 class="modal-title"><i class="bi bi-x-circle me-2"></i>Talebi İptal Et</h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                  </div>
+                  <div class="modal-body">
+                    <div class="mb-3">
+                      <label class="form-label fw-semibold">İptal Sebebi</label>
+                      <textarea name="iptal_sebebi" class="form-control" rows="3" placeholder="İptal sebebini giriniz"></textarea>
+                    </div>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Vazgeç</button>
+                    <button type="submit" class="btn btn-danger">İptal Et</button>
+                  </div>
+                </form>
+              </div>
             </div>
-            <div class="col">
-              <label class="form-label fw-semibold">Ä°ÅŸÃ§ilik (â‚º)</label>
-              <input type="number" name="iscilik" class="form-control form-control-sm"
-                     step="0.01" min="0" value="0" id="sIscilik" oninput="sKdvHesapla()">
-            </div>
           </div>
-          <div class="mb-2">
-            <label class="form-label fw-semibold">KDV OranÄ±</label>
-            <select name="kdv_oran" id="sKdv" class="form-select form-select-sm" onchange="sKdvHesapla()">
-              <option value="0">KDV Yok (%0)</option>
-              <option value="10">%10 KDV</option>
-              <option value="20">%20 KDV</option>
-            </select>
-          </div>
-          <div class="mb-2 p-2 rounded border bg-light small d-flex justify-content-between">
-            <span>KDV: <strong id="sKdvTutar">0 â‚º</strong></span>
-            <span>Toplam: <strong id="sGenelToplam" class="text-primary">0 â‚º</strong></span>
-          </div>
-          <div class="mb-2 form-check">
-            <input class="form-check-input" type="checkbox" name="nakliye_goster" value="1" id="sNavliyeGoster">
-            <label class="form-check-label" for="sNavliyeGoster">
-              Nakliye ve KDV bilgisini maÄŸazaya gÃ¶ster
-            </label>
-          </div>
-          <div class="mb-2">
-            <label class="form-label fw-semibold">Not</label>
-            <textarea name="notlar" class="form-control form-control-sm" rows="2"
-                      placeholder="Opsiyonel not..."></textarea>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">VazgeÃ§</button>
-          <button type="submit" class="btn btn-primary"><i class="bi bi-truck me-1"></i>Sevk Et</button>
-        </div>
-      </form>
+
+          {% endfor %}
+          {% if not talepler %}
+          <tr><td colspan="8" class="text-center text-muted py-4">Talep bulunamadı.</td></tr>
+          {% endif %}
+        </tbody>
+      </table>
     </div>
   </div>
 </div>
 
 {% endblock %}
-{% block extra_js %}
-<script>
-function iptalAc(id) {
-  document.getElementById('iptalForm').action = '/admin/talepler/' + id + '/iptal';
-  new bootstrap.Modal(document.getElementById('iptalModal')).show();
-}
-
-function sevkAc(id, magaza) {
-  document.getElementById('sevkModalForm').action = '/admin/talepler/' + id + '/sevk-hizli';
-  document.getElementById('sevkModalMagaza').textContent = magaza;
-  document.getElementById('sNavliye').value = 0;
-  document.getElementById('sIscilik').value = 0;
-  document.getElementById('sKdv').value = 0;
-  document.getElementById('sNavliyeGoster').checked = false;
-  sKdvHesapla();
-  new bootstrap.Modal(document.getElementById('sevkModal')).show();
-}
-
-function sKdvHesapla() {
-  const n = parseFloat(document.getElementById('sNavliye').value) || 0;
-  const i = parseFloat(document.getElementById('sIscilik').value) || 0;
-  const oran = parseInt(document.getElementById('sKdv').value) || 0;
-  const ara = n + i;
-  const kdv = ara * oran / 100;
-  document.getElementById('sKdvTutar').textContent = kdv.toLocaleString('tr-TR', {maximumFractionDigits:2}) + ' â‚º';
-  document.getElementById('sGenelToplam').textContent = (ara + kdv).toLocaleString('tr-TR', {maximumFractionDigits:2}) + ' â‚º';
-}
-</script>
-{% endblock %}
-

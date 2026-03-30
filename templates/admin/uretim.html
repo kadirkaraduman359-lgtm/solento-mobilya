@@ -1,199 +1,160 @@
-﻿{% extends "base.html" %}
-{% block title %}Ãœretim Takibi â€“ Solento Mobilya{% endblock %}
-{% block page_title %}Ãœretim Takibi{% endblock %}
-
+{% extends "base.html" %}
+{% block title %}Üretim Takibi – Solento Mobilya{% endblock %}
+{% block page_title %}Üretim Takibi{% endblock %}
 {% block content %}
-<!-- Toolbar -->
-<div class="d-flex flex-wrap align-items-center gap-2 mb-3">
-  <h5 class="fw-bold mb-0 me-auto"><i class="bi bi-gear me-2 text-primary"></i>Ãœretim Takibi</h5>
-  <div class="btn-group" role="group">
-    <a href="?durum=aktif"
-       class="btn btn-sm {{ 'btn-primary' if durum_filter == 'aktif' else 'btn-outline-primary' }}">
-      <i class="bi bi-play-circle me-1"></i>Aktif
-      {% if aktif_sayi %}<span class="badge bg-white text-primary ms-1">{{ aktif_sayi }}</span>{% endif %}
+
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+  <div class="d-flex gap-2 flex-wrap">
+    <a href="{{ url_for('admin.uretim') }}" class="btn btn-sm {% if not durum_filter %}btn-primary{% else %}btn-outline-secondary{% endif %}">
+      Tümü
     </a>
-    <a href="?durum=tamamlandi"
-       class="btn btn-sm {{ 'btn-success' if durum_filter == 'tamamlandi' else 'btn-outline-success' }}">
-      <i class="bi bi-check-circle me-1"></i>TamamlandÄ±
-      {% if tamamlandi_sayi %}<span class="badge bg-white text-success ms-1">{{ tamamlandi_sayi }}</span>{% endif %}
+    <a href="{{ url_for('admin.uretim', durum='aktif') }}" class="btn btn-sm {% if durum_filter == 'aktif' %}btn-warning{% else %}btn-outline-secondary{% endif %}">
+      Aktif
+    </a>
+    <a href="{{ url_for('admin.uretim', durum='tamamlandi') }}" class="btn btn-sm {% if durum_filter == 'tamamlandi' %}btn-success{% else %}btn-outline-secondary{% endif %}">
+      Tamamlandı
     </a>
   </div>
-  <input type="text" id="searchBox" class="form-control form-control-sm" style="max-width:200px" placeholder="ÃœrÃ¼n ara..."/>
-  <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalYeniUretim">
-    <i class="bi bi-plus-lg me-1"></i>Yeni SipariÅŸ
+  <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalYeniSiparis">
+    <i class="bi bi-plus-lg me-1"></i> Yeni Sipariş
   </button>
 </div>
 
-<div class="card">
+<div class="card border-0 shadow-sm">
   <div class="card-body p-0">
     <div class="table-responsive">
-      <table class="table table-hover mb-0" id="uretimTable">
+      <table class="table table-hover mb-0" id="uretimTablo">
         <thead class="table-light">
           <tr>
-            <th>ÃœrÃ¼n</th>
-            <th>SipariÅŸ Adedi</th>
-            <th>Sevk Edilebilir</th>
+            <th>#</th>
+            <th>Ürün</th>
+            <th>Sipariş Adeti</th>
+            <th>Paket Giriş</th>
+            <th>Hazır</th>
             <th>Durum</th>
-            <th>Eksik Paketler</th>
-            <th>Ä°ÅŸlem</th>
+            <th>Notlar</th>
+            <th class="text-end">İşlem</th>
           </tr>
         </thead>
         <tbody>
-          {% for sp in siparisler %}
-          <tr class="uretim-row">
-            <td class="fw-semibold search-field">{{ sp.urun.ad }}</td>
-            <td>{{ sp.siparis_adeti }}</td>
+          {% for s in siparisler %}
+          <tr>
+            <td class="text-muted small">{{ loop.index }}</td>
+            <td class="fw-semibold">{{ s.urun.ad }}</td>
+            <td>{{ s.siparis_adeti|int }}</td>
             <td>
-              <span class="badge bg-{{ 'success' if sp._sevk_edilebilir == sp.siparis_adeti else ('warning text-dark' if sp._sevk_edilebilir > 0 else 'secondary') }}">
-                {{ sp._sevk_edilebilir }}
-              </span>
-            </td>
-            <td>
-              {% if sp.durum == 'uretimde' %}
-                <span class="badge durum-uretimde">Ãœretimde</span>
-              {% elif sp.durum == 'hazir' %}
-                <span class="badge durum-hazir">HazÄ±r</span>
-              {% elif sp.durum == 'tamamlandi' %}
-                <span class="badge durum-tamamlandi">TamamlandÄ±</span>
+              {% if s.paket_girisleri is defined %}
+                {{ s.paket_girisleri|length }}
               {% else %}
-                <span class="badge bg-secondary">{{ sp.durum }}</span>
+                —
               {% endif %}
             </td>
-            <td>
-              {% if sp._eksikler %}
-                {% for e in sp._eksikler %}
-                  <span class="badge bg-warning text-dark me-1">{{ e }}</span>
-                {% endfor %}
-              {% else %}
-                <span class="text-muted small">â€”</span>
-              {% endif %}
+            <td class="fw-bold {% if s._sevk_edilebilir == s.siparis_adeti %}text-success{% elif s._sevk_edilebilir == 0 %}text-danger{% else %}text-warning{% endif %}">
+              {{ s._sevk_edilebilir|int if s._sevk_edilebilir is defined else '—' }}
             </td>
             <td>
-              <div class="d-flex gap-1 flex-wrap">
-                {% if sp.durum in ('uretimde', 'hazir') %}
-                <a href="{{ url_for('admin.paket_gir', id=sp.id) }}" class="btn btn-primary btn-sm">
-                  <i class="bi bi-box-arrow-in-down me-1"></i>Paket Gir
-                </a>
-                <button class="btn btn-success btn-sm" data-bs-toggle="modal"
-                        data-bs-target="#modalTamamla{{ sp.id }}">
-                  <i class="bi bi-check-lg me-1"></i>Tamamla
+              {% if s.durum == 'hazir' %}
+                <span class="badge durum-hazir">Hazır</span>
+              {% elif s.durum == 'uretimde' %}
+                <span class="badge durum-uretimde">Üretimde</span>
+              {% elif s.durum == 'tamamlandi' %}
+                <span class="badge durum-tamamlandi">Tamamlandı</span>
+              {% else %}
+                <span class="badge bg-secondary">{{ s.durum }}</span>
+              {% endif %}
+            </td>
+            <td class="small text-muted">{{ s.notlar or '—' }}</td>
+            <td class="text-end">
+              <a href="{{ url_for('admin.paket_gir', id=s.id) }}" class="btn btn-sm btn-outline-primary">
+                <i class="bi bi-box-seam"></i> Paket Gir
+              </a>
+              {% if s.durum != 'tamamlandi' %}
+              <form method="post" action="{{ url_for('admin.uretim_tamamla', id=s.id) }}" class="d-inline">
+                <button type="submit" class="btn btn-sm btn-success" onclick="return confirm('Bu siparişi tamamlandı olarak işaretlemek istiyor musunuz?')">
+                  <i class="bi bi-check-lg"></i> Tamamla
                 </button>
-                {% endif %}
-                {% if sp.durum == 'tamamlandi' %}
-                <form method="POST" action="{{ url_for('admin.uretim_tekrar_ac', id=sp.id) }}" class="d-inline">
-                  <button type="submit" class="btn btn-warning btn-sm">
-                    <i class="bi bi-arrow-counterclockwise me-1"></i>Tekrar AÃ§
-                  </button>
-                </form>
-                {% endif %}
-                <button class="btn btn-danger btn-sm" data-bs-toggle="modal"
-                        data-bs-target="#modalUretimSil{{ sp.id }}">
-                  <i class="bi bi-trash"></i>
+              </form>
+              {% else %}
+              <form method="post" action="{{ url_for('admin.uretim_tekrar_ac', id=s.id) }}" class="d-inline">
+                <button type="submit" class="btn btn-sm btn-warning" onclick="return confirm('Siparişi tekrar açmak istiyor musunuz?')">
+                  <i class="bi bi-arrow-counterclockwise"></i> Tekrar Aç
                 </button>
-              </div>
+              </form>
+              {% endif %}
+              <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#modalSiparisSil{{ s.id }}">
+                <i class="bi bi-trash"></i>
+              </button>
             </td>
           </tr>
-
-          <!-- Tamamla confirm modal -->
-          <div class="modal fade" id="modalTamamla{{ sp.id }}" tabindex="-1">
+          <!-- Sipariş Sil Modal -->
+          <div class="modal fade" id="modalSiparisSil{{ s.id }}" tabindex="-1">
             <div class="modal-dialog modal-sm">
               <div class="modal-content">
                 <div class="modal-header">
-                  <h6 class="modal-title">Ãœretimi Tamamla</h6>
+                  <h6 class="modal-title">Sipariş Sil</h6>
                   <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                  <strong>{{ sp.urun.ad }}</strong> iÃ§in Ã¼retimi tamamlamak istiyor musunuz?
+                  <strong>{{ s.urun.ad }}</strong> siparişini silmek istediğinize emin misiniz?
                 </div>
                 <div class="modal-footer">
-                  <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">VazgeÃ§</button>
-                  <form method="POST" action="{{ url_for('admin.uretim_tamamla', id=sp.id) }}" class="d-inline">
-                    <button type="submit" class="btn btn-success btn-sm">Tamamla</button>
-                  </form>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Sil confirm modal -->
-          <div class="modal fade" id="modalUretimSil{{ sp.id }}" tabindex="-1">
-            <div class="modal-dialog modal-sm">
-              <div class="modal-content">
-                <div class="modal-header">
-                  <h6 class="modal-title">KaydÄ± Sil</h6>
-                  <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                  <strong>{{ sp.urun.ad }}</strong> Ã¼retim kaydÄ±nÄ± silmek istiyor musunuz?
-                </div>
-                <div class="modal-footer">
-                  <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">VazgeÃ§</button>
-                  <form method="POST" action="{{ url_for('admin.uretim_sil', id=sp.id) }}" class="d-inline">
+                  <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Vazgeç</button>
+                  <form method="post" action="{{ url_for('admin.uretim_sil', id=s.id) }}" class="d-inline">
                     <button type="submit" class="btn btn-danger btn-sm">Sil</button>
                   </form>
                 </div>
               </div>
             </div>
           </div>
-          {% else %}
-          <tr><td colspan="6" class="text-center text-muted py-4">KayÄ±t bulunamadÄ±.</td></tr>
           {% endfor %}
+          {% if not siparisler %}
+          <tr><td colspan="8" class="text-center text-muted py-4">Sipariş bulunamadı.</td></tr>
+          {% endif %}
         </tbody>
       </table>
     </div>
   </div>
 </div>
 
-
-<!-- ===== MODAL: Yeni Ãœretim SipariÅŸi ===== -->
-<div class="modal fade" id="modalYeniUretim" tabindex="-1">
+<!-- Yeni Sipariş Modal -->
+<div class="modal fade" id="modalYeniSiparis" tabindex="-1">
   <div class="modal-dialog">
     <div class="modal-content">
-      <form method="POST" action="{{ url_for('admin.uretim_yeni') }}">
+      <form method="post" action="{{ url_for('admin.uretim_yeni') }}">
         <div class="modal-header">
-          <h5 class="modal-title"><i class="bi bi-plus-circle me-2"></i>Yeni Ãœretim SipariÅŸi</h5>
+          <h5 class="modal-title"><i class="bi bi-gear me-2"></i>Yeni Üretim Siparişi</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body">
           <div class="mb-3">
-            <label class="form-label fw-semibold">ÃœrÃ¼n AdÄ±</label>
-            <input type="text" class="form-control" name="urun_ad" placeholder="ÃœrÃ¼n adÄ±" required/>
-            <div class="form-text">Mevcut Ã¼rÃ¼n adÄ±nÄ± birebir yazÄ±n.</div>
-          </div>
-          <div class="row g-2 mb-3">
-            <div class="col">
-              <label class="form-label fw-semibold">Paket SayÄ±sÄ±</label>
-              <input type="number" class="form-control" name="paket_sayisi" min="1" value="1" required/>
-            </div>
-            <div class="col">
-              <label class="form-label fw-semibold">SipariÅŸ Adedi</label>
-              <input type="number" class="form-control" name="siparis_adeti" min="1" value="1" required/>
-            </div>
+            <label class="form-label fw-semibold">Ürün <span class="text-danger">*</span></label>
+            <input type="text" name="urun_ad" class="form-control" placeholder="Ürün adı" list="urunListesi" required>
+            <datalist id="urunListesi">
+              {% for u in urunler %}
+              <option value="{{ u.ad }}">
+              {% endfor %}
+            </datalist>
           </div>
           <div class="mb-3">
-            <label class="form-label fw-semibold">Not</label>
-            <textarea class="form-control" name="notlar" rows="2" placeholder="Opsiyonel not..."></textarea>
+            <label class="form-label fw-semibold">Paket Sayısı <span class="text-danger">*</span></label>
+            <input type="number" name="paket_sayisi" class="form-control" placeholder="1" min="1" value="1" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Sipariş Adeti <span class="text-danger">*</span></label>
+            <input type="number" name="siparis_adeti" class="form-control" placeholder="0" min="1" step="0.01" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Notlar</label>
+            <textarea name="notlar" class="form-control" rows="2" placeholder="İsteğe bağlı notlar"></textarea>
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">VazgeÃ§</button>
-          <button type="submit" class="btn btn-primary"><i class="bi bi-plus-lg me-1"></i>OluÅŸtur</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Vazgeç</button>
+          <button type="submit" class="btn btn-primary">Kaydet</button>
         </div>
       </form>
     </div>
   </div>
 </div>
-{% endblock %}
 
-{% block scripts %}
-<script>
-  document.getElementById('searchBox').addEventListener('input', function () {
-    const q = this.value.toLowerCase();
-    document.querySelectorAll('#uretimTable .uretim-row').forEach(row => {
-      const text = row.querySelector('.search-field')?.textContent.toLowerCase() || '';
-      row.style.display = text.includes(q) ? '' : 'none';
-    });
-  });
-</script>
 {% endblock %}
-

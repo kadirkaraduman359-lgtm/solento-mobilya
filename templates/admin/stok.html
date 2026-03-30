@@ -1,174 +1,164 @@
-﻿{% extends "base.html" %}
-{% block title %}Depo Stok â€“ Solento Mobilya{% endblock %}
+{% extends "base.html" %}
+{% block title %}Depo Stok – Solento Mobilya{% endblock %}
 {% block page_title %}Depo Stok{% endblock %}
-
 {% block content %}
-<div class="d-flex align-items-center justify-content-between mb-3">
-  <h5 class="fw-bold mb-0"><i class="bi bi-archive me-2 text-primary"></i>Depo Stok YÃ¶netimi</h5>
-</div>
 
-<!-- ===== STOK Ã–ZETÄ° ===== -->
-<div class="card mb-4">
-  <div class="card-header d-flex align-items-center justify-content-between py-2">
-    <span class="fw-semibold">Stok Ã–zeti</span>
-    <input type="text" id="stokSearch" class="form-control form-control-sm" style="max-width:200px" placeholder="ÃœrÃ¼n ara..."/>
+<!-- Stok Özet Tablosu -->
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-header bg-white d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <span class="fw-semibold"><i class="bi bi-archive me-2 text-primary"></i>Stok Özeti</span>
+    <input type="text" id="stokAra" class="form-control form-control-sm" placeholder="Ürün ara..." style="max-width:220px;" oninput="stokFiltre()">
   </div>
   <div class="card-body p-0">
     <div class="table-responsive">
-      <table class="table table-hover mb-0" id="stokTable">
+      <table class="table table-hover mb-0" id="stokOzetTablo">
         <thead class="table-light">
           <tr>
-            <th>ÃœrÃ¼n</th>
+            <th>Ürün</th>
             <th class="text-end">Bakiye</th>
             <th class="text-end">Rezerve</th>
-            <th class="text-end">KullanÄ±labilir</th>
-            <th style="width:120px">Manuel DÃ¼zelt</th>
+            <th class="text-end">Kullanılabilir</th>
+            <th class="text-end">İşlem</th>
           </tr>
         </thead>
         <tbody>
-          {% for row in ozet %}
-          <tr class="stok-row">
-            <td class="fw-semibold stok-name">{{ row.urun.ad }}</td>
-            <td class="text-end">{{ row.bakiye }}</td>
-            <td class="text-end text-warning fw-semibold">{{ row.rezerve }}</td>
-            <td class="text-end">
-              <span class="badge {{ 'bg-success' if row.kullanilabilir > 0 else 'bg-danger' }} fs-6">
-                {{ row.kullanilabilir }}
-              </span>
+          {% for item in ozet %}
+          <tr>
+            <td class="fw-semibold">{{ item.urun.ad }}</td>
+            <td class="text-end">{{ item.bakiye|int }}</td>
+            <td class="text-end text-warning">{{ item.rezerve|int }}</td>
+            <td class="text-end fw-bold {% if item.kullanilabilir <= 0 %}text-danger{% elif item.kullanilabilir < 5 %}text-warning{% else %}text-success{% endif %}">
+              {{ item.kullanilabilir|int }}
             </td>
-            <td>
-              <button class="btn btn-warning btn-sm w-100"
-                      data-bs-toggle="modal"
-                      data-bs-target="#modalManuel{{ row.urun.id }}"
-                      data-urun="{{ row.urun.ad }}">
-                <i class="bi bi-pencil me-1"></i>DÃ¼zelt
+            <td class="text-end">
+              <button class="btn btn-warning btn-sm"
+                data-bs-toggle="modal"
+                data-bs-target="#modalDuzelt{{ item.urun.id }}"
+                data-id="{{ item.urun.id }}"
+                data-ad="{{ item.urun.ad }}">
+                <i class="bi bi-pencil"></i> Manuel Düzelt
               </button>
             </td>
           </tr>
-
-          <!-- Manuel DÃ¼zelt Modal -->
-          <div class="modal fade" id="modalManuel{{ row.urun.id }}" tabindex="-1">
+          <!-- Manuel Düzelt Modal -->
+          <div class="modal fade" id="modalDuzelt{{ item.urun.id }}" tabindex="-1">
             <div class="modal-dialog">
               <div class="modal-content">
-                <form method="POST" action="{{ url_for('admin.stok_manuel_giris') }}">
-                  <input type="hidden" name="urun_id" value="{{ row.urun.id }}"/>
+                <form method="post" action="{{ url_for('admin.stok_manuel_giris') }}">
+                  <input type="hidden" name="urun_id" value="{{ item.urun.id }}">
                   <div class="modal-header">
-                    <h5 class="modal-title"><i class="bi bi-pencil me-2"></i>Manuel Stok DÃ¼zelt</h5>
+                    <h6 class="modal-title">Manuel Stok Düzelt – {{ item.urun.ad }}</h6>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                   </div>
                   <div class="modal-body">
-                    <div class="alert alert-info py-2 small">
-                      <strong>{{ row.urun.ad }}</strong> â€“ Mevcut bakiye: <strong>{{ row.bakiye }}</strong>
-                    </div>
                     <div class="mb-3">
-                      <label class="form-label fw-semibold">Miktar</label>
-                      <input type="number" class="form-control" name="miktar" placeholder="Pozitif veya negatif" required/>
-                      <div class="form-text">Negatif girerek dÃ¼ÅŸebilirsiniz.</div>
-                    </div>
-                    <div class="mb-3">
-                      <label class="form-label fw-semibold">Hareket TÃ¼rÃ¼</label>
-                      <select class="form-select" name="hareket_turu" required>
-                        <option value="duzeltme_giris">DÃ¼zeltme â€“ GiriÅŸ</option>
-                        <option value="duzeltme_cikis">DÃ¼zeltme â€“ Ã‡Ä±kÄ±ÅŸ</option>
+                      <label class="form-label fw-semibold">İşlem Türü <span class="text-danger">*</span></label>
+                      <select name="hareket_turu" class="form-select" required>
+                        <option value="duzeltme_giris">Düzeltme Girişi (+)</option>
+                        <option value="duzeltme_cikis">Düzeltme Çıkışı (-)</option>
                       </select>
                     </div>
                     <div class="mb-3">
-                      <label class="form-label fw-semibold">AÃ§Ä±klama</label>
-                      <textarea class="form-control" name="aciklama" rows="2" placeholder="DÃ¼zeltme sebebi..."></textarea>
+                      <label class="form-label fw-semibold">Miktar <span class="text-danger">*</span></label>
+                      <input type="number" name="miktar" class="form-control" min="1" placeholder="Miktar" required>
+                    </div>
+                    <div class="mb-3">
+                      <label class="form-label fw-semibold">Açıklama</label>
+                      <input type="text" name="aciklama" class="form-control" placeholder="İsteğe bağlı açıklama">
                     </div>
                   </div>
                   <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">VazgeÃ§</button>
-                    <button type="submit" class="btn btn-warning"><i class="bi bi-check-lg me-1"></i>Kaydet</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Vazgeç</button>
+                    <button type="submit" class="btn btn-warning">Kaydet</button>
                   </div>
                 </form>
               </div>
             </div>
           </div>
-          {% else %}
-          <tr><td colspan="5" class="text-center text-muted py-4">Stok verisi yok.</td></tr>
           {% endfor %}
+          {% if not ozet %}
+          <tr><td colspan="5" class="text-center text-muted py-4">Stok kaydı bulunamadı.</td></tr>
+          {% endif %}
         </tbody>
       </table>
     </div>
   </div>
 </div>
 
-<!-- ===== SON HAREKETLER ===== -->
-<div class="card">
-  <div class="card-header py-2">
-    <span class="fw-semibold">Son 100 Stok Hareketi</span>
+<!-- Hareket Geçmişi -->
+<div class="card border-0 shadow-sm">
+  <div class="card-header bg-white fw-semibold">
+    <i class="bi bi-clock-history me-2 text-secondary"></i>Hareket Geçmişi
   </div>
   <div class="card-body p-0">
     <div class="table-responsive">
-      <table class="table table-hover table-sm mb-0">
+      <table class="table table-sm table-hover mb-0">
         <thead class="table-light">
           <tr>
             <th>Tarih</th>
-            <th>ÃœrÃ¼n</th>
-            <th>TÃ¼r</th>
+            <th>Ürün</th>
+            <th>Tür</th>
             <th class="text-end">Miktar</th>
-            <th>Kaynak</th>
-            <th style="width:100px">Ä°ÅŸlem</th>
+            <th>Açıklama</th>
+            <th class="text-end">İşlem</th>
           </tr>
         </thead>
         <tbody>
           {% for h in hareketler %}
           <tr>
-            <td class="text-muted small">{{ h.tarih if h.tarih else 'â€”' }}</td>
-            <td>{{ h.urun.ad }}</td>
+            <td class="small text-muted">{{ h.tarih }}</td>
+            <td class="small">{{ h.urun.ad if h.urun else '—' }}</td>
             <td>
-              {% if 'giris' in h.hareket_turu or h.hareket_turu == 'uretim' %}
-                <span class="badge bg-success">{{ h.hareket_turu }}</span>
+              {% if 'giris' in h.hareket_turu %}
+                <span class="badge bg-success">Giriş</span>
               {% else %}
-                <span class="badge bg-danger">{{ h.hareket_turu }}</span>
+                <span class="badge bg-danger">Çıkış</span>
               {% endif %}
+              <small class="text-muted">{{ h.hareket_turu }}</small>
             </td>
-            <td class="text-end fw-semibold">{{ h.miktar }}</td>
-            <td class="text-muted small">{{ h.kaynak or 'â€”' }}</td>
-            <td>
-              <div class="d-flex gap-1">
-                <button class="btn btn-warning btn-sm" data-bs-toggle="modal"
-                        data-bs-target="#modalHareket{{ h.id }}">
-                  <i class="bi bi-pencil"></i>
-                </button>
-                <button class="btn btn-danger btn-sm" data-bs-toggle="modal"
-                        data-bs-target="#modalHareketSil{{ h.id }}">
-                  <i class="bi bi-trash"></i>
-                </button>
-              </div>
+            <td class="text-end fw-bold">{{ h.miktar|int }}</td>
+            <td class="small text-muted">{{ h.aciklama or '—' }}</td>
+            <td class="text-end">
+              <button class="btn btn-sm btn-outline-warning"
+                data-bs-toggle="modal"
+                data-bs-target="#modalHareketDuzenle{{ h.id }}">
+                <i class="bi bi-pencil"></i> Düzenle
+              </button>
+              <button class="btn btn-sm btn-danger"
+                data-bs-toggle="modal"
+                data-bs-target="#modalHareketSil{{ h.id }}">
+                <i class="bi bi-trash"></i>
+              </button>
             </td>
           </tr>
-
-          <!-- DÃ¼zenle modal -->
-          <div class="modal fade" id="modalHareket{{ h.id }}" tabindex="-1">
+          <!-- Hareket Düzenle Modal -->
+          <div class="modal fade" id="modalHareketDuzenle{{ h.id }}" tabindex="-1">
             <div class="modal-dialog">
               <div class="modal-content">
-                <form method="POST" action="{{ url_for('admin.stok_hareket_duzenle', id=h.id) }}">
+                <form method="post" action="{{ url_for('admin.stok_hareket_duzenle', id=h.id) }}">
                   <div class="modal-header">
-                    <h5 class="modal-title"><i class="bi bi-pencil me-2"></i>Hareketi DÃ¼zenle</h5>
+                    <h6 class="modal-title">Hareketi Düzenle</h6>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                   </div>
                   <div class="modal-body">
                     <div class="mb-3">
-                      <label class="form-label fw-semibold">Yeni Miktar</label>
-                      <input type="number" class="form-control" name="miktar" value="{{ h.miktar }}" required/>
+                      <label class="form-label fw-semibold">Miktar <span class="text-danger">*</span></label>
+                      <input type="number" name="miktar" class="form-control" value="{{ h.miktar|int }}" min="1" required>
                     </div>
                     <div class="mb-3">
-                      <label class="form-label fw-semibold">AÃ§Ä±klama</label>
-                      <textarea class="form-control" name="aciklama" rows="2">{{ h.kaynak or '' }}</textarea>
+                      <label class="form-label fw-semibold">Açıklama</label>
+                      <input type="text" name="aciklama" class="form-control" value="{{ h.aciklama or '' }}">
                     </div>
                   </div>
                   <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">VazgeÃ§</button>
-                    <button type="submit" class="btn btn-warning"><i class="bi bi-check-lg me-1"></i>Kaydet</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Vazgeç</button>
+                    <button type="submit" class="btn btn-warning">Güncelle</button>
                   </div>
                 </form>
               </div>
             </div>
           </div>
-
-          <!-- Sil confirm modal -->
+          <!-- Hareket Sil Modal -->
           <div class="modal fade" id="modalHareketSil{{ h.id }}" tabindex="-1">
             <div class="modal-dialog modal-sm">
               <div class="modal-content">
@@ -176,35 +166,34 @@
                   <h6 class="modal-title">Hareketi Sil</h6>
                   <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body">Bu stok hareketini silmek istiyor musunuz?</div>
+                <div class="modal-body">Bu stok hareketini silmek istediğinize emin misiniz?</div>
                 <div class="modal-footer">
-                  <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">VazgeÃ§</button>
-                  <form method="POST" action="{{ url_for('admin.stok_hareket_sil', id=h.id) }}" class="d-inline">
+                  <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Vazgeç</button>
+                  <form method="post" action="{{ url_for('admin.stok_hareket_sil', id=h.id) }}" class="d-inline">
                     <button type="submit" class="btn btn-danger btn-sm">Sil</button>
                   </form>
                 </div>
               </div>
             </div>
           </div>
-          {% else %}
-          <tr><td colspan="6" class="text-center text-muted py-4">Hareket kaydÄ± yok.</td></tr>
           {% endfor %}
+          {% if not hareketler %}
+          <tr><td colspan="6" class="text-center text-muted py-4">Hareket kaydı bulunamadı.</td></tr>
+          {% endif %}
         </tbody>
       </table>
     </div>
   </div>
 </div>
-{% endblock %}
 
-{% block scripts %}
+{% endblock %}
+{% block extra_js %}
 <script>
-  document.getElementById('stokSearch').addEventListener('input', function () {
-    const q = this.value.toLowerCase();
-    document.querySelectorAll('#stokTable .stok-row').forEach(row => {
-      const name = row.querySelector('.stok-name')?.textContent.toLowerCase() || '';
-      row.style.display = name.includes(q) ? '' : 'none';
-    });
+function stokFiltre() {
+  const q = document.getElementById('stokAra').value.toLowerCase();
+  document.querySelectorAll('#stokOzetTablo tbody tr').forEach(tr => {
+    tr.style.display = tr.querySelector('td') && tr.textContent.toLowerCase().includes(q) ? '' : 'none';
   });
+}
 </script>
 {% endblock %}
-

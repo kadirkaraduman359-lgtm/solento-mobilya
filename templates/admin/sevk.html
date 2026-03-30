@@ -1,328 +1,229 @@
-﻿{% extends "base.html" %}
-{% block title %}Sevkiyat â€“ Solento Mobilya{% endblock %}
+{% extends "base.html" %}
+{% block title %}Sevkiyat – Solento Mobilya{% endblock %}
 {% block page_title %}Sevkiyat{% endblock %}
-
-{% block head %}
-<style>
-  .urun-row .btn-remove-row { cursor: pointer; }
-  #kdv-bilgi { font-size: .85rem; }
-</style>
-{% endblock %}
-
 {% block content %}
-<div class="d-flex align-items-center justify-content-between mb-3">
-  <h5 class="fw-bold mb-0"><i class="bi bi-truck me-2 text-primary"></i>Sevkiyat YÃ¶netimi</h5>
-</div>
 
-<div class="row g-3">
-
-  <!-- ===== LEFT: Yeni Sevk Formu ===== -->
-  <div class="col-lg-5">
-    <div class="card h-100">
-      <div class="card-header py-2 fw-semibold">
-        <i class="bi bi-plus-circle me-1 text-primary"></i>Yeni Sevk OluÅŸtur
+<div class="row g-4">
+  <!-- YENİ SEVK FORMU -->
+  <div class="col-12 col-xl-5">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white fw-semibold">
+        <i class="bi bi-truck me-2 text-primary"></i>Yeni Sevk Oluştur
       </div>
       <div class="card-body">
-        <form method="POST" action="{{ url_for('admin.sevk_yeni') }}" id="sevkForm">
-          <!-- Talep Ã¶n-doldurma -->
-          {% if talep %}
-          <div class="alert alert-info py-2 small mb-3">
-            <i class="bi bi-info-circle me-1"></i>Talep #{{ talep.id }} esas alÄ±narak Ã¶nceden dolduruldu.
-            <input type="hidden" name="talep_id" value="{{ talep.id }}"/>
-          </div>
-          {% endif %}
+        <form method="post" action="{{ url_for('admin.sevk_yeni') }}" id="sevkForm">
 
-          <!-- AlÄ±cÄ± Tipi -->
+          <!-- Alıcı Türü -->
           <div class="mb-3">
-            <label class="form-label fw-semibold">AlÄ±cÄ± Tipi</label>
+            <label class="form-label fw-semibold">Alıcı Türü <span class="text-danger">*</span></label>
             <div class="d-flex gap-3">
               <div class="form-check">
-                <input class="form-check-input" type="radio" name="alici_turu" id="tipMagaza" value="magaza" checked/>
-                <label class="form-check-label" for="tipMagaza">KayÄ±tlÄ± MaÄŸaza</label>
+                <input class="form-check-input" type="radio" name="alici_turu" id="radioMagaza" value="magaza" checked onchange="aliciTuruDegis()">
+                <label class="form-check-label" for="radioMagaza">Mağaza</label>
               </div>
               <div class="form-check">
-                <input class="form-check-input" type="radio" name="alici_turu" id="tipSerbest" value="serbest"/>
-                <label class="form-check-label" for="tipSerbest">Serbest AlÄ±cÄ±</label>
+                <input class="form-check-input" type="radio" name="alici_turu" id="radioSerbest" value="serbest" onchange="aliciTuruDegis()">
+                <label class="form-check-label" for="radioSerbest">Serbest</label>
               </div>
             </div>
           </div>
 
-          <div id="magazaSecimi" class="mb-3">
-            <label class="form-label fw-semibold">MaÄŸaza</label>
-            <select class="form-select" name="magaza_id">
-              <option value="">â€” MaÄŸaza seÃ§in â€”</option>
+          <!-- Mağaza Seçimi -->
+          <div class="mb-3" id="magazaAlani">
+            <label class="form-label fw-semibold">Mağaza <span class="text-danger">*</span></label>
+            <select name="magaza_id" class="form-select" id="magazaSelect">
+              <option value="">— Mağaza Seçin —</option>
               {% for m in magazalar %}
-              <option value="{{ m.id }}" {% if talep and talep.magaza and talep.magaza.id == m.id %}selected{% endif %}>
-                {{ m.ad }} ({{ m.sehir.ad if m.sehir else '' }})
-              </option>
+              <option value="{{ m.id }}" {% if talep and talep.magaza_id == m.id %}selected{% endif %}>{{ m.ad }}</option>
               {% endfor %}
             </select>
           </div>
 
-          <div id="serbestAlici" class="mb-3 d-none">
-            <label class="form-label fw-semibold">AlÄ±cÄ± AdÄ±</label>
-            <input type="text" class="form-control" name="alici_adi" placeholder="AlÄ±cÄ± adÄ± / firma"/>
+          <!-- Serbest Alıcı -->
+          <div class="mb-3 d-none" id="serberstAlani">
+            <label class="form-label fw-semibold">Alıcı Adı <span class="text-danger">*</span></label>
+            <input type="text" name="alici_adi" class="form-control" id="aliciAdi" placeholder="Alıcı adı veya firma">
           </div>
 
           <!-- Tarih -->
           <div class="mb-3">
-            <label class="form-label fw-semibold">Tarih</label>
-            <input type="date" class="form-control" name="tarih" value="{{ '' }}" required/>
+            <label class="form-label fw-semibold">Tarih <span class="text-danger">*</span></label>
+            <input type="date" name="tarih" class="form-control" required>
           </div>
 
-          <!-- ÃœrÃ¼n SatÄ±rlarÄ± -->
-          <div class="mb-2 fw-semibold">ÃœrÃ¼n Kalemleri</div>
-          <div id="urunRows">
-            {% if talep and talep.kalemler %}
-              {% for k in talep.kalemler %}
-              <div class="row g-2 mb-2 urun-row">
-                <div class="col">
-                  <select class="form-select form-select-sm" name="urun_id[]" required>
-                    <option value="">ÃœrÃ¼n seÃ§</option>
+          <!-- Ürün Satırları -->
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Ürünler <span class="text-danger">*</span></label>
+            <div id="urunSatirlari">
+              <div class="row g-2 mb-2 urun-satir">
+                <div class="col-7">
+                  <select name="urun_id[]" class="form-select form-select-sm">
+                    <option value="">— Ürün —</option>
                     {% for u in urunler %}
-                    <option value="{{ u.id }}" {% if k.urun.id == u.id %}selected{% endif %}>{{ u.ad }}</option>
+                    <option value="{{ u.id }}" {% if talep and talep.urun_id == u.id %}selected{% endif %}>{{ u.ad }}</option>
                     {% endfor %}
                   </select>
                 </div>
                 <div class="col-3">
-                  <input type="number" class="form-control form-control-sm" name="miktar[]"
-                         placeholder="Adet" min="1" value="{{ k.miktar }}" required/>
+                  <input type="number" name="miktar[]" class="form-control form-control-sm" placeholder="Adet" min="1" value="{{ talep.miktar if talep else '' }}">
                 </div>
-                <div class="col-auto">
-                  <button type="button" class="btn btn-outline-danger btn-sm btn-remove-row">
-                    <i class="bi bi-x"></i>
+                <div class="col-2">
+                  <button type="button" class="btn btn-danger btn-sm w-100" onclick="satirSil(this)">
+                    <i class="bi bi-dash"></i>
                   </button>
                 </div>
               </div>
-              {% endfor %}
-            {% else %}
-            <div class="row g-2 mb-2 urun-row">
-              <div class="col">
-                <select class="form-select form-select-sm" name="urun_id[]" required>
-                  <option value="">ÃœrÃ¼n seÃ§</option>
-                  {% for u in urunler %}
-                  <option value="{{ u.id }}">{{ u.ad }}</option>
-                  {% endfor %}
-                </select>
-              </div>
-              <div class="col-3">
-                <input type="number" class="form-control form-control-sm" name="miktar[]" placeholder="Adet" min="1" required/>
-              </div>
-              <div class="col-auto">
-                <button type="button" class="btn btn-outline-danger btn-sm btn-remove-row">
-                  <i class="bi bi-x"></i>
-                </button>
-              </div>
             </div>
-            {% endif %}
+            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="satirEkle()">
+              <i class="bi bi-plus"></i> Ürün Ekle
+            </button>
           </div>
-          <button type="button" id="addUrunRow" class="btn btn-outline-primary btn-sm mb-3">
-            <i class="bi bi-plus me-1"></i>SatÄ±r Ekle
-          </button>
 
-          <!-- Nakliye / Ä°ÅŸÃ§ilik -->
+          <!-- Maliyet -->
           <div class="row g-2 mb-3">
-            <div class="col">
-              <label class="form-label fw-semibold">Nakliye Ãœcreti (â‚º)</label>
-              <input type="number" class="form-control" name="nakliye_ucreti" id="nakliye_ucreti" min="0" value="0" step="0.01"/>
+            <div class="col-6">
+              <label class="form-label fw-semibold">Nakliye Ücreti (₺)</label>
+              <input type="number" name="nakliye_ucreti" class="form-control" placeholder="0" min="0" step="0.01">
             </div>
-            <div class="col">
-              <label class="form-label fw-semibold">Ä°ÅŸÃ§ilik (â‚º)</label>
-              <input type="number" class="form-control" name="iscilik" id="iscilik" min="0" value="0" step="0.01"/>
+            <div class="col-6">
+              <label class="form-label fw-semibold">İşçilik (₺)</label>
+              <input type="number" name="iscilik" class="form-control" placeholder="0" min="0" step="0.01">
             </div>
           </div>
 
           <!-- KDV -->
           <div class="mb-3">
-            <label class="form-label fw-semibold">KDV OranÄ±</label>
-            <select class="form-select" name="kdv_oran" id="kdv_oran">
-              <option value="0">%0 (KDV Yok)</option>
-              <option value="10">%10</option>
-              <option value="20">%20</option>
+            <label class="form-label fw-semibold">KDV Oranı</label>
+            <select name="kdv_oran" class="form-select">
+              <option value="0">%0 KDV Yok</option>
+              <option value="10">%10 KDV</option>
+              <option value="20">%20 KDV</option>
             </select>
           </div>
-          <div class="alert alert-secondary py-2 mb-3" id="kdv-bilgi">
-            <div class="row">
-              <div class="col">Ara Toplam: <strong id="araToplam">0,00 â‚º</strong></div>
-              <div class="col">KDV: <strong id="kdvTutar">0,00 â‚º</strong></div>
-              <div class="col fw-bold">Toplam: <strong id="genelToplam">0,00 â‚º</strong></div>
-            </div>
-          </div>
 
-          <!-- Nakliyeyi maÄŸazaya gÃ¶ster -->
+          <!-- Nakliye Göster -->
           <div class="form-check mb-3">
-            <input class="form-check-input" type="checkbox" name="nakliye_goster" id="nakliye_goster" value="1"/>
-            <label class="form-check-label" for="nakliye_goster">Nakliyeyi maÄŸazaya gÃ¶ster</label>
+            <input class="form-check-input" type="checkbox" name="nakliye_goster" id="nakliyeGoster" value="1">
+            <label class="form-check-label" for="nakliyeGoster">
+              Nakliye ücretini faturada göster
+            </label>
           </div>
 
-          <!-- Genel Gider SatÄ±rlarÄ± -->
-          <div class="mb-2 fw-semibold">Genel Giderler <small class="text-muted fw-normal">(opsiyonel)</small></div>
-          <div id="giderRows"></div>
-          <button type="button" id="addGiderRow" class="btn btn-outline-secondary btn-sm mb-3">
-            <i class="bi bi-plus me-1"></i>Gider Ekle
-          </button>
-
-          <!-- Not -->
+          <!-- Notlar -->
           <div class="mb-3">
-            <label class="form-label fw-semibold">Not</label>
-            <textarea class="form-control" name="notlar" rows="2" placeholder="Opsiyonel not..."></textarea>
+            <label class="form-label fw-semibold">Notlar</label>
+            <textarea name="notlar" class="form-control" rows="2" placeholder="İsteğe bağlı notlar"></textarea>
           </div>
 
-          <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">
-            <i class="bi bi-send me-2"></i>Sevk OluÅŸtur
+          <button type="submit" class="btn btn-primary w-100">
+            <i class="bi bi-truck me-2"></i>Sevk Oluştur
           </button>
         </form>
       </div>
     </div>
   </div>
 
-  <!-- ===== RIGHT: Sevk Listesi ===== -->
-  <div class="col-lg-7">
-    <div class="card">
-      <div class="card-header py-2 fw-semibold">
-        <i class="bi bi-list-ul me-1 text-primary"></i>Sevk Listesi
+  <!-- SEVK LİSTESİ -->
+  <div class="col-12 col-xl-7">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white fw-semibold">
+        <i class="bi bi-list-ul me-2 text-secondary"></i>Sevk Listesi
       </div>
       <div class="card-body p-0">
         <div class="table-responsive">
-          <table class="table table-hover mb-0 table-sm">
+          <table class="table table-hover mb-0">
             <thead class="table-light">
               <tr>
-                <th>#</th>
                 <th>Tarih</th>
-                <th>AlÄ±cÄ±</th>
-                <th>ÃœrÃ¼nler</th>
-                <th>Nakliye</th>
-                <th>KDV</th>
-                <th>Durum</th>
-                <th>Ä°ÅŸlem</th>
+                <th>Alıcı</th>
+                <th>Ürünler</th>
+                <th class="text-end">Toplam</th>
+                <th class="text-end">İşlem</th>
               </tr>
             </thead>
             <tbody>
               {% for sv in sevkler %}
               <tr>
-                <td class="text-muted">{{ sv.id }}</td>
-                <td class="small">{{ sv.tarih if sv.tarih else 'â€”' }}</td>
-                <td>
-                  {% if sv.alici_turu == 'magaza' %}
-                    <span class="badge bg-primary">{{ sv.magaza.ad if sv.magaza else '?' }}</span>
-                  {% else %}
-                    <span class="text-muted small">{{ sv.alici_adi }}</span>
-                  {% endif %}
-                </td>
+                <td class="small text-muted">{{ sv.tarih }}</td>
+                <td class="fw-semibold small">{{ sv.magaza.ad if sv.magaza else sv.alici_adi or '—' }}</td>
                 <td class="small">
-                  {% for k in sv.kalemler %}
-                    <div>{{ k.urun.ad }} Ã— {{ k.miktar }}</div>
+                  {% for kalem in sv.kalemler %}
+                    <div>{{ kalem.urun.ad if kalem.urun else '?' }}: <strong>{{ kalem.miktar|int }}</strong></div>
                   {% endfor %}
                 </td>
-                <td class="small">{{ '%.2f â‚º'|format(sv.nakliye_ucreti or 0) }}</td>
-                <td class="small">%{{ sv.kdv_oran or 0 }}</td>
-                <td>
-                  {% if sv.teslim_durumu == 'teslim_alindi' %}
-                    <span class="badge bg-success">Teslim AlÄ±ndÄ±</span>
-                  {% else %}
-                    <span class="badge bg-warning text-dark">Bekliyor</span>
+                <td class="text-end small">
+                  {% if sv.nakliye_goster %}
+                  <div>Nakliye: {{ sv.nakliye_ucreti or 0 }}₺</div>
+                  {% endif %}
+                  {% if sv.iscilik %}
+                  <div>İşçilik: {{ sv.iscilik }}₺</div>
                   {% endif %}
                 </td>
-                <td>
-                  <div class="d-flex gap-1 flex-wrap">
-                    <button class="btn btn-warning btn-sm" data-bs-toggle="modal"
-                            data-bs-target="#modalSevkDuzenle{{ sv.id }}" title="DÃ¼zenle">
-                      <i class="bi bi-pencil"></i>
-                    </button>
-                    <button class="btn btn-danger btn-sm" data-bs-toggle="modal"
-                            data-bs-target="#modalSevkSil{{ sv.id }}" title="Sil">
-                      <i class="bi bi-trash"></i>
-                    </button>
-                    <a class="btn btn-success btn-sm"
-                       href="https://wa.me/?text={{ ('Sevk%20%23' + sv.id|string + '%0ATarih%3A%20' + (sv.tarih if sv.tarih else '') + '%0AAlÄ±cÄ±%3A%20' + (sv.magaza.ad if sv.magaza else sv.alici_adi or '')) | urlencode }}"
-                       target="_blank" title="WhatsApp">
-                      <i class="bi bi-whatsapp"></i>
-                    </a>
-                  </div>
+                <td class="text-end">
+                  <!-- WhatsApp -->
+                  {% if sv.magaza and sv.magaza.telefon %}
+                  <a href="https://wa.me/9{{ sv.magaza.telefon|replace(' ','')|replace('-','') }}" target="_blank" class="btn btn-sm btn-success">
+                    <i class="bi bi-whatsapp"></i>
+                  </a>
+                  {% endif %}
+                  <!-- Düzenle -->
+                  <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#modalSevkDuzenle{{ sv.id }}">
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                  <!-- Sil -->
+                  <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#modalSevkSil{{ sv.id }}">
+                    <i class="bi bi-trash"></i>
+                  </button>
                 </td>
               </tr>
 
-              <!-- DÃ¼zenle modal -->
+              <!-- Sevk Düzenle Modal -->
               <div class="modal fade" id="modalSevkDuzenle{{ sv.id }}" tabindex="-1">
-                <div class="modal-dialog modal-lg">
+                <div class="modal-dialog">
                   <div class="modal-content">
-                    <form method="POST" action="{{ url_for('admin.sevk_duzenle', sevk_id=sv.id) }}">
+                    <form method="post" action="{{ url_for('admin.sevk_duzenle', sevk_id=sv.id) }}">
                       <div class="modal-header">
-                        <h5 class="modal-title"><i class="bi bi-pencil me-2"></i>Sevk #{{ sv.id }} DÃ¼zenle</h5>
+                        <h6 class="modal-title">Sevk Düzenle</h6>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                       </div>
                       <div class="modal-body">
-                        <!-- ÃœrÃ¼n kalemleri -->
-                        <div class="mb-3">
-                          <label class="form-label fw-semibold">ÃœrÃ¼n Kalemleri</label>
-                          <div class="edit-urun-rows-{{ sv.id }}">
-                            {% for k in sv.kalemler %}
-                            <div class="row g-2 mb-2 urun-row">
-                              <div class="col">
-                                <select class="form-select form-select-sm" name="urun_id[]" required>
-                                  {% for u in urunler %}
-                                  <option value="{{ u.id }}" {% if k.urun.id == u.id %}selected{% endif %}>{{ u.ad }}</option>
-                                  {% endfor %}
-                                </select>
-                              </div>
-                              <div class="col-3">
-                                <input type="number" class="form-control form-control-sm" name="miktar[]"
-                                       value="{{ k.miktar }}" min="1" required/>
-                              </div>
-                              <div class="col-auto">
-                                <button type="button" class="btn btn-outline-danger btn-sm btn-remove-row">
-                                  <i class="bi bi-x"></i>
-                                </button>
-                              </div>
-                            </div>
-                            {% endfor %}
-                          </div>
-                          <button type="button" class="btn btn-outline-primary btn-sm btn-add-edit-row"
-                                  data-target="edit-urun-rows-{{ sv.id }}"
-                                  data-urunler='{{ urunler | map(attribute="id") | list | tojson }}'>
-                            <i class="bi bi-plus me-1"></i>SatÄ±r Ekle
-                          </button>
-                        </div>
                         <div class="row g-2 mb-3">
-                          <div class="col">
-                            <label class="form-label fw-semibold">Nakliye (â‚º)</label>
-                            <input type="number" class="form-control" name="nakliye_ucreti"
-                                   value="{{ sv.nakliye_ucreti or 0 }}" min="0" step="0.01"/>
+                          <div class="col-6">
+                            <label class="form-label fw-semibold">Nakliye Ücreti (₺)</label>
+                            <input type="number" name="nakliye_ucreti" class="form-control" value="{{ sv.nakliye_ucreti or 0 }}" min="0" step="0.01">
                           </div>
-                          <div class="col">
-                            <label class="form-label fw-semibold">Ä°ÅŸÃ§ilik (â‚º)</label>
-                            <input type="number" class="form-control" name="iscilik"
-                                   value="{{ sv.iscilik or 0 }}" min="0" step="0.01"/>
+                          <div class="col-6">
+                            <label class="form-label fw-semibold">İşçilik (₺)</label>
+                            <input type="number" name="iscilik" class="form-control" value="{{ sv.iscilik or 0 }}" min="0" step="0.01">
                           </div>
-                          <div class="col">
-                            <label class="form-label fw-semibold">KDV OranÄ±</label>
-                            <select class="form-select" name="kdv_oran">
-                              <option value="0" {% if (sv.kdv_oran or 0) == 0 %}selected{% endif %}>%0</option>
-                              <option value="10" {% if sv.kdv_oran == 10 %}selected{% endif %}>%10</option>
-                              <option value="20" {% if sv.kdv_oran == 20 %}selected{% endif %}>%20</option>
-                            </select>
-                          </div>
+                        </div>
+                        <div class="mb-3">
+                          <label class="form-label fw-semibold">KDV Oranı</label>
+                          <select name="kdv_oran" class="form-select">
+                            <option value="0" {% if sv.kdv_oran == 0 %}selected{% endif %}>%0 KDV Yok</option>
+                            <option value="10" {% if sv.kdv_oran == 10 %}selected{% endif %}>%10 KDV</option>
+                            <option value="20" {% if sv.kdv_oran == 20 %}selected{% endif %}>%20 KDV</option>
+                          </select>
                         </div>
                         <div class="form-check mb-3">
-                          <input class="form-check-input" type="checkbox" name="nakliye_goster"
-                                 id="ng{{ sv.id }}" value="1" {% if sv.nakliye_goster %}checked{% endif %}/>
-                          <label class="form-check-label" for="ng{{ sv.id }}">Nakliyeyi maÄŸazaya gÃ¶ster</label>
+                          <input class="form-check-input" type="checkbox" name="nakliye_goster" value="1" id="ng{{ sv.id }}" {% if sv.nakliye_goster %}checked{% endif %}>
+                          <label class="form-check-label" for="ng{{ sv.id }}">Nakliyeyi faturada göster</label>
                         </div>
                         <div class="mb-3">
-                          <label class="form-label fw-semibold">Not</label>
-                          <textarea class="form-control" name="notlar" rows="2">{{ sv.notlar or '' }}</textarea>
+                          <label class="form-label fw-semibold">Notlar</label>
+                          <textarea name="notlar" class="form-control" rows="2">{{ sv.notlar or '' }}</textarea>
                         </div>
                       </div>
                       <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">VazgeÃ§</button>
-                        <button type="submit" class="btn btn-warning"><i class="bi bi-check-lg me-1"></i>Kaydet</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Vazgeç</button>
+                        <button type="submit" class="btn btn-warning">Güncelle</button>
                       </div>
                     </form>
                   </div>
                 </div>
               </div>
 
-              <!-- Sil confirm modal -->
+              <!-- Sevk Sil Modal -->
               <div class="modal fade" id="modalSevkSil{{ sv.id }}" tabindex="-1">
                 <div class="modal-dialog modal-sm">
                   <div class="modal-content">
@@ -330,115 +231,53 @@
                       <h6 class="modal-title">Sevk Sil</h6>
                       <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
-                    <div class="modal-body">Sevk #{{ sv.id }} kaydÄ±nÄ± silmek istiyor musunuz?</div>
+                    <div class="modal-body">Bu sevk kaydını silmek istediğinize emin misiniz?</div>
                     <div class="modal-footer">
-                      <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">VazgeÃ§</button>
-                      <form method="POST" action="{{ url_for('admin.sevk_sil', id=sv.id) }}" class="d-inline">
+                      <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Vazgeç</button>
+                      <form method="post" action="{{ url_for('admin.sevk_sil', id=sv.id) }}" class="d-inline">
                         <button type="submit" class="btn btn-danger btn-sm">Sil</button>
                       </form>
                     </div>
                   </div>
                 </div>
               </div>
-              {% else %}
-              <tr><td colspan="8" class="text-center text-muted py-4">Sevk kaydÄ± yok.</td></tr>
+
               {% endfor %}
+              {% if not sevkler %}
+              <tr><td colspan="5" class="text-center text-muted py-4">Sevk kaydı bulunamadı.</td></tr>
+              {% endif %}
             </tbody>
           </table>
         </div>
       </div>
     </div>
   </div>
+</div>
 
-</div><!-- /row -->
-
-
-<!-- Hidden row template -->
-<template id="urunRowTemplate">
-  <div class="row g-2 mb-2 urun-row">
-    <div class="col">
-      <select class="form-select form-select-sm" name="urun_id[]" required>
-        <option value="">ÃœrÃ¼n seÃ§</option>
-        {% for u in urunler %}
-        <option value="{{ u.id }}">{{ u.ad }}</option>
-        {% endfor %}
-      </select>
-    </div>
-    <div class="col-3">
-      <input type="number" class="form-control form-control-sm" name="miktar[]" placeholder="Adet" min="1" required/>
-    </div>
-    <div class="col-auto">
-      <button type="button" class="btn btn-outline-danger btn-sm btn-remove-row"><i class="bi bi-x"></i></button>
-    </div>
-  </div>
-</template>
-
-<template id="giderRowTemplate">
-  <div class="row g-2 mb-2 gider-row">
-    <div class="col">
-      <input type="text" class="form-control form-control-sm" name="gider_tur[]" placeholder="Gider tÃ¼rÃ¼"/>
-    </div>
-    <div class="col-3">
-      <input type="number" class="form-control form-control-sm" name="gider_tutar[]" placeholder="Tutar" min="0" step="0.01"/>
-    </div>
-    <div class="col-auto">
-      <button type="button" class="btn btn-outline-danger btn-sm btn-remove-gider"><i class="bi bi-x"></i></button>
-    </div>
-  </div>
-</template>
 {% endblock %}
-
-{% block scripts %}
+{% block extra_js %}
 <script>
-// AlÄ±cÄ± tipi toggle
-document.querySelectorAll('input[name="alici_turu"]').forEach(r => {
-  r.addEventListener('change', () => {
-    const isMagaza = document.getElementById('tipMagaza').checked;
-    document.getElementById('magazaSecimi').classList.toggle('d-none', !isMagaza);
-    document.getElementById('serbestAlici').classList.toggle('d-none', isMagaza);
-  });
-});
-
-// ÃœrÃ¼n satÄ±rÄ± ekle
-document.getElementById('addUrunRow').addEventListener('click', () => {
-  const tpl = document.getElementById('urunRowTemplate').content.cloneNode(true);
-  document.getElementById('urunRows').appendChild(tpl);
-});
-
-// SatÄ±r sil (delegated)
-document.addEventListener('click', e => {
-  if (e.target.closest('.btn-remove-row')) {
-    const row = e.target.closest('.urun-row');
-    if (row) row.remove();
-  }
-  if (e.target.closest('.btn-remove-gider')) {
-    const row = e.target.closest('.gider-row');
-    if (row) row.remove();
-  }
-});
-
-// Gider satÄ±rÄ± ekle
-document.getElementById('addGiderRow').addEventListener('click', () => {
-  const tpl = document.getElementById('giderRowTemplate').content.cloneNode(true);
-  document.getElementById('giderRows').appendChild(tpl);
-});
-
-// KDV hesapla
-function hesaplaKdv() {
-  const nakliye = parseFloat(document.getElementById('nakliye_ucreti').value) || 0;
-  const iscilik = parseFloat(document.getElementById('iscilik').value) || 0;
-  const kdvOran = parseFloat(document.getElementById('kdv_oran').value) || 0;
-  const araToplam = nakliye + iscilik;
-  const kdvTutar = araToplam * kdvOran / 100;
-  const genelToplam = araToplam + kdvTutar;
-  document.getElementById('araToplam').textContent = araToplam.toLocaleString('tr-TR', {minimumFractionDigits:2}) + ' â‚º';
-  document.getElementById('kdvTutar').textContent = kdvTutar.toLocaleString('tr-TR', {minimumFractionDigits:2}) + ' â‚º';
-  document.getElementById('genelToplam').textContent = genelToplam.toLocaleString('tr-TR', {minimumFractionDigits:2}) + ' â‚º';
+function aliciTuruDegis() {
+  const magaza = document.getElementById('radioMagaza').checked;
+  document.getElementById('magazaAlani').classList.toggle('d-none', !magaza);
+  document.getElementById('serberstAlani').classList.toggle('d-none', magaza);
+  document.getElementById('magazaSelect').required = magaza;
+  document.getElementById('aliciAdi').required = !magaza;
 }
-['nakliye_ucreti','iscilik','kdv_oran'].forEach(id => {
-  document.getElementById(id)?.addEventListener('input', hesaplaKdv);
-});
+
+function satirEkle() {
+  const container = document.getElementById('urunSatirlari');
+  const ilk = container.querySelector('.urun-satir');
+  const yeni = ilk.cloneNode(true);
+  yeni.querySelectorAll('select, input').forEach(el => { el.value = ''; });
+  container.appendChild(yeni);
+}
+
+function satirSil(btn) {
+  const satirlar = document.querySelectorAll('.urun-satir');
+  if (satirlar.length > 1) {
+    btn.closest('.urun-satir').remove();
+  }
+}
 </script>
 {% endblock %}
-
-

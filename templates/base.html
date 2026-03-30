@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="tr">
 <head>
   <meta charset="UTF-8" />
@@ -13,204 +13,179 @@
       --sidebar-text: #c8d0e0;
       --sidebar-hover: #2d3550;
       --sidebar-active: #4f6df5;
-      --topbar-height: 56px;
     }
-    body { background: #f4f6fb; font-family: 'Segoe UI', sans-serif; }
-
-    /* Sidebar */
+    body { margin: 0; font-family: 'Segoe UI', sans-serif; background: #f0f2f7; }
     #sidebar {
       position: fixed; top: 0; left: 0; height: 100vh;
       width: var(--sidebar-width); background: var(--sidebar-bg);
       display: flex; flex-direction: column; z-index: 1040;
       transition: transform .25s ease;
     }
-    #sidebar .brand {
-      padding: 1.1rem 1.25rem;
-      border-bottom: 1px solid #2d3550;
-      display: flex; align-items: center; gap: .6rem;
+    .sidebar-brand {
+      padding: 1.25rem 1rem; border-bottom: 1px solid rgba(255,255,255,.08);
+      display: flex; align-items: center; gap: .75rem;
     }
-    #sidebar .brand span.logo-icon {
-      width: 34px; height: 34px; background: var(--sidebar-active);
-      border-radius: 8px; display: flex; align-items: center; justify-content: center;
+    .sidebar-brand .brand-icon {
+      width: 40px; height: 40px; background: #4f6df5; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
       color: #fff; font-size: 1.1rem; flex-shrink: 0;
     }
-    #sidebar .brand .brand-name {
-      color: #fff; font-weight: 700; font-size: .95rem; line-height: 1.2;
+    .sidebar-brand .brand-text h6 { color: #fff; margin: 0; font-size: .95rem; font-weight: 700; }
+    .sidebar-brand .brand-text small { color: #7b8ab8; font-size: .72rem; }
+    .sidebar-nav { flex: 1; overflow-y: auto; padding: .75rem 0; }
+    .sidebar-section {
+      padding: .35rem 1rem .1rem; font-size: .65rem; font-weight: 700;
+      letter-spacing: .08em; color: #4a5580; text-transform: uppercase; margin-top: .5rem;
     }
-    #sidebar .brand .brand-sub {
-      color: #7b8ab8; font-size: .72rem;
-    }
-    #sidebar nav { flex: 1; overflow-y: auto; padding: .75rem 0; }
-    #sidebar nav .nav-section {
-      color: #4a5480; font-size: .68rem; text-transform: uppercase;
-      letter-spacing: .08em; padding: .65rem 1.25rem .25rem;
-    }
-    #sidebar nav a {
+    .sidebar-nav a {
       display: flex; align-items: center; gap: .65rem;
-      padding: .5rem 1.25rem; color: var(--sidebar-text);
+      padding: .55rem 1rem; color: var(--sidebar-text);
       text-decoration: none; font-size: .875rem; border-radius: 0;
       transition: background .15s, color .15s;
-      position: relative;
     }
-    #sidebar nav a i { font-size: 1rem; flex-shrink: 0; }
-    #sidebar nav a:hover { background: var(--sidebar-hover); color: #fff; }
-    #sidebar nav a.active {
-      background: var(--sidebar-active); color: #fff;
+    .sidebar-nav a:hover { background: var(--sidebar-hover); color: #fff; }
+    .sidebar-nav a.active { background: var(--sidebar-active); color: #fff; font-weight: 600; }
+    .sidebar-nav a i { font-size: 1rem; flex-shrink: 0; }
+    .sidebar-footer {
+      padding: .75rem 1rem; border-top: 1px solid rgba(255,255,255,.08);
     }
-    #sidebar nav a .badge { margin-left: auto; }
-
-    #sidebar .sidebar-footer {
-      padding: .75rem 1.25rem;
-      border-top: 1px solid #2d3550;
-      font-size: .8rem; color: #7b8ab8;
+    .sidebar-footer .user-info { display: flex; align-items: center; gap: .65rem; }
+    .sidebar-footer .user-avatar {
+      width: 34px; height: 34px; background: #4f6df5; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-size: .85rem; flex-shrink: 0;
     }
-    #sidebar .sidebar-footer a { color: #7b8ab8; text-decoration: none; }
-    #sidebar .sidebar-footer a:hover { color: #fff; }
-
-    /* Main content */
+    .sidebar-footer .user-name { color: #fff; font-size: .82rem; font-weight: 600; margin: 0; }
+    .sidebar-footer .user-role { color: #7b8ab8; font-size: .7rem; margin: 0; }
+    .sidebar-footer a.logout-btn {
+      display: flex; align-items: center; gap: .4rem;
+      color: #7b8ab8; font-size: .8rem; text-decoration: none; margin-top: .5rem;
+      padding: .3rem .5rem; border-radius: 6px; transition: all .15s;
+    }
+    .sidebar-footer a.logout-btn:hover { color: #ff6b6b; background: rgba(255,107,107,.1); }
+    .sidebar-overlay {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5);
+      z-index: 1039;
+    }
     #main-wrapper {
       margin-left: var(--sidebar-width);
-      min-height: 100vh;
-      display: flex; flex-direction: column;
-      transition: margin-left .25s ease;
+      min-height: 100vh; display: flex; flex-direction: column;
     }
-    #topbar {
-      background: #fff; height: var(--topbar-height);
-      display: flex; align-items: center; padding: 0 1.5rem;
-      border-bottom: 1px solid #e4e8f0; position: sticky; top: 0; z-index: 100;
+    .top-navbar {
+      background: #fff; border-bottom: 1px solid #e2e8f0;
+      padding: .6rem 1.5rem; display: flex; align-items: center;
+      position: sticky; top: 0; z-index: 100;
+      box-shadow: 0 1px 4px rgba(0,0,0,.06);
     }
-    #topbar .page-heading { font-weight: 600; font-size: 1.05rem; color: #1a1f2e; }
-    #main-content { padding: 1.5rem; flex: 1; }
-
-    /* Topbar toggle (mobile) */
-    #sidebarToggle { display: none; }
-
-    /* Flash messages */
-    .flash-container { position: fixed; top: 66px; right: 1rem; z-index: 9999; min-width: 300px; }
-
-    /* Card style */
-    .card { border: none; box-shadow: 0 1px 4px rgba(0,0,0,.07); border-radius: 10px; }
-    .card-header { border-radius: 10px 10px 0 0 !important; background: #fff; border-bottom: 1px solid #e8ecf2; }
-
-    /* Table */
-    .table th { font-size: .8rem; text-transform: uppercase; color: #7b8ab8; letter-spacing: .04em; font-weight: 600; }
-    .table td { vertical-align: middle; }
-
-    /* Badge durum */
-    .durum-uretimde { background: #fff3cd; color: #856404; }
-    .durum-hazir { background: #cff4fc; color: #055160; }
-    .durum-tamamlandi { background: #d1e7dd; color: #0f5132; }
-    .durum-beklemede { background: #fff3cd; color: #856404; }
-    .durum-onaylandi { background: #cff4fc; color: #055160; }
-    .durum-sevk_edildi { background: #d1e7dd; color: #0f5132; }
-    .durum-iptal { background: #f8d7da; color: #842029; }
-    .durum-islemde { background: #cfe2ff; color: #084298; }
-    .durum-teslim_edildi { background: #d1e7dd; color: #0f5132; }
-
+    .top-navbar .page-title { font-size: 1.05rem; font-weight: 700; color: #1a1f2e; margin: 0; }
+    .btn-sidebar-toggle { display: none; background: none; border: none; padding: .25rem; margin-right: .75rem; }
+    .content-area { flex: 1; padding: 1.5rem; }
+    .badge-dot { font-size: .65rem; padding: .2em .45em; }
+    .durum-beklemede { background: #ffc107; color: #000; }
+    .durum-onaylandi { background: #198754; color: #fff; }
+    .durum-sevk_edildi { background: #0d6efd; color: #fff; }
+    .durum-iptal { background: #6c757d; color: #fff; }
+    .durum-hazir { background: #20c997; color: #fff; }
+    .durum-uretimde { background: #fd7e14; color: #fff; }
+    .durum-tamamlandi { background: #198754; color: #fff; }
+    .durum-islemde { background: #0dcaf0; color: #000; }
+    .durum-teslim_edildi { background: #198754; color: #fff; }
     @media (max-width: 991px) {
       #sidebar { transform: translateX(-100%); }
       #sidebar.show { transform: translateX(0); }
-      #main-wrapper { margin-left: 0; }
-      #sidebarToggle { display: inline-flex; }
-      .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 1039; }
       .sidebar-overlay.show { display: block; }
+      #main-wrapper { margin-left: 0; }
+      .btn-sidebar-toggle { display: block; }
     }
   </style>
-  {% block head %}{% endblock %}
+  {% block extra_head %}{% endblock %}
 </head>
 <body>
-
 <!-- Sidebar -->
 <div id="sidebar">
-  <div class="brand">
-    <span class="logo-icon"><i class="bi bi-box-seam"></i></span>
-    <div>
-      <div class="brand-name">Solento</div>
-      <div class="brand-sub">Mobilya YÃ¶netim</div>
+  <div class="sidebar-brand">
+    <div class="brand-icon"><i class="bi bi-box-seam"></i></div>
+    <div class="brand-text">
+      <h6>Solento</h6>
+      <small>Mobilya Yönetim</small>
     </div>
   </div>
 
-  <nav>
+  <nav class="sidebar-nav">
     {% if current_user.is_authenticated %}
-      {% if current_user.rol == 'admin' %}
-        <!-- ADMIN NAV -->
-        <span class="nav-section">Ana MenÃ¼</span>
-        <a href="{{ url_for('admin.dashboard') }}" {% if request.endpoint == 'admin.dashboard' %}class="active"{% endif %}>
+      {% if current_user.is_admin %}
+        <div class="sidebar-section">Ana Menü</div>
+        <a href="{{ url_for('admin.dashboard') }}" class="{% if request.endpoint == 'admin.dashboard' %}active{% endif %}">
           <i class="bi bi-speedometer2"></i> Dashboard
         </a>
-        <a href="{{ url_for('admin.uretim') }}" {% if request.endpoint == 'admin.uretim' %}class="active"{% endif %}>
-          <i class="bi bi-gear"></i> Ãœretim Takibi
+        <a href="{{ url_for('admin.uretim') }}" class="{% if request.endpoint == 'admin.uretim' %}active{% endif %}">
+          <i class="bi bi-gear"></i> Üretim Takibi
         </a>
-        <a href="{{ url_for('admin.stok') }}" {% if request.endpoint == 'admin.stok' %}class="active"{% endif %}>
+        <a href="{{ url_for('admin.stok') }}" class="{% if request.endpoint == 'admin.stok' %}active{% endif %}">
           <i class="bi bi-archive"></i> Depo Stok
         </a>
-        <a href="{{ url_for('admin.sevk_listesi') }}" {% if request.endpoint == 'admin.sevk_listesi' %}class="active"{% endif %}>
+        <a href="{{ url_for('admin.sevk_listesi') }}" class="{% if request.endpoint == 'admin.sevk_listesi' %}active{% endif %}">
           <i class="bi bi-truck"></i> Sevkiyat
         </a>
-        <a href="{{ url_for('admin.talepler') }}" {% if request.endpoint == 'admin.talepler' %}class="active"{% endif %}>
-          <i class="bi bi-cart-check"></i> SipariÅŸ Talepleri
-          {% if bekleyen_badge and bekleyen_badge > 0 %}
-            <span class="badge bg-danger rounded-pill">{{ bekleyen_badge }}</span>
+        <a href="{{ url_for('admin.talepler') }}" class="{% if request.endpoint == 'admin.talepler' %}active{% endif %}">
+          <i class="bi bi-cart-check"></i> Sipariş Talepleri
+          {% if bekleyen_badge > 0 %}
+            <span class="badge bg-danger ms-auto badge-dot">{{ bekleyen_badge }}</span>
           {% endif %}
         </a>
-
-        <span class="nav-section">YÃ¶netim</span>
-        <a href="{{ url_for('admin.magaza_stok') }}" {% if request.endpoint == 'admin.magaza_stok' %}class="active"{% endif %}>
-          <i class="bi bi-shop"></i> MaÄŸaza StoklarÄ±
+        <div class="sidebar-section">Yönetim</div>
+        <a href="{{ url_for('admin.magaza_stok') }}" class="{% if request.endpoint == 'admin.magaza_stok' %}active{% endif %}">
+          <i class="bi bi-shop"></i> Mağaza Stokları
         </a>
-        <a href="{{ url_for('admin.katalog') }}" {% if request.endpoint == 'admin.katalog' %}class="active"{% endif %}>
+        <a href="{{ url_for('admin.katalog') }}" class="{% if request.endpoint == 'admin.katalog' %}active{% endif %}">
           <i class="bi bi-grid"></i> Katalog
         </a>
-        <a href="{{ url_for('admin.ssh_listesi') }}" {% if request.endpoint == 'admin.ssh_listesi' %}class="active"{% endif %}>
+        <a href="{{ url_for('admin.ssh_listesi') }}" class="{% if request.endpoint == 'admin.ssh_listesi' %}active{% endif %}">
           <i class="bi bi-exclamation-triangle"></i> SSH Bildirimleri
         </a>
-        <a href="{{ url_for('admin.raporlar') }}" {% if request.endpoint == 'admin.raporlar' %}class="active"{% endif %}>
+        <a href="{{ url_for('admin.raporlar') }}" class="{% if request.endpoint == 'admin.raporlar' %}active{% endif %}">
           <i class="bi bi-bar-chart"></i> Raporlar
         </a>
-
-        <span class="nav-section">Sistem</span>
-        <a href="{{ url_for('admin.tanimlar') }}" {% if request.endpoint == 'admin.tanimlar' %}class="active"{% endif %}>
-          <i class="bi bi-list-ul"></i> TanÄ±mlar
+        <div class="sidebar-section">Sistem</div>
+        <a href="{{ url_for('admin.tanimlar') }}" class="{% if request.endpoint == 'admin.tanimlar' %}active{% endif %}">
+          <i class="bi bi-list-ul"></i> Tanımlar
         </a>
-        <a href="{{ url_for('admin.kullanicilar') }}" {% if request.endpoint == 'admin.kullanicilar' %}class="active"{% endif %}>
-          <i class="bi bi-people"></i> KullanÄ±cÄ±lar
-          {% if bekleyen_kayit and bekleyen_kayit > 0 %}
-            <span class="badge bg-warning text-dark rounded-pill">{{ bekleyen_kayit }}</span>
+        <a href="{{ url_for('admin.kullanicilar') }}" class="{% if request.endpoint == 'admin.kullanicilar' %}active{% endif %}">
+          <i class="bi bi-people"></i> Kullanıcılar
+          {% if bekleyen_kayit > 0 %}
+            <span class="badge bg-warning text-dark ms-auto badge-dot">{{ bekleyen_kayit }}</span>
           {% endif %}
         </a>
-
-      {% elif current_user.rol == 'magaza' %}
-        <!-- MAGAZA NAV -->
-        {% set yetki = current_user.yetki %}
-        <span class="nav-section">MaÄŸaza Paneli</span>
-        <a href="{{ url_for('magaza.dashboard') }}" {% if request.endpoint == 'magaza.dashboard' %}class="active"{% endif %}>
+      {% else %}
+        <div class="sidebar-section">Ana Menü</div>
+        <a href="{{ url_for('magaza.dashboard') }}" class="{% if request.endpoint == 'magaza.dashboard' %}active{% endif %}">
           <i class="bi bi-house"></i> Dashboard
         </a>
-        {% if yetki and yetki.stok %}
-        <a href="{{ url_for('magaza.stok_gorunum') }}" {% if request.endpoint == 'magaza.stok_gorunum' %}class="active"{% endif %}>
-          <i class="bi bi-archive"></i> Stok &amp; SipariÅŸ
+        {% if current_user.yetkisi_var_mi('stok') %}
+        <a href="{{ url_for('magaza.stok_gorunum') }}" class="{% if request.endpoint == 'magaza.stok_gorunum' %}active{% endif %}">
+          <i class="bi bi-archive"></i> Stok & Sipariş
         </a>
         {% endif %}
-        {% if yetki and yetki.talepler %}
-        <a href="{{ url_for('magaza.taleplerim') }}" {% if request.endpoint == 'magaza.taleplerim' %}class="active"{% endif %}>
-          <i class="bi bi-bag-check"></i> SipariÅŸlerim
+        {% if current_user.yetkisi_var_mi('talepler') %}
+        <a href="{{ url_for('magaza.taleplerim') }}" class="{% if request.endpoint == 'magaza.taleplerim' %}active{% endif %}">
+          <i class="bi bi-bag-check"></i> Siparişlerim
         </a>
         {% endif %}
-        {% if yetki and yetki.sevklerim %}
-        <a href="{{ url_for('magaza.sevklerim') }}" {% if request.endpoint == 'magaza.sevklerim' %}class="active"{% endif %}>
+        {% if current_user.yetkisi_var_mi('sevklerim') %}
+        <a href="{{ url_for('magaza.sevklerim') }}" class="{% if request.endpoint == 'magaza.sevklerim' %}active{% endif %}">
           <i class="bi bi-truck"></i> Sevklerim
         </a>
         {% endif %}
-        {% if yetki and yetki.katalog %}
-        <a href="{{ url_for('magaza.katalog') }}" {% if request.endpoint == 'magaza.katalog' %}class="active"{% endif %}>
+        {% if current_user.yetkisi_var_mi('katalog') %}
+        <a href="{{ url_for('magaza.katalog') }}" class="{% if request.endpoint == 'magaza.katalog' %}active{% endif %}">
           <i class="bi bi-grid"></i> Katalog
         </a>
         {% endif %}
-        {% if yetki and yetki.ssh %}
-        <a href="{{ url_for('magaza.ssh_bildir') }}" {% if request.endpoint == 'magaza.ssh_bildir' %}class="active"{% endif %}>
+        {% if current_user.yetkisi_var_mi('ssh') %}
+        <a href="{{ url_for('magaza.ssh_bildir') }}" class="{% if request.endpoint == 'magaza.ssh_bildir' %}active{% endif %}">
           <i class="bi bi-exclamation-circle"></i> SSH Bildir
         </a>
-        <a href="{{ url_for('magaza.ssh_gecmis') }}" {% if request.endpoint == 'magaza.ssh_gecmis' %}class="active"{% endif %}>
+        <a href="{{ url_for('magaza.ssh_gecmis') }}" class="{% if request.endpoint == 'magaza.ssh_gecmis' %}active{% endif %}">
           <i class="bi bi-clock-history"></i> SSH Takibi
         </a>
         {% endif %}
@@ -220,14 +195,16 @@
 
   <div class="sidebar-footer">
     {% if current_user.is_authenticated %}
-    <div class="d-flex align-items-center gap-2 mb-1">
-      <i class="bi bi-person-circle fs-5"></i>
+    <div class="user-info">
+      <div class="user-avatar"><i class="bi bi-person"></i></div>
       <div>
-        <div class="text-white" style="font-size:.8rem;font-weight:600;">{{ current_user.ad_soyad }}</div>
-        <div style="font-size:.7rem;">{{ current_user.rol|capitalize }}</div>
+        <p class="user-name">{{ current_user.ad_soyad or current_user.kullanici_adi }}</p>
+        <p class="user-role">{{ 'Admin' if current_user.is_admin else 'Mağaza' }}</p>
       </div>
     </div>
-    <a href="{{ url_for('auth.logout') }}"><i class="bi bi-box-arrow-left me-1"></i>Ã‡Ä±kÄ±ÅŸ Yap</a>
+    <a href="{{ url_for('auth.logout') }}" class="logout-btn">
+      <i class="bi bi-box-arrow-left"></i> Çıkış Yap
+    </a>
     {% endif %}
   </div>
 </div>
@@ -237,62 +214,44 @@
 
 <!-- Main wrapper -->
 <div id="main-wrapper">
-  <!-- Topbar -->
-  <div id="topbar">
-    <button class="btn btn-sm btn-light me-3" id="sidebarToggle" aria-label="MenÃ¼">
-      <i class="bi bi-list fs-5"></i>
+  <div class="top-navbar">
+    <button class="btn-sidebar-toggle" id="sidebarToggle">
+      <i class="bi bi-list" style="font-size:1.4rem;color:#1a1f2e;"></i>
     </button>
-    <span class="page-heading">{% block page_title %}{% endblock %}</span>
-    <div class="ms-auto d-flex align-items-center gap-2">
-      {% if current_user.is_authenticated and current_user.rol == 'magaza' and current_user.magaza %}
-        <span class="badge bg-primary rounded-pill"><i class="bi bi-shop me-1"></i>{{ current_user.magaza.ad }}</span>
-      {% endif %}
-    </div>
+    <h1 class="page-title">{% block page_title %}Solento Mobilya{% endblock %}</h1>
   </div>
 
-  <!-- Flash messages -->
-  <div class="flash-container">
+  <div class="content-area">
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% for category, message in messages %}
-        <div class="alert alert-{{ 'success' if category == 'success' else ('danger' if category == 'error' else category) }} alert-dismissible fade show shadow-sm" role="alert">
-          {% if category == 'success' %}<i class="bi bi-check-circle me-2"></i>
-          {% elif category == 'error' or category == 'danger' %}<i class="bi bi-x-circle me-2"></i>
-          {% else %}<i class="bi bi-info-circle me-2"></i>{% endif %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show mb-3" role="alert">
+          <i class="bi {% if category == 'success' %}bi-check-circle{% elif category == 'danger' %}bi-exclamation-circle{% else %}bi-info-circle{% endif %} me-2"></i>
           {{ message }}
           <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
       {% endfor %}
     {% endwith %}
-  </div>
 
-  <!-- Page content -->
-  <main id="main-content">
     {% block content %}{% endblock %}
-  </main>
+  </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-  // Sidebar toggle (mobile)
-  const sidebarEl = document.getElementById('sidebar');
-  const overlayEl = document.getElementById('sidebarOverlay');
-  document.getElementById('sidebarToggle')?.addEventListener('click', () => {
-    sidebarEl.classList.toggle('show');
-    overlayEl.classList.toggle('show');
-  });
-  overlayEl?.addEventListener('click', () => {
-    sidebarEl.classList.remove('show');
-    overlayEl.classList.remove('show');
-  });
-
-  // Auto-dismiss flash after 4s
-  setTimeout(() => {
-    document.querySelectorAll('.flash-container .alert').forEach(el => {
-      bootstrap.Alert.getOrCreateInstance(el).close();
+  const toggle = document.getElementById('sidebarToggle');
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebarOverlay');
+  if(toggle){
+    toggle.addEventListener('click', () => {
+      sidebar.classList.toggle('show');
+      overlay.classList.toggle('show');
     });
-  }, 4000);
+    overlay.addEventListener('click', () => {
+      sidebar.classList.remove('show');
+      overlay.classList.remove('show');
+    });
+  }
 </script>
-{% block scripts %}{% endblock %}
+{% block extra_js %}{% endblock %}
 </body>
 </html>
-

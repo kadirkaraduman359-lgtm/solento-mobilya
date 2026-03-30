@@ -1,13 +1,12 @@
-﻿{% extends "base.html" %}
-{% block title %}SSH Takibim â€“ Solento Mobilya{% endblock %}
+{% extends "base.html" %}
+{% block title %}SSH Takibim – Solento Mobilya{% endblock %}
 {% block page_title %}SSH Takibim{% endblock %}
-
 {% block content %}
-<div class="d-flex align-items-center justify-content-between mb-3">
-  <h5 class="fw-bold mb-0"><i class="bi bi-clock-history me-2 text-primary"></i>SSH Takibim</h5>
-</div>
 
-<div class="card">
+<div class="card border-0 shadow-sm">
+  <div class="card-header bg-white fw-semibold">
+    <i class="bi bi-clock-history me-2 text-secondary"></i>SSH Bildirimlerim
+  </div>
   <div class="card-body p-0">
     <div class="table-responsive">
       <table class="table table-hover mb-0">
@@ -15,10 +14,10 @@
           <tr>
             <th>#</th>
             <th>Tarih</th>
-            <th>ÃœrÃ¼n</th>
+            <th>Ürün</th>
             <th>Paket</th>
-            <th>Hasar</th>
-            <th class="text-end">Talep Miktar</th>
+            <th>Hasar Açıklaması</th>
+            <th class="text-end">Talep</th>
             <th>Durum</th>
             <th>Admin Notu</th>
           </tr>
@@ -26,34 +25,44 @@
         <tbody>
           {% for b in bildirimleri %}
           <tr>
-            <td class="text-muted">{{ b.id }}</td>
-            <td class="small">{{ b.tarih if b.tarih else 'â€”' }}</td>
-            <td>{{ b.urun.ad if b.urun else 'â€”' }}</td>
-            <td class="small">{{ b.paket.paket_adi if b.paket else 'â€”' }}</td>
-            <td class="small" style="max-width:200px">{{ b.hasar_aciklamasi }}</td>
-            <td class="text-end">{{ b.talep_miktar }}</td>
+            <td class="text-muted small">{{ loop.index }}</td>
+            <td class="small text-muted">{{ b.tarih }}</td>
+            <td class="small fw-semibold">{{ b.urun.ad if b.urun else '—' }}</td>
+            <td class="small">
+              {% if b.paket %}
+                {{ b.paket.paket_no or ('Paket ' ~ b.paket.id) }}
+              {% else %}
+                —
+              {% endif %}
+            </td>
+            <td class="small">{{ b.hasar_aciklamasi or '—' }}</td>
+            <td class="text-end small">{{ b.talep_miktar or '—' }}</td>
             <td>
               {% if b.durum == 'beklemede' %}
-                <span class="badge bg-warning text-dark">Beklemede</span>
+                <span class="badge durum-beklemede">Beklemede</span>
               {% elif b.durum == 'islemde' %}
-                <span class="badge bg-primary">Ä°ÅŸlemde</span>
+                <span class="badge durum-islemde">İşlemde</span>
               {% elif b.durum == 'teslim_edildi' %}
-                <span class="badge bg-success">Teslim Edildi</span>
+                <span class="badge durum-teslim_edildi">Teslim Edildi</span>
               {% else %}
                 <span class="badge bg-secondary">{{ b.durum }}</span>
               {% endif %}
             </td>
-            <td class="small text-muted">
-              {{ b.admin_notu or 'â€”' }}
+            <td class="small text-muted">{{ b.admin_notu or '—' }}</td>
+          </tr>
+          {% endfor %}
+          {% if not bildirimleri %}
+          <tr>
+            <td colspan="8" class="text-center text-muted py-5">
+              <i class="bi bi-check-circle fs-1 d-block mb-2 text-success"></i>
+              Henüz SSH bildirimi bulunmuyor.
             </td>
           </tr>
-          {% else %}
-          <tr><td colspan="8" class="text-center text-muted py-4">SSH bildirimi yok.</td></tr>
-          {% endfor %}
+          {% endif %}
         </tbody>
       </table>
     </div>
   </div>
 </div>
-{% endblock %}
 
+{% endblock %}

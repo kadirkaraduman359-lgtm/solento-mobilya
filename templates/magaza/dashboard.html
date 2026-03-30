@@ -1,143 +1,79 @@
-﻿{% extends "base.html" %}
-{% block title %}MaÄŸaza Paneli â€“ Solento Mobilya{% endblock %}
-{% block page_title %}MaÄŸaza Paneli{% endblock %}
-
+{% extends "base.html" %}
+{% block title %}Mağaza Paneli – Solento Mobilya{% endblock %}
+{% block page_title %}Mağaza Paneli{% endblock %}
 {% block content %}
-<div class="mb-3">
-  <h5 class="fw-bold mb-0">
-    <i class="bi bi-house me-2 text-primary"></i>HoÅŸ geldiniz,
-    <span class="text-primary">{{ current_user.ad_soyad }}</span>
-  </h5>
-  {% if current_user.magaza %}
-  <div class="text-muted small"><i class="bi bi-shop me-1"></i>{{ current_user.magaza.ad }}</div>
-  {% endif %}
+
+<div class="row g-3 mb-4">
+  <div class="col-12 col-md-4">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body text-center">
+        <div class="mb-2">
+          <i class="bi bi-archive text-primary" style="font-size:2rem;"></i>
+        </div>
+        <div class="text-muted small mb-1">Stoğum</div>
+        <div class="h2 fw-bold text-primary mb-2">{{ kendi_stok|length }}</div>
+        <p class="text-muted small mb-3">Mağazanıza teslim edilen ürün çeşidi</p>
+        {% if current_user.yetkisi_var_mi('stok') %}
+        <a href="{{ url_for('magaza.stok_gorunum') }}" class="btn btn-outline-primary btn-sm">Stok & Sipariş</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-md-4">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body text-center">
+        <div class="mb-2">
+          <i class="bi bi-bag-check text-warning" style="font-size:2rem;"></i>
+        </div>
+        <div class="text-muted small mb-1">Siparişlerim</div>
+        <div class="h2 fw-bold text-warning mb-2">{{ acik_talepler }}</div>
+        <p class="text-muted small mb-3">Açık sipariş talebi</p>
+        {% if current_user.yetkisi_var_mi('talepler') %}
+        <a href="{{ url_for('magaza.taleplerim') }}" class="btn btn-outline-warning btn-sm">Siparişlerim</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-md-4">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body text-center">
+        <div class="mb-2">
+          <i class="bi bi-exclamation-triangle text-danger" style="font-size:2rem;"></i>
+        </div>
+        <div class="text-muted small mb-1">SSH Bildirimlerim</div>
+        <div class="h2 fw-bold text-danger mb-2">{{ acik_ssh }}</div>
+        <p class="text-muted small mb-3">Bekleyen SSH bildirimi</p>
+        {% if current_user.yetkisi_var_mi('ssh') %}
+        <a href="{{ url_for('magaza.ssh_gecmis') }}" class="btn btn-outline-danger btn-sm">SSH Takibi</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
 </div>
 
-<div class="row g-3">
-
-  <!-- ===== ELÄ°MDEKÄ° STOK ===== -->
-  <div class="col-md-4">
-    <div class="card h-100">
-      <div class="card-header py-2 fw-semibold">
-        <i class="bi bi-archive me-2 text-primary"></i>Elimdeki Stok
-      </div>
-      <div class="card-body p-0">
-        {% if kendi_stok %}
-        <table class="table table-sm mb-0">
-          <thead class="table-light">
-            <tr><th>ÃœrÃ¼n</th><th class="text-end">Miktar</th></tr>
-          </thead>
-          <tbody>
-            {% for row in kendi_stok %}
-            <tr>
-              <td>{{ row.urun.ad }}</td>
-              <td class="text-end fw-semibold">{{ row.miktar }}</td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-        {% else %}
-        <div class="text-center text-muted py-4">
-          <i class="bi bi-inbox fs-3 d-block mb-2"></i>Stok bilgisi yok.
-        </div>
-        {% endif %}
-      </div>
-    </div>
+{% if kendi_stok %}
+<div class="card border-0 shadow-sm">
+  <div class="card-header bg-white fw-semibold">
+    <i class="bi bi-archive me-2 text-primary"></i>Mağazamdaki Stok
   </div>
-
-  <!-- ===== SON SÄ°PARÄ°ÅLERÄ°M ===== -->
-  <div class="col-md-4">
-    <div class="card h-100">
-      <div class="card-header py-2 d-flex align-items-center justify-content-between">
-        <span class="fw-semibold"><i class="bi bi-bag-check me-2 text-primary"></i>Son SipariÅŸlerim</span>
-        <a href="{{ url_for('magaza.taleplerim') }}" class="btn btn-outline-primary btn-sm">TÃ¼mÃ¼</a>
-      </div>
-      <div class="card-body p-0">
-        {% if acik_talepler %}
-        <div class="list-group list-group-flush">
-          {% for t in acik_talepler %}
-          <div class="list-group-item py-2">
-            <div class="d-flex justify-content-between align-items-start">
-              <div>
-                <div class="small fw-semibold">#{{ t.id }}</div>
-                <div class="text-muted" style="font-size:.8rem;">
-                  {% for k in t.kalemler %}{{ k.urun.ad }} Ã— {{ k.miktar }}{% if not loop.last %}, {% endif %}{% endfor %}
-                </div>
-              </div>
-              <div>
-                {% if t.durum == 'beklemede' %}
-                  <span class="badge bg-warning text-dark">Beklemede</span>
-                {% elif t.durum == 'onaylandi' %}
-                  <span class="badge bg-info text-dark">OnaylandÄ±</span>
-                {% elif t.durum == 'sevk_edildi' %}
-                  <span class="badge bg-success">Sevk Edildi</span>
-                {% elif t.durum == 'iptal' %}
-                  <span class="badge bg-danger">Ä°ptal</span>
-                {% else %}
-                  <span class="badge bg-secondary">{{ t.durum }}</span>
-                {% endif %}
-              </div>
-            </div>
-            <div class="text-muted" style="font-size:.75rem;">
-              {{ t.tarih if t.tarih else '' }}
-            </div>
-          </div>
-          {% endfor %}
-        </div>
-        {% else %}
-        <div class="text-center text-muted py-4">
-          <i class="bi bi-bag fs-3 d-block mb-2"></i>AÃ§Ä±k sipariÅŸ yok.
-        </div>
-        {% endif %}
-      </div>
-    </div>
+  <div class="card-body p-0">
+    <table class="table table-sm mb-0">
+      <thead class="table-light">
+        <tr><th>Ürün</th><th class="text-end">Miktar</th></tr>
+      </thead>
+      <tbody>
+        {% for item in kendi_stok %}
+        <tr>
+          <td class="small">{{ item.urun.ad if item.urun else item.urun_ad }}</td>
+          <td class="text-end fw-bold">{{ item.miktar|int }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
   </div>
+</div>
+{% endif %}
 
-  <!-- ===== AÃ‡IK SSH BÄ°LDÄ°RÄ°MLERÄ°M ===== -->
-  <div class="col-md-4">
-    <div class="card h-100">
-      <div class="card-header py-2 d-flex align-items-center justify-content-between">
-        <span class="fw-semibold"><i class="bi bi-exclamation-triangle me-2 text-warning"></i>SSH Bildirimlerim</span>
-        {% if current_user.yetki and current_user.yetki.ssh %}
-        <a href="{{ url_for('magaza.ssh_gecmis') }}" class="btn btn-outline-warning btn-sm">TÃ¼mÃ¼</a>
-        {% endif %}
-      </div>
-      <div class="card-body p-0">
-        {% if acik_ssh %}
-        <div class="list-group list-group-flush">
-          {% for b in acik_ssh %}
-          <div class="list-group-item py-2">
-            <div class="d-flex justify-content-between align-items-start">
-              <div>
-                <div class="small fw-semibold">{{ b.urun.ad if b.urun else 'â€”' }}</div>
-                <div class="text-muted" style="font-size:.8rem;">{{ b.paket.paket_adi if b.paket else '' }}</div>
-                <div class="text-muted" style="font-size:.78rem;">{{ b.hasar_aciklamasi[:60] }}{% if b.hasar_aciklamasi|length > 60 %}â€¦{% endif %}</div>
-              </div>
-              <div>
-                {% if b.durum == 'beklemede' %}
-                  <span class="badge bg-warning text-dark">Beklemede</span>
-                {% elif b.durum == 'islemde' %}
-                  <span class="badge bg-primary">Ä°ÅŸlemde</span>
-                {% elif b.durum == 'teslim_edildi' %}
-                  <span class="badge bg-success">Teslim Edildi</span>
-                {% endif %}
-              </div>
-            </div>
-            <div class="text-muted" style="font-size:.75rem;">
-              {{ b.tarih if b.tarih else '' }}
-            </div>
-          </div>
-          {% endfor %}
-        </div>
-        {% else %}
-        <div class="text-center text-muted py-4">
-          <i class="bi bi-check-circle fs-3 d-block mb-2 text-success"></i>AÃ§Ä±k SSH bildirimi yok.
-        </div>
-        {% endif %}
-      </div>
-    </div>
-  </div>
-
-</div><!-- /row -->
 {% endblock %}
-
