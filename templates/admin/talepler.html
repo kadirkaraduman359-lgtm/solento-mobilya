@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+{% block title %}Sipariş Talepleri – Solento Mobilya{% endblock %}
+{% block page_title %}Sipariş Talepleri{% endblock %}
+{% block content %}
+
+<div class="d-flex gap-2 mb-4 flex-wrap">
+  <a href="{{ url_for('admin.talepler', durum='beklemede') }}" class="btn btn-sm {% if not durum_filter or durum_filter == 'beklemede' %}btn-warning{% else %}btn-outline-secondary{% endif %}">
+    Beklemede
+    {% if beklemede_sayi > 0 %}<span class="badge bg-danger ms-1">{{ beklemede_sayi }}</span>{% endif %}
+  </a>
+  <a href="{{ url_for('admin.talepler', durum='onaylandi') }}" class="btn btn-sm {% if durum_filter == 'onaylandi' %}btn-success{% else %}btn-outline-secondary{% endif %}">
+    Onaylandı
+  </a>
+  <a href="{{ url_for('admin.talepler', durum='sevk_edildi') }}" class="btn btn-sm {% if durum_filter == 'sevk_edildi' %}btn-info{% else %}btn-outline-secondary{% endif %}">
+    Sevk Edildi
+  </a>
+  <a href="{{ url_for('admin.talepler', durum='iptal') }}" class="btn btn-sm {% if durum_filter == 'iptal' %}btn-secondary{% else %}btn-outline-secondary{% endif %}">
+    İptal
+  </a>
+  <a href="{{ url_for('admin.talepler') }}" class="btn btn-sm {% if durum_filter == 'tumu' or not durum_filter and not beklemede_sayi %}btn-dark{% else %}btn-outline-secondary{% endif %}">
+    Tümü
+  </a>
+</div>
+
+<div class="card border-0 shadow-sm">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>#</th>
+            <th>Mağaza</th>
+            <th>Ürünler</th>
+            <th>Tarih</th>
+            <th>Durum</th>
+            <th>Notlar</th>
+            <th class="text-end">İşlem</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for t in talepler %}
+          <tr>
+            <td class="text-muted small">{{ t.id }}</td>
+            <td class="fw-semibold small">{{ t.magaza.ad if t.magaza else '—' }}</td>
+            <td class="small">
+              {% for k in t.kalemler %}
+                <div>{{ k.urun.ad if k.urun else '?' }} – <strong>{{ k.miktar }}</strong> adet</div>
+              {% else %}
+                <span class="text-muted">—</span>
+              {% endfor %}
+            </td>
+            <td class="small text-muted">{{ t.tarih if t.tarih else '—' }}</td>
+            <td>
+              {% if t.durum == 'beklemede' %}
+                <span class="badge bg-warning text-dark">Beklemede</span>
+              {% elif t.durum == 'onaylandi' %}
+                <span class="badge bg-success">Onaylandı</span>
+              {% elif t.durum == 'sevk_edildi' %}
+                <span class="badge bg-info text-dark">Sevk Edildi</span>
+              {% elif t.durum == 'teslim_alindi' %}
+                <span class="badge bg-primary">Teslim Alındı</span>
+              {% elif t.durum == 'iptal' %}
+                <span class="badge bg-secondary">İptal</span>
+              {% else %}
+                <span class="badge bg-secondary">{{ t.durum }}</span>
+              {% endif %}
+            </td>
+            <td class="small text-muted">{{ t.notlar or '—' }}</td>
+            <td class="text-end">
+              <div class="d-flex gap-1 justify-content-end flex-wrap">
+              {% if t.durum == 'beklemede' %}
+              <form method="post" action="{{ url_for('admin.talep_onayla', id=t.id) }}" class="d-inline">
+                <button type="submit" class="btn btn-sm btn-success" onclick="return confirm('Bu talebi onaylamak istiyor musunuz?')">
+                  <i class="bi bi-check-lg"></i> Onayla
+                </button>
+              </form>
+              <form method="post" action="{{ url_for('admin.talep_reddet', id=t.id) }}" class="d-inline">
+                <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Bu talebi reddetmek istiyor musunuz?')">
+                  <i class="bi bi-x-lg"></i> Reddet
+                </button>
+              </form>
+              {% endif %}
+              {% if t.durum in ['beklemede', 'onaylandi'] %}
+              <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#modalSevk{{ t.id }}">
+                <i class="bi bi-truck"></i> Sevk Et
+              </button>
+              <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#modalIptal{{ t.id }}">
+                <i class="bi bi-x-circle"></i> İptal
+              </button>
+              {% endif %}
+              </div>
+            </td>
+          </tr>
+
+          {% if t.durum in ['beklemede', 'onaylandi'] %}
+          <!-- Sevk Modal -->
+          <div class="modal fade" id="modalSevk{{ t.id }}" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+              <div class="modal-content">
+                <form method="post" action="{{ url_for('admin.sevk_hizli', talep_id=t.id) }}">
+                  <div class="modal-header">
+                    <h6 class="modal-title"><i class="bi bi-truck me-2"></i>Sevk Et – {{ t.magaza.ad if t.magaza else '' }}</h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                  </div>
+                  <div class="modal-body">
+                    <div class="mb-3">
+                      <h6 class="fw-semibold">Talep Edilen Ürünler:</h6>
+                      {% for k in t.kalemler %}
+                      <div class="d-flex align-items-center gap-2 mb-2 p-2 bg-light rounded">
+                        <span class="flex-grow-1">{{ k.urun.ad if k.urun else '?' }}</span>
+                        <span class="badge bg-primary">{{ k.miktar }} adet</span>
+                        {% if k.urun %}
+                        <span class="text-muted small">Depoda: {{ kullanilabilir.get(k.urun.id, 0) }}</span>
+                        {% endif %}
+                      </div>
+                      {% endfor %}
+                    </div>
+                    <hr>
+                    <div class="row g-2 mb-3">
+                      <div class="col-6">
+                        <label class="form-label fw-semibold">Nakliye Ücreti (₺)</label>
+                        <input type="number" name="nakliye_ucreti" class="form-control" placeholder="0" min="0" step="0.01">
+                      </div>
+                      <div class="col-6">
+                        <label class="form-label fw-semibold">İşçilik (₺)</label>
+                        <input type="number" name="iscilik" class="form-control" placeholder="0" min="0" step="0.01">
+                      </div>
+                    </div>
+                    <div class="row g-2 mb-3">
+                      <div class="col-6">
+                        <label class="form-label fw-semibold">KDV Oranı</label>
+                        <select name="kdv_oran" class="form-select">
+                          <option value="0">%0 – KDV Yok</option>
+                          <option value="10">%10 KDV</option>
+                          <option value="20">%20 KDV</option>
+                        </select>
+                      </div>
+                      <div class="col-6 d-flex align-items-end">
+                        <div class="form-check mb-2">
+                          <input class="form-check-input" type="checkbox" name="nakliye_goster" value="1" id="ng{{ t.id }}">
+                          <label class="form-check-label" for="ng{{ t.id }}">Nakliyeyi mağazaya göster</label>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="mb-3">
+                      <label class="form-label fw-semibold">Notlar</label>
+                      <textarea name="notlar" class="form-control" rows="2" placeholder="İsteğe bağlı not..."></textarea>
+                    </div>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Vazgeç</button>
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-truck me-1"></i>Sevk Et</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <!-- İptal Modal -->
+          <div class="modal fade" id="modalIptal{{ t.id }}" tabindex="-1">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <form method="post" action="{{ url_for('admin.talep_iptal', talep_id=t.id) }}">
+                  <div class="modal-header">
+                    <h6 class="modal-title"><i class="bi bi-x-circle me-2"></i>Talebi İptal Et</h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                  </div>
+                  <div class="modal-body">
+                    <div class="mb-3">
+                      <label class="form-label fw-semibold">İptal Sebebi</label>
+                      <textarea name="iptal_sebebi" class="form-control" rows="3" placeholder="İptal sebebini giriniz..." required></textarea>
+                    </div>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Vazgeç</button>
+                    <button type="submit" class="btn btn-danger"><i class="bi bi-x-circle me-1"></i>İptal Et</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+          {% endif %}
+
+          {% endfor %}
+          {% if not talepler %}
+          <tr><td colspan="7" class="text-center text-muted py-4">Talep bulunamadı.</td></tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

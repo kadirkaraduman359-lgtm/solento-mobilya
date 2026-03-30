@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Giriş â€“ Solento Mobilya</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"/>
+  <style>
+    body {
+      background: linear-gradient(135deg, #1a1f2e 0%, #2d3550 60%, #4f6df5 100%);
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    .login-card {
+      background: #fff; border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.35);
+      width: 100%; max-width: 440px; padding: 2.5rem 2rem;
+    }
+    .brand-section { text-align: center; margin-bottom: 1.75rem; }
+    .brand-icon {
+      width: 64px; height: 64px; background: #4f6df5; border-radius: 14px;
+      display: inline-flex; align-items: center; justify-content: center;
+      color: #fff; font-size: 1.8rem; margin-bottom: .75rem;
+    }
+    .brand-section h1 { font-size: 1.5rem; font-weight: 700; color: #1a1f2e; margin-bottom: .1rem; }
+    .brand-section p { color: #7b8ab8; font-size: .85rem; margin: 0; }
+    .nav-tabs .nav-link { color: #7b8ab8; font-weight: 500; border: none; }
+    .nav-tabs .nav-link.active { color: #4f6df5; font-weight: 700; border-bottom: 3px solid #4f6df5; background: none; }
+    .btn-primary { background: #4f6df5; border-color: #4f6df5; }
+    .btn-primary:hover { background: #3a56d4; border-color: #3a56d4; }
+    .form-control:focus { border-color: #4f6df5; box-shadow: 0 0 0 .2rem rgba(79,109,245,.2); }
+  </style>
+</head>
+<body>
+<div class="login-card">
+  <div class="brand-section">
+    <div class="brand-icon"><i class="bi bi-box-seam"></i></div>
+    <h1>Solento Mobilya</h1>
+    <p>Yönetim &amp; Mağaza Paneli</p>
+  </div>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}
+      <div class="alert alert-{{ category }} alert-dismissible fade show py-2" role="alert">
+        {{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    {% endfor %}
+  {% endwith %}
+
+  <ul class="nav nav-tabs mb-3" id="loginTabs" role="tablist">
+    <li class="nav-item flex-fill" role="presentation">
+      <button class="nav-link w-100 {% if aktif_sekme != 'magaza' and aktif_sekme != 'kayit' %}active{% endif %}"
+              id="admin-tab" data-bs-toggle="tab" data-bs-target="#admin-pane" type="button">
+        <i class="bi bi-shield-lock me-1"></i>Yönetici
+      </button>
+    </li>
+    <li class="nav-item flex-fill" role="presentation">
+      <button class="nav-link w-100 {% if aktif_sekme == 'magaza' %}active{% endif %}"
+              id="magaza-tab" data-bs-toggle="tab" data-bs-target="#magaza-pane" type="button">
+        <i class="bi bi-shop me-1"></i>Mağaza Girişi
+      </button>
+    </li>
+    <li class="nav-item flex-fill" role="presentation">
+      <button class="nav-link w-100 {% if aktif_sekme == 'kayit' %}active{% endif %}"
+              id="kayit-tab" data-bs-toggle="tab" data-bs-target="#kayit-pane" type="button">
+        <i class="bi bi-person-plus me-1"></i>Kayıt Ol
+      </button>
+    </li>
+  </ul>
+
+  <div class="tab-content">
+    <!-- YÖNETİCİ GİRİŞİ -->
+    <div class="tab-pane fade {% if aktif_sekme != 'magaza' and aktif_sekme != 'kayit' %}show active{% endif %}" id="admin-pane">
+      <form method="POST" action="{{ url_for('auth.login') }}">
+        <input type="hidden" name="tip" value="yonetici"/>
+        <div class="mb-3">
+          <label class="form-label fw-semibold">E-posta</label>
+          <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+            <input type="email" class="form-control" name="email" placeholder="kadirkaraduman359@gmail.com" required/>
+          </div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Şifre</label>
+          <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-lock"></i></span>
+            <input type="password" class="form-control" name="sifre" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" required/>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">
+          <i class="bi bi-box-arrow-in-right me-2"></i>Yönetici Girişi
+        </button>
+      </form>
+    </div>
+
+    <!-- MAĞAZA GİRİŞİ -->
+    <div class="tab-pane fade {% if aktif_sekme == 'magaza' %}show active{% endif %}" id="magaza-pane">
+      <form method="POST" action="{{ url_for('auth.login') }}">
+        <input type="hidden" name="tip" value="magaza"/>
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Kullanıcı Adı</label>
+          <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-person"></i></span>
+            <input type="text" class="form-control" name="kullanici_adi" placeholder="mağaza kullanıcı adı" required/>
+          </div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Şifre</label>
+          <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-lock"></i></span>
+            <input type="password" class="form-control" name="sifre" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" required/>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">
+          <i class="bi bi-box-arrow-in-right me-2"></i>Mağaza Girişi
+        </button>
+      </form>
+    </div>
+
+    <!-- KAYIT OL -->
+    <div class="tab-pane fade {% if aktif_sekme == 'kayit' %}show active{% endif %}" id="kayit-pane">
+      <form method="POST" action="{{ url_for('auth.kayit') }}">
+        <div class="mb-2">
+          <label class="form-label fw-semibold">Ad Soyad <span class="text-danger">*</span></label>
+          <input type="text" class="form-control" name="ad_soyad" placeholder="Ahmet Yılmaz" required/>
+        </div>
+        <div class="mb-2">
+          <label class="form-label fw-semibold">Kullanıcı Adı <span class="text-danger">*</span></label>
+          <input type="text" class="form-control" name="kullanici_adi" placeholder="ahmetyilmaz" required/>
+        </div>
+        <div class="mb-2">
+          <label class="form-label fw-semibold">Mağaza Adı <span class="text-danger">*</span></label>
+          <input type="text" class="form-control" name="magaza_adi" placeholder="Kadir Mobilya" required/>
+        </div>
+        <div class="mb-2">
+          <label class="form-label fw-semibold">Şehir <span class="text-danger">*</span></label>
+          <input type="text" class="form-control" name="sehir_adi" placeholder="KAYSERİ" required/>
+        </div>
+        <div class="mb-2">
+          <label class="form-label fw-semibold">Telefon</label>
+          <input type="tel" class="form-control" name="telefon" placeholder="05xx xxx xxxx"/>
+        </div>
+        <div class="mb-2">
+          <label class="form-label fw-semibold">Şifre <span class="text-danger">*</span></label>
+          <input type="password" class="form-control" name="sifre" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" required/>
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Şifre Tekrar <span class="text-danger">*</span></label>
+          <input type="password" class="form-control" name="sifre2" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" required/>
+        </div>
+        <button type="submit" class="btn btn-success w-100 py-2 fw-semibold">
+          <i class="bi bi-person-check me-2"></i>Kayıt Talebi Gönder
+        </button>
+        <p class="text-muted text-center mt-2" style="font-size:.8rem;">
+          Kaydınız yönetici onayından sonra aktif olur.
+        </p>
+      </form>
+    </div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+
