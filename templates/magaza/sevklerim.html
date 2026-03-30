@@ -1,5 +1,5 @@
-{% extends "base.html" %}
-{% block title %}Sevklerim – Solento Mobilya{% endblock %}
+﻿{% extends "base.html" %}
+{% block title %}Sevklerim â€“ Solento Mobilya{% endblock %}
 {% block page_title %}Sevklerim{% endblock %}
 
 {% block content %}
@@ -15,36 +15,36 @@
           <tr>
             <th>#</th>
             <th>Tarih</th>
-            <th>Ürünler</th>
+            <th>ÃœrÃ¼nler</th>
             <th>Nakliye</th>
             <th>Durum</th>
-            <th>İşlem</th>
+            <th>Ä°ÅŸlem</th>
           </tr>
         </thead>
         <tbody>
           {% for sv in sevkler %}
           <tr>
             <td class="text-muted">{{ sv.id }}</td>
-            <td class="small">{{ sv.tarih.strftime('%d.%m.%Y') if sv.tarih else '—' }}</td>
+            <td class="small">{{ sv.tarih if sv.tarih else 'â€”' }}</td>
             <td class="small">
               {% for k in sv.kalemler %}
-                <div>{{ k.urun.ad }} × {{ k.miktar }}</div>
+                <div>{{ k.urun.ad }} Ã— {{ k.miktar }}</div>
               {% endfor %}
             </td>
             <td class="small">
               {% if sv.nakliye_goster %}
-                {{ '%.2f ₺'|format(sv.nakliye_ucreti or 0) }}
+                {{ '%.2f â‚º'|format(sv.nakliye_ucreti or 0) }}
               {% else %}
-                <span class="text-muted">—</span>
+                <span class="text-muted">â€”</span>
               {% endif %}
             </td>
             <td>
               {% if sv.teslim_durumu == 'teslim_alindi' %}
                 <span class="badge bg-success">
-                  <i class="bi bi-check-lg me-1"></i>Teslim Alındı
+                  <i class="bi bi-check-lg me-1"></i>Teslim AlÄ±ndÄ±
                 </span>
                 {% if sv.teslim_tarihi %}
-                  <div class="text-muted small">{{ sv.teslim_tarihi.strftime('%d.%m.%Y') }}</div>
+                  <div class="text-muted small">{{ sv.teslim_tarihi }}</div>
                 {% endif %}
               {% else %}
                 <span class="badge bg-warning text-dark">Yolda</span>
@@ -54,11 +54,11 @@
               {% if sv.teslim_durumu != 'teslim_alindi' %}
               <button class="btn btn-success btn-sm" data-bs-toggle="modal"
                       data-bs-target="#modalTeslim{{ sv.id }}">
-                <i class="bi bi-check-circle me-1"></i>Teslim Aldım
+                <i class="bi bi-check-circle me-1"></i>Teslim AldÄ±m
               </button>
               {% else %}
               <span class="text-success small fw-semibold">
-                <i class="bi bi-check-circle-fill me-1"></i>Teslim Alındı
+                <i class="bi bi-check-circle-fill me-1"></i>Teslim AlÄ±ndÄ±
               </span>
               {% endif %}
             </td>
@@ -74,13 +74,13 @@
                   <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                  Sevk #{{ sv.id }} teslimatını aldığınızı onaylıyor musunuz?
+                  Sevk #{{ sv.id }} teslimatÄ±nÄ± aldÄ±ÄŸÄ±nÄ±zÄ± onaylÄ±yor musunuz?
                 </div>
                 <div class="modal-footer">
-                  <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Vazgeç</button>
+                  <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">VazgeÃ§</button>
                   <form method="POST" action="{{ url_for('magaza.teslim_al', id=sv.id) }}" class="d-inline">
                     <button type="submit" class="btn btn-success btn-sm">
-                      <i class="bi bi-check-lg me-1"></i>Evet, Teslim Aldım
+                      <i class="bi bi-check-lg me-1"></i>Evet, Teslim AldÄ±m
                     </button>
                   </form>
                 </div>
@@ -89,7 +89,7 @@
           </div>
           {% endif %}
           {% else %}
-          <tr><td colspan="6" class="text-center text-muted py-4">Sevk kaydı yok.</td></tr>
+          <tr><td colspan="6" class="text-center text-muted py-4">Sevk kaydÄ± yok.</td></tr>
           {% endfor %}
         </tbody>
       </table>
@@ -97,3 +97,4 @@
   </div>
 </div>
 {% endblock %}
+

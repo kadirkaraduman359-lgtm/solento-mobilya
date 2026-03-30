@@ -1,28 +1,28 @@
-{% extends "base.html" %}
-{% block title %}Depo Stok – Solento Mobilya{% endblock %}
+﻿{% extends "base.html" %}
+{% block title %}Depo Stok â€“ Solento Mobilya{% endblock %}
 {% block page_title %}Depo Stok{% endblock %}
 
 {% block content %}
 <div class="d-flex align-items-center justify-content-between mb-3">
-  <h5 class="fw-bold mb-0"><i class="bi bi-archive me-2 text-primary"></i>Depo Stok Yönetimi</h5>
+  <h5 class="fw-bold mb-0"><i class="bi bi-archive me-2 text-primary"></i>Depo Stok YÃ¶netimi</h5>
 </div>
 
-<!-- ===== STOK ÖZETİ ===== -->
+<!-- ===== STOK Ã–ZETÄ° ===== -->
 <div class="card mb-4">
   <div class="card-header d-flex align-items-center justify-content-between py-2">
-    <span class="fw-semibold">Stok Özeti</span>
-    <input type="text" id="stokSearch" class="form-control form-control-sm" style="max-width:200px" placeholder="Ürün ara..."/>
+    <span class="fw-semibold">Stok Ã–zeti</span>
+    <input type="text" id="stokSearch" class="form-control form-control-sm" style="max-width:200px" placeholder="ÃœrÃ¼n ara..."/>
   </div>
   <div class="card-body p-0">
     <div class="table-responsive">
       <table class="table table-hover mb-0" id="stokTable">
         <thead class="table-light">
           <tr>
-            <th>Ürün</th>
+            <th>ÃœrÃ¼n</th>
             <th class="text-end">Bakiye</th>
             <th class="text-end">Rezerve</th>
-            <th class="text-end">Kullanılabilir</th>
-            <th style="width:120px">Manuel Düzelt</th>
+            <th class="text-end">KullanÄ±labilir</th>
+            <th style="width:120px">Manuel DÃ¼zelt</th>
           </tr>
         </thead>
         <tbody>
@@ -41,44 +41,44 @@
                       data-bs-toggle="modal"
                       data-bs-target="#modalManuel{{ row.urun.id }}"
                       data-urun="{{ row.urun.ad }}">
-                <i class="bi bi-pencil me-1"></i>Düzelt
+                <i class="bi bi-pencil me-1"></i>DÃ¼zelt
               </button>
             </td>
           </tr>
 
-          <!-- Manuel Düzelt Modal -->
+          <!-- Manuel DÃ¼zelt Modal -->
           <div class="modal fade" id="modalManuel{{ row.urun.id }}" tabindex="-1">
             <div class="modal-dialog">
               <div class="modal-content">
                 <form method="POST" action="{{ url_for('admin.stok_manuel_giris') }}">
                   <input type="hidden" name="urun_id" value="{{ row.urun.id }}"/>
                   <div class="modal-header">
-                    <h5 class="modal-title"><i class="bi bi-pencil me-2"></i>Manuel Stok Düzelt</h5>
+                    <h5 class="modal-title"><i class="bi bi-pencil me-2"></i>Manuel Stok DÃ¼zelt</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                   </div>
                   <div class="modal-body">
                     <div class="alert alert-info py-2 small">
-                      <strong>{{ row.urun.ad }}</strong> – Mevcut bakiye: <strong>{{ row.bakiye }}</strong>
+                      <strong>{{ row.urun.ad }}</strong> â€“ Mevcut bakiye: <strong>{{ row.bakiye }}</strong>
                     </div>
                     <div class="mb-3">
                       <label class="form-label fw-semibold">Miktar</label>
                       <input type="number" class="form-control" name="miktar" placeholder="Pozitif veya negatif" required/>
-                      <div class="form-text">Negatif girerek düşebilirsiniz.</div>
+                      <div class="form-text">Negatif girerek dÃ¼ÅŸebilirsiniz.</div>
                     </div>
                     <div class="mb-3">
-                      <label class="form-label fw-semibold">Hareket Türü</label>
+                      <label class="form-label fw-semibold">Hareket TÃ¼rÃ¼</label>
                       <select class="form-select" name="hareket_turu" required>
-                        <option value="duzeltme_giris">Düzeltme – Giriş</option>
-                        <option value="duzeltme_cikis">Düzeltme – Çıkış</option>
+                        <option value="duzeltme_giris">DÃ¼zeltme â€“ GiriÅŸ</option>
+                        <option value="duzeltme_cikis">DÃ¼zeltme â€“ Ã‡Ä±kÄ±ÅŸ</option>
                       </select>
                     </div>
                     <div class="mb-3">
-                      <label class="form-label fw-semibold">Açıklama</label>
-                      <textarea class="form-control" name="aciklama" rows="2" placeholder="Düzeltme sebebi..."></textarea>
+                      <label class="form-label fw-semibold">AÃ§Ä±klama</label>
+                      <textarea class="form-control" name="aciklama" rows="2" placeholder="DÃ¼zeltme sebebi..."></textarea>
                     </div>
                   </div>
                   <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Vazgeç</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">VazgeÃ§</button>
                     <button type="submit" class="btn btn-warning"><i class="bi bi-check-lg me-1"></i>Kaydet</button>
                   </div>
                 </form>
@@ -105,17 +105,17 @@
         <thead class="table-light">
           <tr>
             <th>Tarih</th>
-            <th>Ürün</th>
-            <th>Tür</th>
+            <th>ÃœrÃ¼n</th>
+            <th>TÃ¼r</th>
             <th class="text-end">Miktar</th>
             <th>Kaynak</th>
-            <th style="width:100px">İşlem</th>
+            <th style="width:100px">Ä°ÅŸlem</th>
           </tr>
         </thead>
         <tbody>
           {% for h in hareketler %}
           <tr>
-            <td class="text-muted small">{{ h.tarih.strftime('%d.%m.%Y %H:%M') if h.tarih else '—' }}</td>
+            <td class="text-muted small">{{ h.tarih if h.tarih else 'â€”' }}</td>
             <td>{{ h.urun.ad }}</td>
             <td>
               {% if 'giris' in h.hareket_turu or h.hareket_turu == 'uretim' %}
@@ -125,7 +125,7 @@
               {% endif %}
             </td>
             <td class="text-end fw-semibold">{{ h.miktar }}</td>
-            <td class="text-muted small">{{ h.kaynak or '—' }}</td>
+            <td class="text-muted small">{{ h.kaynak or 'â€”' }}</td>
             <td>
               <div class="d-flex gap-1">
                 <button class="btn btn-warning btn-sm" data-bs-toggle="modal"
@@ -140,13 +140,13 @@
             </td>
           </tr>
 
-          <!-- Düzenle modal -->
+          <!-- DÃ¼zenle modal -->
           <div class="modal fade" id="modalHareket{{ h.id }}" tabindex="-1">
             <div class="modal-dialog">
               <div class="modal-content">
                 <form method="POST" action="{{ url_for('admin.stok_hareket_duzenle', id=h.id) }}">
                   <div class="modal-header">
-                    <h5 class="modal-title"><i class="bi bi-pencil me-2"></i>Hareketi Düzenle</h5>
+                    <h5 class="modal-title"><i class="bi bi-pencil me-2"></i>Hareketi DÃ¼zenle</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                   </div>
                   <div class="modal-body">
@@ -155,12 +155,12 @@
                       <input type="number" class="form-control" name="miktar" value="{{ h.miktar }}" required/>
                     </div>
                     <div class="mb-3">
-                      <label class="form-label fw-semibold">Açıklama</label>
+                      <label class="form-label fw-semibold">AÃ§Ä±klama</label>
                       <textarea class="form-control" name="aciklama" rows="2">{{ h.kaynak or '' }}</textarea>
                     </div>
                   </div>
                   <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Vazgeç</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">VazgeÃ§</button>
                     <button type="submit" class="btn btn-warning"><i class="bi bi-check-lg me-1"></i>Kaydet</button>
                   </div>
                 </form>
@@ -178,7 +178,7 @@
                 </div>
                 <div class="modal-body">Bu stok hareketini silmek istiyor musunuz?</div>
                 <div class="modal-footer">
-                  <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Vazgeç</button>
+                  <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">VazgeÃ§</button>
                   <form method="POST" action="{{ url_for('admin.stok_hareket_sil', id=h.id) }}" class="d-inline">
                     <button type="submit" class="btn btn-danger btn-sm">Sil</button>
                   </form>
@@ -187,7 +187,7 @@
             </div>
           </div>
           {% else %}
-          <tr><td colspan="6" class="text-center text-muted py-4">Hareket kaydı yok.</td></tr>
+          <tr><td colspan="6" class="text-center text-muted py-4">Hareket kaydÄ± yok.</td></tr>
           {% endfor %}
         </tbody>
       </table>
@@ -207,3 +207,4 @@
   });
 </script>
 {% endblock %}
+

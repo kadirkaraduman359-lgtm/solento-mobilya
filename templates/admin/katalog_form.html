@@ -1,6 +1,6 @@
-{% extends "base.html" %}
-{% block title %}{{ 'Ürün Düzenle' if ku else 'Yeni Katalog Ürünü' }}{% endblock %}
-{% block page_title %}{{ 'Düzenle: ' + ku.ad if ku else 'Yeni Katalog Ürünü' }}{% endblock %}
+﻿{% extends "base.html" %}
+{% block title %}{{ 'ÃœrÃ¼n DÃ¼zenle' if ku else 'Yeni Katalog ÃœrÃ¼nÃ¼' }}{% endblock %}
+{% block page_title %}{{ 'DÃ¼zenle: ' + ku.ad if ku else 'Yeni Katalog ÃœrÃ¼nÃ¼' }}{% endblock %}
 {% block content %}
 <div class="row justify-content-center">
 <div class="col-xl-8">
@@ -11,34 +11,34 @@
   <h6 class="fw-bold mb-3 text-primary"><i class="bi bi-info-circle me-1"></i>Temel Bilgiler</h6>
   <div class="row g-3 mb-4">
     <div class="col-md-8">
-      <label class="form-label small">Ürün Adı *</label>
+      <label class="form-label small">ÃœrÃ¼n AdÄ± *</label>
       <input type="text" name="ad" class="form-control" value="{{ ku.ad if ku else '' }}" required>
     </div>
     <div class="col-md-4">
-      <label class="form-label small">Ürün Kodu</label>
+      <label class="form-label small">ÃœrÃ¼n Kodu</label>
       <input type="text" name="kod" class="form-control" value="{{ ku.kod if ku else '' }}" placeholder="Opsiyonel">
     </div>
     <div class="col-md-6">
       <label class="form-label small">Kategori</label>
-      <input type="text" name="kategori" class="form-control" value="{{ ku.kategori if ku else '' }}" placeholder="Dolap, Yatak Odası...">
+      <input type="text" name="kategori" class="form-control" value="{{ ku.kategori if ku else '' }}" placeholder="Dolap, Yatak OdasÄ±...">
     </div>
     <div class="col-md-6" {% if ku %} {% endif %}>
       {% if ku %}
       <label class="form-label small">Durum</label>
       <div class="form-check form-switch mt-2">
         <input class="form-check-input" type="checkbox" name="aktif" id="aktif" {% if ku.aktif %}checked{% endif %}>
-        <label class="form-check-label" for="aktif">Aktif (katalogda görünsün)</label>
+        <label class="form-check-label" for="aktif">Aktif (katalogda gÃ¶rÃ¼nsÃ¼n)</label>
       </div>
       {% endif %}
     </div>
     <div class="col-12">
-      <label class="form-label small">Açıklama</label>
+      <label class="form-label small">AÃ§Ä±klama</label>
       <textarea name="aciklama" class="form-control" rows="3">{{ ku.aciklama if ku else '' }}</textarea>
     </div>
   </div>
 
-  <!-- Ölçüler -->
-  <h6 class="fw-bold mb-3 text-info"><i class="bi bi-rulers me-1"></i>Ölçüler (cm / kg)</h6>
+  <!-- Ã–lÃ§Ã¼ler -->
+  <h6 class="fw-bold mb-3 text-info"><i class="bi bi-rulers me-1"></i>Ã–lÃ§Ã¼ler (cm / kg)</h6>
   <div class="row g-3 mb-4">
     <div class="col-3">
       <label class="form-label small">Boy (cm)</label>
@@ -53,7 +53,7 @@
       <input type="number" step="0.1" name="derinlik" class="form-control" value="{{ ku.derinlik if ku and ku.derinlik else '' }}" placeholder="0">
     </div>
     <div class="col-3">
-      <label class="form-label small">Ağırlık (kg)</label>
+      <label class="form-label small">AÄŸÄ±rlÄ±k (kg)</label>
       <input type="number" step="0.1" name="agirlik" class="form-control" value="{{ ku.agirlik if ku and ku.agirlik else '' }}" placeholder="0">
     </div>
   </div>
@@ -62,35 +62,35 @@
   <h6 class="fw-bold mb-3 text-success"><i class="bi bi-tag me-1"></i>Fiyat</h6>
   <div class="row g-3 mb-4 align-items-center">
     <div class="col-md-4">
-      <label class="form-label small">Fiyat (₺)</label>
+      <label class="form-label small">Fiyat (â‚º)</label>
       <input type="number" step="0.01" name="fiyat" class="form-control" value="{{ ku.fiyat if ku and ku.fiyat else '' }}" placeholder="0.00">
     </div>
     <div class="col-md-8">
-      <label class="form-label small d-block">Fiyat Görünürlüğü</label>
+      <label class="form-label small d-block">Fiyat GÃ¶rÃ¼nÃ¼rlÃ¼ÄŸÃ¼</label>
       <div class="form-check form-switch">
         <input class="form-check-input" type="checkbox" name="fiyat_onaylandi" id="fiyat_on"
                {% if ku and ku.fiyat_onaylandi %}checked{% endif %}>
         <label class="form-check-label" for="fiyat_on">
-          <span class="text-success">Fiyat onaylandı — yetkili mağazalara görünür</span>
+          <span class="text-success">Fiyat onaylandÄ± â€” yetkili maÄŸazalara gÃ¶rÃ¼nÃ¼r</span>
         </label>
       </div>
     </div>
   </div>
 
-  <!-- Görünürlük -->
-  <h6 class="fw-bold mb-3 text-warning"><i class="bi bi-eye me-1"></i>Ürün Görünürlüğü</h6>
+  <!-- GÃ¶rÃ¼nÃ¼rlÃ¼k -->
+  <h6 class="fw-bold mb-3 text-warning"><i class="bi bi-eye me-1"></i>ÃœrÃ¼n GÃ¶rÃ¼nÃ¼rlÃ¼ÄŸÃ¼</h6>
   <div class="mb-3">
     <select name="gorunurluk" class="form-select" id="gorunurluk_sel" onchange="toggleMagaza(this.value)">
-      <option value="herkes" {% if not ku or ku.gorunurluk=='herkes' %}selected{% endif %}>Tüm Mağazalar Görebilir</option>
-      <option value="secili" {% if ku and ku.gorunurluk=='secili' %}selected{% endif %}>Sadece Seçili Mağazalar</option>
-      <option value="gizli" {% if ku and ku.gorunurluk=='gizli' %}selected{% endif %}>Gizli (Hiçbir mağaza göremez)</option>
+      <option value="herkes" {% if not ku or ku.gorunurluk=='herkes' %}selected{% endif %}>TÃ¼m MaÄŸazalar GÃ¶rebilir</option>
+      <option value="secili" {% if ku and ku.gorunurluk=='secili' %}selected{% endif %}>Sadece SeÃ§ili MaÄŸazalar</option>
+      <option value="gizli" {% if ku and ku.gorunurluk=='gizli' %}selected{% endif %}>Gizli (HiÃ§bir maÄŸaza gÃ¶remez)</option>
     </select>
   </div>
 
-  <!-- Mağaza seçimi -->
+  <!-- MaÄŸaza seÃ§imi -->
   <div id="magaza_secimi" style="display:{% if ku and ku.gorunurluk=='secili' %}block{% else %}none{% endif %}">
     <div class="card p-3 mb-4" style="background:#0f172a">
-      <p class="small text-muted mb-2">Hangi mağazalar bu ürünü görebilir ve fiyatı görebilir mi?</p>
+      <p class="small text-muted mb-2">Hangi maÄŸazalar bu Ã¼rÃ¼nÃ¼ gÃ¶rebilir ve fiyatÄ± gÃ¶rebilir mi?</p>
       {% set izin_map = {} %}
       {% if ku %}
         {% for i in ku.magaza_izinleri %}
@@ -114,7 +114,7 @@
             <input class="form-check-input" type="checkbox" name="fiyat_{{ m.id }}" id="mf_{{ m.id }}"
                    {% if izin and izin.fiyat_gorunsun %}checked{% endif %}
                    {% if not izin %}disabled{% endif %}>
-            <label class="form-check-label small text-success" for="mf_{{ m.id }}">Fiyatı da görebilir</label>
+            <label class="form-check-label small text-success" for="mf_{{ m.id }}">FiyatÄ± da gÃ¶rebilir</label>
           </div>
         </div>
       </div>
@@ -133,20 +133,20 @@
            style="width:100px;height:80px;object-fit:cover;border-radius:8px">
       <form method="POST" action="{{ url_for('admin.katalog_resim_sil', id=ku.id, rid=r.id) }}"
             style="position:absolute;top:2px;right:2px">
-        <button style="background:rgba(239,68,68,.9);border:none;border-radius:50%;width:22px;height:22px;color:#fff;font-size:11px;cursor:pointer">×</button>
+        <button style="background:rgba(239,68,68,.9);border:none;border-radius:50%;width:22px;height:22px;color:#fff;font-size:11px;cursor:pointer">Ã—</button>
       </form>
     </div>
     {% endfor %}
   </div>
   {% endif %}
   <input type="file" name="resimler" class="form-control mb-4" multiple accept="image/*">
-  <small class="text-muted">JPG, PNG, WEBP desteklenir. Birden fazla seçebilirsiniz.</small>
+  <small class="text-muted">JPG, PNG, WEBP desteklenir. Birden fazla seÃ§ebilirsiniz.</small>
 
   <div class="d-flex gap-2 mt-4">
     <button type="submit" class="btn btn-primary flex-fill">
-      <i class="bi bi-check-lg me-1"></i>{{ 'Güncelle' if ku else 'Ekle' }}
+      <i class="bi bi-check-lg me-1"></i>{{ 'GÃ¼ncelle' if ku else 'Ekle' }}
     </button>
-    <a href="{{ url_for('admin.katalog') }}" class="btn btn-outline-secondary">İptal</a>
+    <a href="{{ url_for('admin.katalog') }}" class="btn btn-outline-secondary">Ä°ptal</a>
   </div>
 </form>
 </div>
@@ -159,3 +159,4 @@ function toggleMagaza(v) {
 }
 </script>
 {% endblock %}
+

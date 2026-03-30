@@ -1,24 +1,24 @@
-{% extends "base.html" %}
-{% block title %}Mağaza Stok Durumu{% endblock %}
-{% block page_title %}Mağaza Stok Durumu{% endblock %}
+﻿{% extends "base.html" %}
+{% block title %}MaÄŸaza Stok Durumu{% endblock %}
+{% block page_title %}MaÄŸaza Stok Durumu{% endblock %}
 {% block content %}
 
 <!-- Filtre -->
 <form method="GET" class="card p-3 mb-4">
   <div class="row g-2 align-items-end">
     <div class="col-md-3">
-      <label class="form-label small fw-semibold">Şehir</label>
+      <label class="form-label small fw-semibold">Åehir</label>
       <select name="sehir_id" class="form-select form-select-sm">
-        <option value="">Tüm Şehirler</option>
+        <option value="">TÃ¼m Åehirler</option>
         {% for s in sehirler %}
         <option value="{{ s.id }}" {% if secili_sehir_id==s.id %}selected{% endif %}>{{ s.ad }}</option>
         {% endfor %}
       </select>
     </div>
     <div class="col-md-4">
-      <label class="form-label small fw-semibold">Mağaza</label>
+      <label class="form-label small fw-semibold">MaÄŸaza</label>
       <select name="magaza_id" class="form-select form-select-sm">
-        <option value="">Tüm Mağazalar</option>
+        <option value="">TÃ¼m MaÄŸazalar</option>
         {% for m in magazalar %}
         <option value="{{ m.id }}" {% if secili_magaza_id==m.id %}selected{% endif %}>
           {{ m.sehir.ad }} / {{ m.ad }}
@@ -36,7 +36,7 @@
 </form>
 
 {% if not magaza_ozetleri %}
-  <div class="alert alert-info">Görüntülenecek mağaza bulunamadı.</div>
+  <div class="alert alert-info">GÃ¶rÃ¼ntÃ¼lenecek maÄŸaza bulunamadÄ±.</div>
 {% endif %}
 
 {% for item in magaza_ozetleri %}
@@ -47,12 +47,12 @@
       <span class="text-muted ms-2 small">{{ item.magaza.sehir.ad }}</span>
     </div>
     <div class="small text-muted">
-      {{ item.stok|length }} ürün çeşidi
+      {{ item.stok|length }} Ã¼rÃ¼n Ã§eÅŸidi
       &nbsp;|&nbsp;
       Toplam Eldeki:
       <strong class="text-success">{{ item.stok|sum(attribute='eldeki')|int }}</strong>
       &nbsp;|&nbsp;
-      Toplam Satılan:
+      Toplam SatÄ±lan:
       <strong class="text-danger">{{ item.stok|sum(attribute='satilan')|int }}</strong>
     </div>
   </div>
@@ -61,9 +61,9 @@
     <table class="table table-sm table-hover mb-0">
       <thead class="table-light">
         <tr>
-          <th class="ps-3">Ürün</th>
+          <th class="ps-3">ÃœrÃ¼n</th>
           <th class="text-end text-primary">Toplam Gelen</th>
-          <th class="text-end text-danger">Satılan</th>
+          <th class="text-end text-danger">SatÄ±lan</th>
           <th class="text-end text-success">Eldeki</th>
         </tr>
       </thead>
@@ -82,8 +82,9 @@
     </table>
   </div>
   {% else %}
-  <div class="card-body text-muted small">Bu mağazaya henüz sevk yapılmamış.</div>
+  <div class="card-body text-muted small">Bu maÄŸazaya henÃ¼z sevk yapÄ±lmamÄ±ÅŸ.</div>
   {% endif %}
 </div>
 {% endfor %}
 {% endblock %}
+

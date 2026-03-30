@@ -1,6 +1,6 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 {% block title %}Katalog{% endblock %}
-{% block page_title %}Ürün Kataloğu{% endblock %}
+{% block page_title %}ÃœrÃ¼n KataloÄŸu{% endblock %}
 {% block content %}
 
 <!-- Arama + Filtre -->
@@ -8,7 +8,7 @@
   <div class="input-group input-group-sm" style="max-width:320px">
     <span class="input-group-text"><i class="bi bi-search"></i></span>
     <input type="text" id="katalogArama" class="form-control"
-           placeholder="Ürün adı veya kategori ara..." oninput="katalogFiltrele()">
+           placeholder="ÃœrÃ¼n adÄ± veya kategori ara..." oninput="katalogFiltrele()">
     <button class="btn btn-outline-secondary" onclick="document.getElementById('katalogArama').value='';katalogFiltrele()">
       <i class="bi bi-x"></i>
     </button>
@@ -19,7 +19,7 @@
 {% if not urunler %}
 <div class="text-center text-muted py-5">
   <i class="bi bi-grid fs-1 d-block mb-3"></i>
-  Henüz katalog ürünü yok.
+  HenÃ¼z katalog Ã¼rÃ¼nÃ¼ yok.
 </div>
 {% else %}
 <div class="row g-4" id="katalogGrid">
@@ -67,7 +67,7 @@
       </div>
       {% endif %}
 
-      <!-- Kart İçeriği -->
+      <!-- Kart Ä°Ã§eriÄŸi -->
       <div class="card-body d-flex flex-column p-3">
         {% if ku.kategori %}
         <div class="text-muted small mb-1">{{ ku.kategori }}</div>
@@ -77,7 +77,7 @@
         <div class="text-muted small mb-2">Kod: {{ ku.kod }}</div>
         {% endif %}
 
-        <!-- Ölçüler -->
+        <!-- Ã–lÃ§Ã¼ler -->
         {% if ku.boy or ku.en or ku.derinlik %}
         <div class="d-flex gap-2 mb-2 flex-wrap">
           {% if ku.boy %}
@@ -98,7 +98,7 @@
         </div>
         {% endif %}
 
-        <!-- Açıklama -->
+        <!-- AÃ§Ä±klama -->
         {% if ku.aciklama %}
         <p class="text-muted small mb-2" style="line-height:1.4;
            overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">
@@ -110,7 +110,7 @@
         <div class="mt-auto">
           {% if fiyat_gorunsun and ku.fiyat %}
           <div class="fw-bold text-success fs-5 mb-2">
-            {{ "{:,.0f}".format(ku.fiyat) }} ₺
+            {{ "{:,.0f}".format(ku.fiyat) }} â‚º
           </div>
           {% endif %}
 
@@ -118,12 +118,12 @@
           <div class="d-flex gap-2">
             <button class="btn btn-primary btn-sm flex-grow-1"
                     onclick="siparisAc({{ ku.id }}, '{{ ku.ad|replace("'","\\'")|e }}', {{ ku.fiyat or 'null' }}, {{ 'true' if fiyat_gorunsun else 'false' }})">
-              <i class="bi bi-cart-plus me-1"></i>Sipariş Et
+              <i class="bi bi-cart-plus me-1"></i>SipariÅŸ Et
             </button>
             {% if not fiyat_gorunsun or not ku.fiyat %}
             <button class="btn btn-outline-warning btn-sm"
                     onclick="teklifAc({{ ku.id }}, '{{ ku.ad|replace("'","\\'")|e }}')"
-                    title="Fiyat Teklifi İste">
+                    title="Fiyat Teklifi Ä°ste">
               <i class="bi bi-tag"></i>
             </button>
             {% endif %}
@@ -136,12 +136,12 @@
 </div>
 {% endif %}
 
-<!-- Sipariş Modal -->
+<!-- SipariÅŸ Modal -->
 <div class="modal fade" id="siparisModal" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header border-0 pb-0">
-        <h5 class="modal-title"><i class="bi bi-cart-plus me-2 text-primary"></i>Sipariş Talebi</h5>
+        <h5 class="modal-title"><i class="bi bi-cart-plus me-2 text-primary"></i>SipariÅŸ Talebi</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <form method="POST" action="{{ url_for('magaza.katalog_siparis') }}">
@@ -149,7 +149,7 @@
           <input type="hidden" name="katalog_urun_id" id="sp-urun-id">
           <p class="fw-bold mb-3" id="sp-urun-ad"></p>
           <div id="sp-fiyat-blok" class="alert alert-success py-2 mb-3 d-none">
-            <i class="bi bi-tag me-1"></i>Birim Fiyat: <strong id="sp-fiyat"></strong> ₺
+            <i class="bi bi-tag me-1"></i>Birim Fiyat: <strong id="sp-fiyat"></strong> â‚º
           </div>
           <div class="mb-3">
             <label class="form-label fw-bold">Adet</label>
@@ -163,9 +163,9 @@
           </div>
         </div>
         <div class="modal-footer border-0 pt-0">
-          <button type="button" class="btn btn-light" data-bs-dismiss="modal">İptal</button>
+          <button type="button" class="btn btn-light" data-bs-dismiss="modal">Ä°ptal</button>
           <button type="submit" class="btn btn-primary">
-            <i class="bi bi-send me-1"></i>Talebi Gönder
+            <i class="bi bi-send me-1"></i>Talebi GÃ¶nder
           </button>
         </div>
       </form>
@@ -178,7 +178,7 @@
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header border-0 pb-0">
-        <h5 class="modal-title"><i class="bi bi-tag me-2 text-warning"></i>Fiyat Teklifi İste</h5>
+        <h5 class="modal-title"><i class="bi bi-tag me-2 text-warning"></i>Fiyat Teklifi Ä°ste</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <form method="POST" action="{{ url_for('magaza.fiyat_teklifi_gonder') }}">
@@ -187,22 +187,22 @@
           <p class="fw-bold mb-3" id="ft-urun-ad"></p>
           <div class="alert alert-info py-2 mb-3" style="font-size:13px">
             <i class="bi bi-info-circle me-1"></i>
-            Fiyat talebiniz yöneticiye iletilecek, size en kısa sürede fiyat bilgisi gönderilecek.
+            Fiyat talebiniz yÃ¶neticiye iletilecek, size en kÄ±sa sÃ¼rede fiyat bilgisi gÃ¶nderilecek.
           </div>
           <div class="mb-3">
-            <label class="form-label fw-bold">İstediğiniz Adet</label>
+            <label class="form-label fw-bold">Ä°stediÄŸiniz Adet</label>
             <input type="number" name="miktar" class="form-control" value="1" min="1" required>
           </div>
           <div class="mb-3">
             <label class="form-label fw-bold">Not <span class="text-muted fw-normal">(opsiyonel)</span></label>
             <textarea name="not_" class="form-control" rows="2"
-                      placeholder="Özel istek, renk, model, teslim tarihi..."></textarea>
+                      placeholder="Ã–zel istek, renk, model, teslim tarihi..."></textarea>
           </div>
         </div>
         <div class="modal-footer border-0 pt-0">
-          <button type="button" class="btn btn-light" data-bs-dismiss="modal">İptal</button>
+          <button type="button" class="btn btn-light" data-bs-dismiss="modal">Ä°ptal</button>
           <button type="submit" class="btn btn-warning text-dark">
-            <i class="bi bi-send me-1"></i>Teklif İste
+            <i class="bi bi-send me-1"></i>Teklif Ä°ste
           </button>
         </div>
       </form>
@@ -243,7 +243,8 @@ function katalogFiltrele() {
     }
   });
   var sonuc = document.getElementById('katalogSonuc');
-  sonuc.textContent = q ? (gorunen + ' ürün bulundu') : '';
+  sonuc.textContent = q ? (gorunen + ' Ã¼rÃ¼n bulundu') : '';
 }
 </script>
 {% endblock %}
+

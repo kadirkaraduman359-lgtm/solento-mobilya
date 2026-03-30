@@ -1,32 +1,32 @@
-{% extends "base.html" %}
-{% block title %}Satış Girişi{% endblock %}
-{% block page_title %}Satış Girişi{% endblock %}
+﻿{% extends "base.html" %}
+{% block title %}SatÄ±ÅŸ GiriÅŸi{% endblock %}
+{% block page_title %}SatÄ±ÅŸ GiriÅŸi{% endblock %}
 {% block content %}
 <div class="row justify-content-center">
   <div class="col-xl-8">
     <div class="card p-4">
       <p class="text-muted mb-4">
         <i class="bi bi-info-circle me-1"></i>
-        Bugün sattığınız ürünleri girin. Sistem stokunuzdan otomatik düşer.
+        BugÃ¼n sattÄ±ÄŸÄ±nÄ±z Ã¼rÃ¼nleri girin. Sistem stokunuzdan otomatik dÃ¼ÅŸer.
       </p>
       <form method="POST">
         <div class="mb-3">
-          <label class="form-label fw-semibold">Satış Tarihi</label>
+          <label class="form-label fw-semibold">SatÄ±ÅŸ Tarihi</label>
           <input type="date" name="tarih" class="form-control"
-                 value="{{ now.strftime('%Y-%m-%d') if now else '' }}" required>
+                 value="{{ now if now else '' }}" required>
         </div>
 
-        <label class="form-label fw-semibold">Satılan Ürünler</label>
+        <label class="form-label fw-semibold">SatÄ±lan ÃœrÃ¼nler</label>
         <div id="satisContainer"></div>
         <button type="button" class="btn btn-outline-primary mb-4" onclick="satirEkle()">
-          <i class="bi bi-plus"></i> Ürün Ekle
+          <i class="bi bi-plus"></i> ÃœrÃ¼n Ekle
         </button>
 
         <div class="d-flex gap-2">
           <button type="submit" class="btn btn-success px-4">
-            <i class="bi bi-check-lg me-1"></i>Satışı Kaydet
+            <i class="bi bi-check-lg me-1"></i>SatÄ±ÅŸÄ± Kaydet
           </button>
-          <a href="{{ url_for('magaza.dashboard') }}" class="btn btn-secondary">İptal</a>
+          <a href="{{ url_for('magaza.dashboard') }}" class="btn btn-secondary">Ä°ptal</a>
         </div>
       </form>
     </div>
@@ -34,9 +34,9 @@
 
   <div class="col-xl-4">
     <div class="card p-3">
-      <h6 class="fw-bold mb-3"><i class="bi bi-archive me-1 text-success"></i>Mevcut Stoğunuz</h6>
+      <h6 class="fw-bold mb-3"><i class="bi bi-archive me-1 text-success"></i>Mevcut StoÄŸunuz</h6>
       <table class="table table-sm mb-0">
-        <thead><tr><th>Ürün</th><th class="text-end">Eldeki</th></tr></thead>
+        <thead><tr><th>ÃœrÃ¼n</th><th class="text-end">Eldeki</th></tr></thead>
         <tbody>
         {% for s in stok %}
         <tr>
@@ -66,7 +66,7 @@ function satirEkle() {
   const c = document.getElementById("satisContainer");
   const div = document.createElement("div");
   div.className = "row g-2 mb-2 align-items-center";
-  let opts = '<option value="">-- Ürün Seçin --</option>';
+  let opts = '<option value="">-- ÃœrÃ¼n SeÃ§in --</option>';
   urunler.forEach(u => opts += `<option value="${u.id}">${u.ad} (Eldeki: ${u.eldeki})</option>`);
   div.innerHTML = `
     <div class="col-5">
@@ -92,3 +92,4 @@ function satirEkle() {
 satirEkle();
 </script>
 {% endblock %}
+

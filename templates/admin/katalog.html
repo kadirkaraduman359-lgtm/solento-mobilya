@@ -1,6 +1,6 @@
-{% extends "base.html" %}
-{% block title %}Katalog Yönetimi{% endblock %}
-{% block page_title %}Ürün Kataloğu{% endblock %}
+﻿{% extends "base.html" %}
+{% block title %}Katalog YÃ¶netimi{% endblock %}
+{% block page_title %}ÃœrÃ¼n KataloÄŸu{% endblock %}
 {% block content %}
 
 <!-- Bekleyen Bildirimler -->
@@ -10,7 +10,7 @@
   <div class="col-md-6">
     <div class="card border-primary p-3">
       <h6 class="fw-bold mb-3 text-primary">
-        <i class="bi bi-cart me-1"></i>Katalogdan Gelen Siparişler
+        <i class="bi bi-cart me-1"></i>Katalogdan Gelen SipariÅŸler
         <span class="badge bg-danger ms-1">{{ katalog_siparisler|length }}</span>
       </h6>
       {% for t in katalog_siparisler %}
@@ -28,7 +28,7 @@
               </button>
             </form>
           {% else %}
-            <span class="badge bg-primary">Onaylandı</span>
+            <span class="badge bg-primary">OnaylandÄ±</span>
           {% endif %}
         </div>
       </div>
@@ -44,7 +44,7 @@
         <span class="badge bg-danger ms-1">{{ bekleyen_teklifler }}</span>
       </h6>
       <a href="{{ url_for('admin.fiyat_teklifleri') }}" class="btn btn-warning btn-sm w-100">
-        <i class="bi bi-reply me-1"></i>Teklifleri Yanıtla
+        <i class="bi bi-reply me-1"></i>Teklifleri YanÄ±tla
       </a>
     </div>
   </div>
@@ -53,9 +53,9 @@
 {% endif %}
 
 <div class="d-flex justify-content-between align-items-center mb-3">
-  <span class="text-muted">{{ urunler|length }} ürün</span>
+  <span class="text-muted">{{ urunler|length }} Ã¼rÃ¼n</span>
   <a href="{{ url_for('admin.katalog_yeni') }}" class="btn btn-primary">
-    <i class="bi bi-plus-lg me-1"></i>Yeni Ürün Ekle
+    <i class="bi bi-plus-lg me-1"></i>Yeni ÃœrÃ¼n Ekle
   </a>
 </div>
 
@@ -76,7 +76,7 @@
       <div class="d-flex justify-content-between align-items-start mb-1">
         <strong class="text-white">{{ ku.ad }}</strong>
         {% if ku.gorunurluk == 'herkes' %}<span class="badge bg-success">Herkese</span>
-        {% elif ku.gorunurluk == 'secili' %}<span class="badge bg-warning text-dark">Seçili</span>
+        {% elif ku.gorunurluk == 'secili' %}<span class="badge bg-warning text-dark">SeÃ§ili</span>
         {% else %}<span class="badge bg-secondary">Gizli</span>{% endif %}
       </div>
       {% if ku.kod %}<div class="text-muted small mb-1">Kod: {{ ku.kod }}</div>{% endif %}
@@ -86,22 +86,22 @@
       <div class="text-muted small mb-2">
         <i class="bi bi-rulers me-1"></i>
         {% if ku.boy %}{{ ku.boy|int }}cm {% endif %}
-        {% if ku.en %}× {{ ku.en|int }}cm {% endif %}
-        {% if ku.derinlik %}× {{ ku.derinlik|int }}cm{% endif %}
+        {% if ku.en %}Ã— {{ ku.en|int }}cm {% endif %}
+        {% if ku.derinlik %}Ã— {{ ku.derinlik|int }}cm{% endif %}
       </div>
       {% endif %}
 
       <div class="d-flex align-items-center justify-content-between mb-3">
         {% if ku.fiyat %}
         <div>
-          <span class="fw-bold text-success">{{ "{:,.0f}".format(ku.fiyat) }} ₺</span>
+          <span class="fw-bold text-success">{{ "{:,.0f}".format(ku.fiyat) }} â‚º</span>
           <form method="POST" action="{{ url_for('admin.katalog_fiyat_onayla', id=ku.id) }}" class="d-inline ms-2">
             {% if ku.fiyat_onaylandi %}
-              <button class="btn btn-xs" style="font-size:11px;padding:2px 8px;background:#16a34a;color:#fff;border:none;border-radius:6px" title="Fiyat görünür — tıkla gizle">
-                <i class="bi bi-eye"></i> Görünür
+              <button class="btn btn-xs" style="font-size:11px;padding:2px 8px;background:#16a34a;color:#fff;border:none;border-radius:6px" title="Fiyat gÃ¶rÃ¼nÃ¼r â€” tÄ±kla gizle">
+                <i class="bi bi-eye"></i> GÃ¶rÃ¼nÃ¼r
               </button>
             {% else %}
-              <button class="btn btn-xs" style="font-size:11px;padding:2px 8px;background:#475569;color:#fff;border:none;border-radius:6px" title="Fiyat gizli — tıkla onayla">
+              <button class="btn btn-xs" style="font-size:11px;padding:2px 8px;background:#475569;color:#fff;border:none;border-radius:6px" title="Fiyat gizli â€” tÄ±kla onayla">
                 <i class="bi bi-eye-slash"></i> Gizli
               </button>
             {% endif %}
@@ -117,10 +117,10 @@
 
       <div class="d-flex gap-2">
         <a href="{{ url_for('admin.katalog_duzenle', id=ku.id) }}" class="btn btn-sm btn-outline-primary flex-fill">
-          <i class="bi bi-pencil me-1"></i>Düzenle
+          <i class="bi bi-pencil me-1"></i>DÃ¼zenle
         </a>
         <form method="POST" action="{{ url_for('admin.katalog_sil', id=ku.id) }}"
-              onsubmit="return confirm('Bu ürün kataloğdan silinsin mi?')">
+              onsubmit="return confirm('Bu Ã¼rÃ¼n kataloÄŸdan silinsin mi?')">
           <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
         </form>
       </div>
@@ -130,9 +130,10 @@
 {% else %}
 <div class="col-12 text-center text-muted py-5">
   <i class="bi bi-grid" style="font-size:48px"></i>
-  <p class="mt-2">Henüz katalog ürünü eklenmedi.</p>
-  <a href="{{ url_for('admin.katalog_yeni') }}" class="btn btn-primary">İlk Ürünü Ekle</a>
+  <p class="mt-2">HenÃ¼z katalog Ã¼rÃ¼nÃ¼ eklenmedi.</p>
+  <a href="{{ url_for('admin.katalog_yeni') }}" class="btn btn-primary">Ä°lk ÃœrÃ¼nÃ¼ Ekle</a>
 </div>
 {% endfor %}
 </div>
 {% endblock %}
+

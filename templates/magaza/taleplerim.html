@@ -7,13 +7,11 @@
   <h5 class="fw-bold mb-0"><i class="bi bi-bag-check me-2 text-primary"></i>Siparişlerim</h5>
 </div>
 
-<!-- Filtre tabları -->
 {% set aktif_durum = request.args.get('durum', 'tumu') %}
 <ul class="nav nav-tabs mb-3">
   {% for label, val in [('Tümü','tumu'),('Beklemede','beklemede'),('Onaylandı','onaylandi'),('Sevk Edildi','sevk_edildi'),('İptal','iptal')] %}
   <li class="nav-item">
-    <a class="nav-link {% if aktif_durum == val %}active{% endif %}"
-       href="?durum={{ val }}">{{ label }}</a>
+    <a class="nav-link {% if aktif_durum == val %}active{% endif %}" href="?durum={{ val }}">{{ label }}</a>
   </li>
   {% endfor %}
 </ul>
@@ -28,86 +26,92 @@
             <th>Tarih</th>
             <th>Ürünler</th>
             <th>Durum</th>
-            <th>Not</th>
+            <th>Not / İptal Sebebi</th>
             <th>İşlem</th>
           </tr>
         </thead>
         <tbody>
+          {% set gosterilen = [] %}
           {% for t in talepler %}
-          {% if aktif_durum == 'tumu' or t.durum == aktif_durum %}
-          <tr>
-            <td class="text-muted">{{ t.id }}</td>
-            <td class="small">{{ t.tarih.strftime('%d.%m.%Y') if t.tarih else '—' }}</td>
-            <td class="small">
-              {% for k in t.kalemler %}
-                <div>{{ k.urun.ad }} × {{ k.miktar }}</div>
-              {% endfor %}
-            </td>
-            <td>
-              {% if t.durum == 'beklemede' %}
-                <span class="badge durum-beklemede">Beklemede</span>
-              {% elif t.durum == 'onaylandi' %}
-                <span class="badge durum-onaylandi">Onaylandı</span>
-              {% elif t.durum == 'sevk_edildi' %}
-                <span class="badge durum-sevk_edildi">Sevk Edildi</span>
-              {% elif t.durum == 'iptal' %}
-                <span class="badge durum-iptal">İptal</span>
-              {% else %}
-                <span class="badge bg-secondary">{{ t.durum }}</span>
-              {% endif %}
-            </td>
-            <td class="small text-muted">
-              {{ t.notlar or '—' }}
-              {% if t.iptal_sebebi %}
-                <div class="text-danger"><em>{{ t.iptal_sebebi }}</em></div>
-              {% endif %}
-            </td>
-            <td>
-              {% if t.durum == 'beklemede' %}
-              <button class="btn btn-secondary btn-sm" data-bs-toggle="modal"
-                      data-bs-target="#modalIptal{{ t.id }}">
-                <i class="bi bi-x-circle me-1"></i>İptal Et
-              </button>
-              {% else %}
-              <span class="text-muted small">—</span>
-              {% endif %}
-            </td>
-          </tr>
-
-          <!-- İptal modal -->
-          {% if t.durum == 'beklemede' %}
-          <div class="modal fade" id="modalIptal{{ t.id }}" tabindex="-1">
-            <div class="modal-dialog">
-              <div class="modal-content">
-                <form method="POST" action="{{ url_for('magaza.siparis_iptal', id=t.id) }}">
-                  <div class="modal-header">
-                    <h5 class="modal-title"><i class="bi bi-x-circle me-2"></i>Sipariş İptal</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                  </div>
-                  <div class="modal-body">
-                    <div class="mb-3">
-                      <label class="form-label fw-semibold">İptal Sebebi</label>
-                      <textarea class="form-control" name="iptal_sebebi" rows="2" placeholder="Sebep yazın..." required></textarea>
-                    </div>
-                  </div>
-                  <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Vazgeç</button>
-                    <button type="submit" class="btn btn-danger">İptal Et</button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          </div>
-          {% endif %}
+            {% if aktif_durum == 'tumu' or t.durum == aktif_durum %}
+              {% set _ = gosterilen.append(t.id) %}
+              <tr>
+                <td class="text-muted">{{ t.id }}</td>
+                <td class="small">{{ t.tarih or '—' }}</td>
+                <td class="small">
+                  {% for k in t.kalemler %}
+                    <div>{{ k.urun.ad }} × {{ k.miktar|int }}</div>
+                  {% endfor %}
+                </td>
+                <td>
+                  {% if t.durum == 'beklemede' %}
+                    <span class="badge bg-warning text-dark">Beklemede</span>
+                  {% elif t.durum == 'onaylandi' %}
+                    <span class="badge bg-success">Onaylandı</span>
+                  {% elif t.durum == 'sevk_edildi' %}
+                    <span class="badge bg-primary">Sevk Edildi</span>
+                  {% elif t.durum == 'iptal' %}
+                    <span class="badge bg-secondary">İptal</span>
+                  {% else %}
+                    <span class="badge bg-secondary">{{ t.durum }}</span>
+                  {% endif %}
+                </td>
+                <td class="small text-muted">
+                  {{ t.notlar or '—' }}
+                  {% if t.iptal_sebebi %}
+                    <div class="text-danger mt-1"><i class="bi bi-exclamation-circle me-1"></i>{{ t.iptal_sebebi }}</div>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if t.durum == 'beklemede' %}
+                  <button class="btn btn-outline-danger btn-sm" data-bs-toggle="modal"
+                          data-bs-target="#modalIptal{{ t.id }}">
+                    <i class="bi bi-x-circle me-1"></i>İptal Et
+                  </button>
+                  {% else %}
+                  <span class="text-muted small">—</span>
+                  {% endif %}
+                </td>
+              </tr>
+            {% endif %}
           {% endfor %}
 
-          {% set filtered = talepler | selectattr('durum', 'eq', aktif_durum) | list if aktif_durum != 'tumu' else talepler %}
-          {% if (aktif_durum == 'tumu' and not talepler) or (aktif_durum != 'tumu' and not filtered) %}
-          <tr><td colspan="6" class="text-center text-muted py-4">Bu kategoride sipariş yok.</td></tr>
+          {% if not gosterilen %}
+          <tr><td colspan="6" class="text-center text-muted py-4">Bu kategoride sipariş bulunamadı.</td></tr>
           {% endif %}
         </tbody>
       </table>
     </div>
   </div>
 </div>
+
+<!-- İptal modalleri -->
+{% for t in talepler %}
+  {% if t.durum == 'beklemede' %}
+  <div class="modal fade" id="modalIptal{{ t.id }}" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <form method="POST" action="{{ url_for('magaza.siparis_iptal', id=t.id) }}">
+          <div class="modal-header">
+            <h5 class="modal-title"><i class="bi bi-x-circle me-2"></i>Sipariş İptal</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <p class="text-muted small">Sipariş #{{ t.id }} iptal edilecek.</p>
+            <div class="mb-3">
+              <label class="form-label fw-semibold">İptal Sebebi <span class="text-danger">*</span></label>
+              <textarea class="form-control" name="iptal_sebebi" rows="3"
+                        placeholder="İptal sebebini yazın..." required></textarea>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Vazgeç</button>
+            <button type="submit" class="btn btn-danger"><i class="bi bi-x-circle me-1"></i>İptal Et</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+{% endfor %}
 {% endblock %}

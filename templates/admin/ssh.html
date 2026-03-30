@@ -1,5 +1,5 @@
-{% extends "base.html" %}
-{% block title %}SSH Bildirimleri – Solento Mobilya{% endblock %}
+﻿{% extends "base.html" %}
+{% block title %}SSH Bildirimleri â€“ Solento Mobilya{% endblock %}
 {% block page_title %}SSH Bildirimleri{% endblock %}
 
 {% block content %}
@@ -10,7 +10,7 @@
   <div class="btn-group" role="group">
     <a href="?durum=tumu"
        class="btn btn-sm {{ 'btn-secondary' if durum_filter in ('tumu', None, '') else 'btn-outline-secondary' }}">
-      Tümü
+      TÃ¼mÃ¼
     </a>
     <a href="?durum=beklemede"
        class="btn btn-sm {{ 'btn-warning' if durum_filter == 'beklemede' else 'btn-outline-warning' }}">
@@ -18,7 +18,7 @@
     </a>
     <a href="?durum=islemde"
        class="btn btn-sm {{ 'btn-primary' if durum_filter == 'islemde' else 'btn-outline-primary' }}">
-      İşlemde
+      Ä°ÅŸlemde
     </a>
     <a href="?durum=teslim_edildi"
        class="btn btn-sm {{ 'btn-success' if durum_filter == 'teslim_edildi' else 'btn-outline-success' }}">
@@ -35,12 +35,12 @@
       <div class="card-header py-2 d-flex align-items-center justify-content-between">
         <div>
           <span class="fw-semibold">{{ b.magaza.ad }}</span>
-          <span class="text-muted small ms-2">{{ b.tarih.strftime('%d.%m.%Y %H:%M') if b.tarih else '' }}</span>
+          <span class="text-muted small ms-2">{{ b.tarih }}</span>
         </div>
         {% if b.durum == 'beklemede' %}
           <span class="badge bg-warning text-dark">Beklemede</span>
         {% elif b.durum == 'islemde' %}
-          <span class="badge bg-primary">İşlemde</span>
+          <span class="badge bg-primary">Ä°ÅŸlemde</span>
         {% elif b.durum == 'teslim_edildi' %}
           <span class="badge bg-success">Teslim Edildi</span>
         {% else %}
@@ -50,12 +50,12 @@
       <div class="card-body">
         <table class="table table-sm table-borderless mb-2">
           <tr>
-            <th class="text-muted" style="width:40%">Ürün</th>
-            <td>{{ b.urun.ad if b.urun else '—' }}</td>
+            <th class="text-muted" style="width:40%">ÃœrÃ¼n</th>
+            <td>{{ b.urun.ad if b.urun else 'â€”' }}</td>
           </tr>
           <tr>
             <th class="text-muted">Paket</th>
-            <td>{{ b.paket.paket_adi if b.paket else '—' }}</td>
+            <td>{{ b.paket.paket_adi if b.paket else 'â€”' }}</td>
           </tr>
           <tr>
             <th class="text-muted">Hasar</th>
@@ -75,36 +75,36 @@
       </div>
       <div class="card-footer bg-transparent py-2">
         <div class="d-flex gap-2 flex-wrap">
-          <!-- Durum güncelle dropdown -->
+          <!-- Durum gÃ¼ncelle dropdown -->
           <div class="dropdown">
             <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
-              <i class="bi bi-arrow-repeat me-1"></i>Durum Güncelle
+              <i class="bi bi-arrow-repeat me-1"></i>Durum GÃ¼ncelle
             </button>
             <ul class="dropdown-menu">
               <li>
-                <form method="POST" action="{{ url_for('admin.ssh_durum_guncelle', id=b.id) }}">
+                <form method="POST" action="{{ url_for('admin.ssh_durum', id=b.id) }}">
                   <input type="hidden" name="durum" value="beklemede"/>
                   <input type="hidden" name="admin_notu" value="{{ b.admin_notu or '' }}"/>
                   <button class="dropdown-item" type="submit">
-                    <span class="badge bg-warning text-dark me-1">•</span>Beklemede
+                    <span class="badge bg-warning text-dark me-1">â€¢</span>Beklemede
                   </button>
                 </form>
               </li>
               <li>
-                <form method="POST" action="{{ url_for('admin.ssh_durum_guncelle', id=b.id) }}">
+                <form method="POST" action="{{ url_for('admin.ssh_durum', id=b.id) }}">
                   <input type="hidden" name="durum" value="islemde"/>
                   <input type="hidden" name="admin_notu" value="{{ b.admin_notu or '' }}"/>
                   <button class="dropdown-item" type="submit">
-                    <span class="badge bg-primary me-1">•</span>İşlemde
+                    <span class="badge bg-primary me-1">â€¢</span>Ä°ÅŸlemde
                   </button>
                 </form>
               </li>
               <li>
-                <form method="POST" action="{{ url_for('admin.ssh_durum_guncelle', id=b.id) }}">
+                <form method="POST" action="{{ url_for('admin.ssh_durum', id=b.id) }}">
                   <input type="hidden" name="durum" value="teslim_edildi"/>
                   <input type="hidden" name="admin_notu" value="{{ b.admin_notu or '' }}"/>
                   <button class="dropdown-item" type="submit">
-                    <span class="badge bg-success me-1">•</span>Teslim Edildi
+                    <span class="badge bg-success me-1">â€¢</span>Teslim Edildi
                   </button>
                 </form>
               </li>
@@ -124,7 +124,7 @@
     <div class="modal fade" id="modalNot{{ b.id }}" tabindex="-1">
       <div class="modal-dialog">
         <div class="modal-content">
-          <form method="POST" action="{{ url_for('admin.ssh_durum_guncelle', id=b.id) }}">
+          <form method="POST" action="{{ url_for('admin.ssh_durum', id=b.id) }}">
             <input type="hidden" name="durum" value="{{ b.durum }}"/>
             <div class="modal-header">
               <h5 class="modal-title"><i class="bi bi-chat-left-text me-2"></i>Admin Notu</h5>
@@ -132,10 +132,10 @@
             </div>
             <div class="modal-body">
               <label class="form-label fw-semibold">Not</label>
-              <textarea class="form-control" name="admin_notu" rows="3" placeholder="Admin notu yazın...">{{ b.admin_notu or '' }}</textarea>
+              <textarea class="form-control" name="admin_notu" rows="3" placeholder="Admin notu yazÄ±n...">{{ b.admin_notu or '' }}</textarea>
             </div>
             <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Vazgeç</button>
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">VazgeÃ§</button>
               <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg me-1"></i>Kaydet</button>
             </div>
           </form>
@@ -152,3 +152,4 @@
 </div>
 {% endif %}
 {% endblock %}
+

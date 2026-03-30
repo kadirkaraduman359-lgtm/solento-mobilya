@@ -1,10 +1,10 @@
-{% extends "base.html" %}
-{% block title %}Kullanıcılar – Solento Mobilya{% endblock %}
-{% block page_title %}Kullanıcılar{% endblock %}
+﻿{% extends "base.html" %}
+{% block title %}KullanÄ±cÄ±lar â€“ Solento Mobilya{% endblock %}
+{% block page_title %}KullanÄ±cÄ±lar{% endblock %}
 
 {% block content %}
 <div class="d-flex align-items-center justify-content-between mb-3">
-  <h5 class="fw-bold mb-0"><i class="bi bi-people me-2 text-primary"></i>Kullanıcı Yönetimi</h5>
+  <h5 class="fw-bold mb-0"><i class="bi bi-people me-2 text-primary"></i>KullanÄ±cÄ± YÃ¶netimi</h5>
 </div>
 
 {% set onayliler = kullanicilar | selectattr('onay_durumu', 'eq', 'onaylandi') | list %}
@@ -13,7 +13,7 @@
 <ul class="nav nav-tabs mb-4" id="kulTabs">
   <li class="nav-item">
     <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-onaylilar" type="button">
-      <i class="bi bi-person-check me-1"></i>Onaylı
+      <i class="bi bi-person-check me-1"></i>OnaylÄ±
       <span class="badge bg-primary ms-1">{{ onayliler|length }}</span>
     </button>
   </li>
@@ -39,9 +39,9 @@
               <tr>
                 <th>Ad Soyad</th>
                 <th>E-posta</th>
-                <th>Mağaza</th>
+                <th>MaÄŸaza</th>
                 <th>Durum</th>
-                <th>İşlem</th>
+                <th>Ä°ÅŸlem</th>
               </tr>
             </thead>
             <tbody>
@@ -49,8 +49,8 @@
               <tr>
                 <td class="fw-semibold">{{ k.ad_soyad }}</td>
                 <td class="text-muted small">{{ k.email }}</td>
-                <td>{{ k.magaza.ad if k.magaza else '—' }}</td>
-                <td><span class="badge bg-success">Onaylı</span></td>
+                <td>{{ k.magaza.ad if k.magaza else 'â€”' }}</td>
+                <td><span class="badge bg-success">OnaylÄ±</span></td>
                 <td>
                   <div class="d-flex gap-1 flex-wrap">
                     <a href="{{ url_for('admin.kullanici_yetki', id=k.id) }}" class="btn btn-warning btn-sm">
@@ -69,14 +69,14 @@
                 <div class="modal-dialog modal-sm">
                   <div class="modal-content">
                     <div class="modal-header">
-                      <h6 class="modal-title">Kullanıcı Sil</h6>
+                      <h6 class="modal-title">KullanÄ±cÄ± Sil</h6>
                       <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body">
-                      <strong>{{ k.ad_soyad }}</strong> kullanıcısını silmek istiyor musunuz?
+                      <strong>{{ k.ad_soyad }}</strong> kullanÄ±cÄ±sÄ±nÄ± silmek istiyor musunuz?
                     </div>
                     <div class="modal-footer">
-                      <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Vazgeç</button>
+                      <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">VazgeÃ§</button>
                       <form method="POST" action="{{ url_for('admin.kullanici_sil', id=k.id) }}" class="d-inline">
                         <button type="submit" class="btn btn-danger btn-sm">Sil</button>
                       </form>
@@ -85,7 +85,7 @@
                 </div>
               </div>
               {% else %}
-              <tr><td colspan="5" class="text-center text-muted py-3">Onaylı kullanıcı yok.</td></tr>
+              <tr><td colspan="5" class="text-center text-muted py-3">OnaylÄ± kullanÄ±cÄ± yok.</td></tr>
               {% endfor %}
             </tbody>
           </table>
@@ -104,9 +104,9 @@
               <tr>
                 <th>Ad Soyad</th>
                 <th>E-posta</th>
-                <th>Mağaza</th>
+                <th>MaÄŸaza</th>
                 <th>Durum</th>
-                <th>İşlem</th>
+                <th>Ä°ÅŸlem</th>
               </tr>
             </thead>
             <tbody>
@@ -114,7 +114,7 @@
               <tr>
                 <td class="fw-semibold">{{ k.ad_soyad }}</td>
                 <td class="text-muted small">{{ k.email }}</td>
-                <td>{{ k.magaza.ad if k.magaza else '—' }}</td>
+                <td>{{ k.magaza.ad if k.magaza else 'â€”' }}</td>
                 <td><span class="badge bg-warning text-dark">Beklemede</span></td>
                 <td>
                   <div class="d-flex gap-1 flex-wrap">
@@ -141,14 +141,14 @@
                 <div class="modal-dialog modal-sm">
                   <div class="modal-content">
                     <div class="modal-header">
-                      <h6 class="modal-title">Kullanıcı Sil</h6>
+                      <h6 class="modal-title">KullanÄ±cÄ± Sil</h6>
                       <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body">
-                      <strong>{{ k.ad_soyad }}</strong> kullanıcısını silmek istiyor musunuz?
+                      <strong>{{ k.ad_soyad }}</strong> kullanÄ±cÄ±sÄ±nÄ± silmek istiyor musunuz?
                     </div>
                     <div class="modal-footer">
-                      <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Vazgeç</button>
+                      <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">VazgeÃ§</button>
                       <form method="POST" action="{{ url_for('admin.kullanici_sil', id=k.id) }}" class="d-inline">
                         <button type="submit" class="btn btn-danger btn-sm">Sil</button>
                       </form>
@@ -157,7 +157,7 @@
                 </div>
               </div>
               {% else %}
-              <tr><td colspan="5" class="text-center text-muted py-3">Bekleyen kayıt yok.</td></tr>
+              <tr><td colspan="5" class="text-center text-muted py-3">Bekleyen kayÄ±t yok.</td></tr>
               {% endfor %}
             </tbody>
           </table>
@@ -168,3 +168,4 @@
 
 </div>
 {% endblock %}
+

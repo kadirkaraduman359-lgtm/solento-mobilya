@@ -1,11 +1,11 @@
-{% extends "base.html" %}
-{% block title %}Mağaza Paneli – Solento Mobilya{% endblock %}
-{% block page_title %}Mağaza Paneli{% endblock %}
+﻿{% extends "base.html" %}
+{% block title %}MaÄŸaza Paneli â€“ Solento Mobilya{% endblock %}
+{% block page_title %}MaÄŸaza Paneli{% endblock %}
 
 {% block content %}
 <div class="mb-3">
   <h5 class="fw-bold mb-0">
-    <i class="bi bi-house me-2 text-primary"></i>Hoş geldiniz,
+    <i class="bi bi-house me-2 text-primary"></i>HoÅŸ geldiniz,
     <span class="text-primary">{{ current_user.ad_soyad }}</span>
   </h5>
   {% if current_user.magaza %}
@@ -15,7 +15,7 @@
 
 <div class="row g-3">
 
-  <!-- ===== ELİMDEKİ STOK ===== -->
+  <!-- ===== ELÄ°MDEKÄ° STOK ===== -->
   <div class="col-md-4">
     <div class="card h-100">
       <div class="card-header py-2 fw-semibold">
@@ -25,7 +25,7 @@
         {% if kendi_stok %}
         <table class="table table-sm mb-0">
           <thead class="table-light">
-            <tr><th>Ürün</th><th class="text-end">Miktar</th></tr>
+            <tr><th>ÃœrÃ¼n</th><th class="text-end">Miktar</th></tr>
           </thead>
           <tbody>
             {% for row in kendi_stok %}
@@ -45,12 +45,12 @@
     </div>
   </div>
 
-  <!-- ===== SON SİPARİŞLERİM ===== -->
+  <!-- ===== SON SÄ°PARÄ°ÅLERÄ°M ===== -->
   <div class="col-md-4">
     <div class="card h-100">
       <div class="card-header py-2 d-flex align-items-center justify-content-between">
-        <span class="fw-semibold"><i class="bi bi-bag-check me-2 text-primary"></i>Son Siparişlerim</span>
-        <a href="{{ url_for('magaza.taleplerim') }}" class="btn btn-outline-primary btn-sm">Tümü</a>
+        <span class="fw-semibold"><i class="bi bi-bag-check me-2 text-primary"></i>Son SipariÅŸlerim</span>
+        <a href="{{ url_for('magaza.taleplerim') }}" class="btn btn-outline-primary btn-sm">TÃ¼mÃ¼</a>
       </div>
       <div class="card-body p-0">
         {% if acik_talepler %}
@@ -61,45 +61,45 @@
               <div>
                 <div class="small fw-semibold">#{{ t.id }}</div>
                 <div class="text-muted" style="font-size:.8rem;">
-                  {% for k in t.kalemler %}{{ k.urun.ad }} × {{ k.miktar }}{% if not loop.last %}, {% endif %}{% endfor %}
+                  {% for k in t.kalemler %}{{ k.urun.ad }} Ã— {{ k.miktar }}{% if not loop.last %}, {% endif %}{% endfor %}
                 </div>
               </div>
               <div>
                 {% if t.durum == 'beklemede' %}
                   <span class="badge bg-warning text-dark">Beklemede</span>
                 {% elif t.durum == 'onaylandi' %}
-                  <span class="badge bg-info text-dark">Onaylandı</span>
+                  <span class="badge bg-info text-dark">OnaylandÄ±</span>
                 {% elif t.durum == 'sevk_edildi' %}
                   <span class="badge bg-success">Sevk Edildi</span>
                 {% elif t.durum == 'iptal' %}
-                  <span class="badge bg-danger">İptal</span>
+                  <span class="badge bg-danger">Ä°ptal</span>
                 {% else %}
                   <span class="badge bg-secondary">{{ t.durum }}</span>
                 {% endif %}
               </div>
             </div>
             <div class="text-muted" style="font-size:.75rem;">
-              {{ t.tarih.strftime('%d.%m.%Y') if t.tarih else '' }}
+              {{ t.tarih if t.tarih else '' }}
             </div>
           </div>
           {% endfor %}
         </div>
         {% else %}
         <div class="text-center text-muted py-4">
-          <i class="bi bi-bag fs-3 d-block mb-2"></i>Açık sipariş yok.
+          <i class="bi bi-bag fs-3 d-block mb-2"></i>AÃ§Ä±k sipariÅŸ yok.
         </div>
         {% endif %}
       </div>
     </div>
   </div>
 
-  <!-- ===== AÇIK SSH BİLDİRİMLERİM ===== -->
+  <!-- ===== AÃ‡IK SSH BÄ°LDÄ°RÄ°MLERÄ°M ===== -->
   <div class="col-md-4">
     <div class="card h-100">
       <div class="card-header py-2 d-flex align-items-center justify-content-between">
         <span class="fw-semibold"><i class="bi bi-exclamation-triangle me-2 text-warning"></i>SSH Bildirimlerim</span>
         {% if current_user.yetki and current_user.yetki.ssh %}
-        <a href="{{ url_for('magaza.ssh_gecmis') }}" class="btn btn-outline-warning btn-sm">Tümü</a>
+        <a href="{{ url_for('magaza.ssh_gecmis') }}" class="btn btn-outline-warning btn-sm">TÃ¼mÃ¼</a>
         {% endif %}
       </div>
       <div class="card-body p-0">
@@ -109,29 +109,29 @@
           <div class="list-group-item py-2">
             <div class="d-flex justify-content-between align-items-start">
               <div>
-                <div class="small fw-semibold">{{ b.urun.ad if b.urun else '—' }}</div>
+                <div class="small fw-semibold">{{ b.urun.ad if b.urun else 'â€”' }}</div>
                 <div class="text-muted" style="font-size:.8rem;">{{ b.paket.paket_adi if b.paket else '' }}</div>
-                <div class="text-muted" style="font-size:.78rem;">{{ b.hasar_aciklamasi[:60] }}{% if b.hasar_aciklamasi|length > 60 %}…{% endif %}</div>
+                <div class="text-muted" style="font-size:.78rem;">{{ b.hasar_aciklamasi[:60] }}{% if b.hasar_aciklamasi|length > 60 %}â€¦{% endif %}</div>
               </div>
               <div>
                 {% if b.durum == 'beklemede' %}
                   <span class="badge bg-warning text-dark">Beklemede</span>
                 {% elif b.durum == 'islemde' %}
-                  <span class="badge bg-primary">İşlemde</span>
+                  <span class="badge bg-primary">Ä°ÅŸlemde</span>
                 {% elif b.durum == 'teslim_edildi' %}
                   <span class="badge bg-success">Teslim Edildi</span>
                 {% endif %}
               </div>
             </div>
             <div class="text-muted" style="font-size:.75rem;">
-              {{ b.tarih.strftime('%d.%m.%Y') if b.tarih else '' }}
+              {{ b.tarih if b.tarih else '' }}
             </div>
           </div>
           {% endfor %}
         </div>
         {% else %}
         <div class="text-center text-muted py-4">
-          <i class="bi bi-check-circle fs-3 d-block mb-2 text-success"></i>Açık SSH bildirimi yok.
+          <i class="bi bi-check-circle fs-3 d-block mb-2 text-success"></i>AÃ§Ä±k SSH bildirimi yok.
         </div>
         {% endif %}
       </div>
@@ -140,3 +140,4 @@
 
 </div><!-- /row -->
 {% endblock %}
+

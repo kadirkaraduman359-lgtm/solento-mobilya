@@ -1,6 +1,6 @@
-{% extends "base.html" %}
-{% block title %}Paket Adları Düzenle{% endblock %}
-{% block page_title %}Paket Adlarını Düzenle{% endblock %}
+﻿{% extends "base.html" %}
+{% block title %}Paket AdlarÄ± DÃ¼zenle{% endblock %}
+{% block page_title %}Paket AdlarÄ±nÄ± DÃ¼zenle{% endblock %}
 {% block content %}
 <div class="row justify-content-center">
   <div class="col-xl-6">
@@ -10,7 +10,7 @@
       <form method="POST">
         {% for p in urun.paketler %}
         <div class="mb-3">
-          <label class="form-label">Paket {{ p.paket_no }} Adı</label>
+          <label class="form-label">Paket {{ p.paket_no }} AdÄ±</label>
           <input type="text" name="paket_{{ p.id }}" class="form-control" value="{{ p.paket_adi }}" required>
         </div>
         {% endfor %}
@@ -23,3 +23,4 @@
   </div>
 </div>
 {% endblock %}
+

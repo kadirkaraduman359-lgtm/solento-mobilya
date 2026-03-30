@@ -1,11 +1,11 @@
-{% extends "base.html" %}
-{% block title %}Üretim Takibi – Solento Mobilya{% endblock %}
-{% block page_title %}Üretim Takibi{% endblock %}
+﻿{% extends "base.html" %}
+{% block title %}Ãœretim Takibi â€“ Solento Mobilya{% endblock %}
+{% block page_title %}Ãœretim Takibi{% endblock %}
 
 {% block content %}
 <!-- Toolbar -->
 <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
-  <h5 class="fw-bold mb-0 me-auto"><i class="bi bi-gear me-2 text-primary"></i>Üretim Takibi</h5>
+  <h5 class="fw-bold mb-0 me-auto"><i class="bi bi-gear me-2 text-primary"></i>Ãœretim Takibi</h5>
   <div class="btn-group" role="group">
     <a href="?durum=aktif"
        class="btn btn-sm {{ 'btn-primary' if durum_filter == 'aktif' else 'btn-outline-primary' }}">
@@ -14,13 +14,13 @@
     </a>
     <a href="?durum=tamamlandi"
        class="btn btn-sm {{ 'btn-success' if durum_filter == 'tamamlandi' else 'btn-outline-success' }}">
-      <i class="bi bi-check-circle me-1"></i>Tamamlandı
+      <i class="bi bi-check-circle me-1"></i>TamamlandÄ±
       {% if tamamlandi_sayi %}<span class="badge bg-white text-success ms-1">{{ tamamlandi_sayi }}</span>{% endif %}
     </a>
   </div>
-  <input type="text" id="searchBox" class="form-control form-control-sm" style="max-width:200px" placeholder="Ürün ara..."/>
+  <input type="text" id="searchBox" class="form-control form-control-sm" style="max-width:200px" placeholder="ÃœrÃ¼n ara..."/>
   <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalYeniUretim">
-    <i class="bi bi-plus-lg me-1"></i>Yeni Sipariş
+    <i class="bi bi-plus-lg me-1"></i>Yeni SipariÅŸ
   </button>
 </div>
 
@@ -30,12 +30,12 @@
       <table class="table table-hover mb-0" id="uretimTable">
         <thead class="table-light">
           <tr>
-            <th>Ürün</th>
-            <th>Sipariş Adedi</th>
+            <th>ÃœrÃ¼n</th>
+            <th>SipariÅŸ Adedi</th>
             <th>Sevk Edilebilir</th>
             <th>Durum</th>
             <th>Eksik Paketler</th>
-            <th>İşlem</th>
+            <th>Ä°ÅŸlem</th>
           </tr>
         </thead>
         <tbody>
@@ -50,11 +50,11 @@
             </td>
             <td>
               {% if sp.durum == 'uretimde' %}
-                <span class="badge durum-uretimde">Üretimde</span>
+                <span class="badge durum-uretimde">Ãœretimde</span>
               {% elif sp.durum == 'hazir' %}
-                <span class="badge durum-hazir">Hazır</span>
+                <span class="badge durum-hazir">HazÄ±r</span>
               {% elif sp.durum == 'tamamlandi' %}
-                <span class="badge durum-tamamlandi">Tamamlandı</span>
+                <span class="badge durum-tamamlandi">TamamlandÄ±</span>
               {% else %}
                 <span class="badge bg-secondary">{{ sp.durum }}</span>
               {% endif %}
@@ -65,7 +65,7 @@
                   <span class="badge bg-warning text-dark me-1">{{ e }}</span>
                 {% endfor %}
               {% else %}
-                <span class="text-muted small">—</span>
+                <span class="text-muted small">â€”</span>
               {% endif %}
             </td>
             <td>
@@ -82,7 +82,7 @@
                 {% if sp.durum == 'tamamlandi' %}
                 <form method="POST" action="{{ url_for('admin.uretim_tekrar_ac', id=sp.id) }}" class="d-inline">
                   <button type="submit" class="btn btn-warning btn-sm">
-                    <i class="bi bi-arrow-counterclockwise me-1"></i>Tekrar Aç
+                    <i class="bi bi-arrow-counterclockwise me-1"></i>Tekrar AÃ§
                   </button>
                 </form>
                 {% endif %}
@@ -99,14 +99,14 @@
             <div class="modal-dialog modal-sm">
               <div class="modal-content">
                 <div class="modal-header">
-                  <h6 class="modal-title">Üretimi Tamamla</h6>
+                  <h6 class="modal-title">Ãœretimi Tamamla</h6>
                   <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                  <strong>{{ sp.urun.ad }}</strong> için üretimi tamamlamak istiyor musunuz?
+                  <strong>{{ sp.urun.ad }}</strong> iÃ§in Ã¼retimi tamamlamak istiyor musunuz?
                 </div>
                 <div class="modal-footer">
-                  <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Vazgeç</button>
+                  <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">VazgeÃ§</button>
                   <form method="POST" action="{{ url_for('admin.uretim_tamamla', id=sp.id) }}" class="d-inline">
                     <button type="submit" class="btn btn-success btn-sm">Tamamla</button>
                   </form>
@@ -120,14 +120,14 @@
             <div class="modal-dialog modal-sm">
               <div class="modal-content">
                 <div class="modal-header">
-                  <h6 class="modal-title">Kaydı Sil</h6>
+                  <h6 class="modal-title">KaydÄ± Sil</h6>
                   <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                  <strong>{{ sp.urun.ad }}</strong> üretim kaydını silmek istiyor musunuz?
+                  <strong>{{ sp.urun.ad }}</strong> Ã¼retim kaydÄ±nÄ± silmek istiyor musunuz?
                 </div>
                 <div class="modal-footer">
-                  <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Vazgeç</button>
+                  <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">VazgeÃ§</button>
                   <form method="POST" action="{{ url_for('admin.uretim_sil', id=sp.id) }}" class="d-inline">
                     <button type="submit" class="btn btn-danger btn-sm">Sil</button>
                   </form>
@@ -136,7 +136,7 @@
             </div>
           </div>
           {% else %}
-          <tr><td colspan="6" class="text-center text-muted py-4">Kayıt bulunamadı.</td></tr>
+          <tr><td colspan="6" class="text-center text-muted py-4">KayÄ±t bulunamadÄ±.</td></tr>
           {% endfor %}
         </tbody>
       </table>
@@ -145,28 +145,28 @@
 </div>
 
 
-<!-- ===== MODAL: Yeni Üretim Siparişi ===== -->
+<!-- ===== MODAL: Yeni Ãœretim SipariÅŸi ===== -->
 <div class="modal fade" id="modalYeniUretim" tabindex="-1">
   <div class="modal-dialog">
     <div class="modal-content">
       <form method="POST" action="{{ url_for('admin.uretim_yeni') }}">
         <div class="modal-header">
-          <h5 class="modal-title"><i class="bi bi-plus-circle me-2"></i>Yeni Üretim Siparişi</h5>
+          <h5 class="modal-title"><i class="bi bi-plus-circle me-2"></i>Yeni Ãœretim SipariÅŸi</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body">
           <div class="mb-3">
-            <label class="form-label fw-semibold">Ürün Adı</label>
-            <input type="text" class="form-control" name="urun_ad" placeholder="Ürün adı" required/>
-            <div class="form-text">Mevcut ürün adını birebir yazın.</div>
+            <label class="form-label fw-semibold">ÃœrÃ¼n AdÄ±</label>
+            <input type="text" class="form-control" name="urun_ad" placeholder="ÃœrÃ¼n adÄ±" required/>
+            <div class="form-text">Mevcut Ã¼rÃ¼n adÄ±nÄ± birebir yazÄ±n.</div>
           </div>
           <div class="row g-2 mb-3">
             <div class="col">
-              <label class="form-label fw-semibold">Paket Sayısı</label>
+              <label class="form-label fw-semibold">Paket SayÄ±sÄ±</label>
               <input type="number" class="form-control" name="paket_sayisi" min="1" value="1" required/>
             </div>
             <div class="col">
-              <label class="form-label fw-semibold">Sipariş Adedi</label>
+              <label class="form-label fw-semibold">SipariÅŸ Adedi</label>
               <input type="number" class="form-control" name="siparis_adeti" min="1" value="1" required/>
             </div>
           </div>
@@ -176,8 +176,8 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Vazgeç</button>
-          <button type="submit" class="btn btn-primary"><i class="bi bi-plus-lg me-1"></i>Oluştur</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">VazgeÃ§</button>
+          <button type="submit" class="btn btn-primary"><i class="bi bi-plus-lg me-1"></i>OluÅŸtur</button>
         </div>
       </form>
     </div>
@@ -196,3 +196,4 @@
   });
 </script>
 {% endblock %}
+

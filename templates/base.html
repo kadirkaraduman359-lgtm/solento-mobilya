@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="tr">
 <head>
   <meta charset="UTF-8" />
@@ -126,7 +126,7 @@
     <span class="logo-icon"><i class="bi bi-box-seam"></i></span>
     <div>
       <div class="brand-name">Solento</div>
-      <div class="brand-sub">Mobilya Yönetim</div>
+      <div class="brand-sub">Mobilya YÃ¶netim</div>
     </div>
   </div>
 
@@ -134,12 +134,12 @@
     {% if current_user.is_authenticated %}
       {% if current_user.rol == 'admin' %}
         <!-- ADMIN NAV -->
-        <span class="nav-section">Ana Menü</span>
+        <span class="nav-section">Ana MenÃ¼</span>
         <a href="{{ url_for('admin.dashboard') }}" {% if request.endpoint == 'admin.dashboard' %}class="active"{% endif %}>
           <i class="bi bi-speedometer2"></i> Dashboard
         </a>
         <a href="{{ url_for('admin.uretim') }}" {% if request.endpoint == 'admin.uretim' %}class="active"{% endif %}>
-          <i class="bi bi-gear"></i> Üretim Takibi
+          <i class="bi bi-gear"></i> Ãœretim Takibi
         </a>
         <a href="{{ url_for('admin.stok') }}" {% if request.endpoint == 'admin.stok' %}class="active"{% endif %}>
           <i class="bi bi-archive"></i> Depo Stok
@@ -148,15 +148,15 @@
           <i class="bi bi-truck"></i> Sevkiyat
         </a>
         <a href="{{ url_for('admin.talepler') }}" {% if request.endpoint == 'admin.talepler' %}class="active"{% endif %}>
-          <i class="bi bi-cart-check"></i> Sipariş Talepleri
+          <i class="bi bi-cart-check"></i> SipariÅŸ Talepleri
           {% if bekleyen_badge and bekleyen_badge > 0 %}
             <span class="badge bg-danger rounded-pill">{{ bekleyen_badge }}</span>
           {% endif %}
         </a>
 
-        <span class="nav-section">Yönetim</span>
+        <span class="nav-section">YÃ¶netim</span>
         <a href="{{ url_for('admin.magaza_stok') }}" {% if request.endpoint == 'admin.magaza_stok' %}class="active"{% endif %}>
-          <i class="bi bi-shop"></i> Mağaza Stokları
+          <i class="bi bi-shop"></i> MaÄŸaza StoklarÄ±
         </a>
         <a href="{{ url_for('admin.katalog') }}" {% if request.endpoint == 'admin.katalog' %}class="active"{% endif %}>
           <i class="bi bi-grid"></i> Katalog
@@ -170,10 +170,10 @@
 
         <span class="nav-section">Sistem</span>
         <a href="{{ url_for('admin.tanimlar') }}" {% if request.endpoint == 'admin.tanimlar' %}class="active"{% endif %}>
-          <i class="bi bi-list-ul"></i> Tanımlar
+          <i class="bi bi-list-ul"></i> TanÄ±mlar
         </a>
         <a href="{{ url_for('admin.kullanicilar') }}" {% if request.endpoint == 'admin.kullanicilar' %}class="active"{% endif %}>
-          <i class="bi bi-people"></i> Kullanıcılar
+          <i class="bi bi-people"></i> KullanÄ±cÄ±lar
           {% if bekleyen_kayit and bekleyen_kayit > 0 %}
             <span class="badge bg-warning text-dark rounded-pill">{{ bekleyen_kayit }}</span>
           {% endif %}
@@ -182,18 +182,18 @@
       {% elif current_user.rol == 'magaza' %}
         <!-- MAGAZA NAV -->
         {% set yetki = current_user.yetki %}
-        <span class="nav-section">Mağaza Paneli</span>
+        <span class="nav-section">MaÄŸaza Paneli</span>
         <a href="{{ url_for('magaza.dashboard') }}" {% if request.endpoint == 'magaza.dashboard' %}class="active"{% endif %}>
           <i class="bi bi-house"></i> Dashboard
         </a>
         {% if yetki and yetki.stok %}
         <a href="{{ url_for('magaza.stok_gorunum') }}" {% if request.endpoint == 'magaza.stok_gorunum' %}class="active"{% endif %}>
-          <i class="bi bi-archive"></i> Stok &amp; Sipariş
+          <i class="bi bi-archive"></i> Stok &amp; SipariÅŸ
         </a>
         {% endif %}
         {% if yetki and yetki.talepler %}
         <a href="{{ url_for('magaza.taleplerim') }}" {% if request.endpoint == 'magaza.taleplerim' %}class="active"{% endif %}>
-          <i class="bi bi-bag-check"></i> Siparişlerim
+          <i class="bi bi-bag-check"></i> SipariÅŸlerim
         </a>
         {% endif %}
         {% if yetki and yetki.sevklerim %}
@@ -227,7 +227,7 @@
         <div style="font-size:.7rem;">{{ current_user.rol|capitalize }}</div>
       </div>
     </div>
-    <a href="{{ url_for('auth.logout') }}"><i class="bi bi-box-arrow-left me-1"></i>Çıkış Yap</a>
+    <a href="{{ url_for('auth.logout') }}"><i class="bi bi-box-arrow-left me-1"></i>Ã‡Ä±kÄ±ÅŸ Yap</a>
     {% endif %}
   </div>
 </div>
@@ -239,7 +239,7 @@
 <div id="main-wrapper">
   <!-- Topbar -->
   <div id="topbar">
-    <button class="btn btn-sm btn-light me-3" id="sidebarToggle" aria-label="Menü">
+    <button class="btn btn-sm btn-light me-3" id="sidebarToggle" aria-label="MenÃ¼">
       <i class="bi bi-list fs-5"></i>
     </button>
     <span class="page-heading">{% block page_title %}{% endblock %}</span>
@@ -295,3 +295,4 @@
 {% block scripts %}{% endblock %}
 </body>
 </html>
+

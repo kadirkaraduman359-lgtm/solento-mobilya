@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 {% block title %}{{ ku.ad }}{% endblock %}
 {% block page_title %}{{ ku.ad }}{% endblock %}
 {% block content %}
@@ -46,7 +46,7 @@
 
       {% if ku.boy or ku.en or ku.derinlik or ku.agirlik %}
       <div class="mb-3 p-3 rounded" style="background:#0f172a">
-        <div class="text-muted small fw-bold mb-2"><i class="bi bi-rulers me-1"></i>ÖLÇÜLER</div>
+        <div class="text-muted small fw-bold mb-2"><i class="bi bi-rulers me-1"></i>Ã–LÃ‡ÃœLER</div>
         <div class="row g-2">
           {% if ku.boy %}
           <div class="col-6"><span class="text-muted small">Boy:</span> <strong>{{ ku.boy }}cm</strong></div>
@@ -58,7 +58,7 @@
           <div class="col-6"><span class="text-muted small">Derinlik:</span> <strong>{{ ku.derinlik }}cm</strong></div>
           {% endif %}
           {% if ku.agirlik %}
-          <div class="col-6"><span class="text-muted small">Ağırlık:</span> <strong>{{ ku.agirlik }}kg</strong></div>
+          <div class="col-6"><span class="text-muted small">AÄŸÄ±rlÄ±k:</span> <strong>{{ ku.agirlik }}kg</strong></div>
           {% endif %}
         </div>
       </div>
@@ -66,15 +66,16 @@
 
       {% if fiyat_gorunsun and ku.fiyat %}
       <div class="p-3 rounded mb-3" style="background:#052e16">
-        <div class="text-muted small mb-1">FİYAT</div>
-        <div class="fs-3 fw-bold text-success">{{ "{:,.0f}".format(ku.fiyat) }} ₺</div>
+        <div class="text-muted small mb-1">FÄ°YAT</div>
+        <div class="fs-3 fw-bold text-success">{{ "{:,.0f}".format(ku.fiyat) }} â‚º</div>
       </div>
       {% endif %}
 
       <a href="{{ url_for('magaza.katalog') }}" class="btn btn-outline-secondary mt-auto">
-        <i class="bi bi-arrow-left me-1"></i>Kataloğa Dön
+        <i class="bi bi-arrow-left me-1"></i>KataloÄŸa DÃ¶n
       </a>
     </div>
   </div>
 </div>
 {% endblock %}
+

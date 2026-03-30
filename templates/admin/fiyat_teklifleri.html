@@ -1,10 +1,10 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 {% block title %}Fiyat Teklifleri{% endblock %}
 {% block page_title %}Fiyat Teklifi Talepleri{% endblock %}
 {% block content %}
 
 <div class="mb-3 d-flex gap-2 flex-wrap align-items-center">
-  {% for d, label, cls in [('beklemede','Beklemede','warning'),('yanitlandi','Yanıtlandı','success'),('tumu','Tümü','dark')] %}
+  {% for d, label, cls in [('beklemede','Beklemede','warning'),('yanitlandi','YanÄ±tlandÄ±','success'),('tumu','TÃ¼mÃ¼','dark')] %}
   <a href="?durum={{ d }}"
      class="btn btn-sm {% if durum_filter==d %}btn-{{ cls }}{% else %}btn-outline-{{ cls }}{% endif %}">
     {{ label }}
@@ -21,12 +21,12 @@
       <tr>
         <th class="ps-3">#</th>
         <th>Tarih</th>
-        <th>Mağaza</th>
-        <th>Ürün</th>
+        <th>MaÄŸaza</th>
+        <th>ÃœrÃ¼n</th>
         <th class="text-center">Adet</th>
-        <th>Müşteri Notu</th>
+        <th>MÃ¼ÅŸteri Notu</th>
         <th>Durum</th>
-        <th class="text-center">İşlem</th>
+        <th class="text-center">Ä°ÅŸlem</th>
       </tr>
     </thead>
     <tbody>
@@ -46,14 +46,14 @@
       </td>
       <td class="text-center"><span class="badge bg-dark">{{ ft.miktar }} adet</span></td>
       <td class="small text-muted" style="max-width:200px">
-        {{ ft.not_ or '—' }}
+        {{ ft.not_ or 'â€”' }}
         {% if ft.durum == 'yanitlandi' %}
           <div class="mt-1 p-1 rounded bg-light">
             <strong>Teklif:</strong>
             {% if ft.admin_teklif_fiyati %}
-              <span class="text-success fw-bold">{{ "{:,.0f}".format(ft.admin_teklif_fiyati) }} ₺</span>
+              <span class="text-success fw-bold">{{ "{:,.0f}".format(ft.admin_teklif_fiyati) }} â‚º</span>
             {% endif %}
-            {% if ft.admin_notu %} — {{ ft.admin_notu }}{% endif %}
+            {% if ft.admin_notu %} â€” {{ ft.admin_notu }}{% endif %}
           </div>
           <div class="text-muted" style="font-size:10px">{{ ft.yanitlama_tarihi }}</div>
         {% endif %}
@@ -62,17 +62,17 @@
         {% if ft.durum == 'beklemede' %}
           <span class="badge bg-warning text-dark">Beklemede</span>
         {% else %}
-          <span class="badge bg-success">Yanıtlandı</span>
+          <span class="badge bg-success">YanÄ±tlandÄ±</span>
         {% endif %}
       </td>
       <td class="text-center">
         {% if ft.durum == 'beklemede' %}
         <button class="btn btn-sm btn-primary py-0 px-2"
                 onclick="yanitlaAc({{ ft.id }}, '{{ ft.urun.ad|replace("'","\\'")|e }}', {{ ft.urun.fiyat or 'null' }})">
-          <i class="bi bi-reply me-1"></i>Yanıtla
+          <i class="bi bi-reply me-1"></i>YanÄ±tla
         </button>
         {% else %}
-        <span class="text-muted small">—</span>
+        <span class="text-muted small">â€”</span>
         {% endif %}
       </td>
     </tr>
@@ -80,7 +80,7 @@
     <tr>
       <td colspan="8" class="text-center text-muted py-4">
         <i class="bi bi-tag fs-3 d-block mb-2"></i>
-        {% if durum_filter == 'beklemede' %}Bekleyen teklif talebi yok.{% else %}Teklif bulunamadı.{% endif %}
+        {% if durum_filter == 'beklemede' %}Bekleyen teklif talebi yok.{% else %}Teklif bulunamadÄ±.{% endif %}
       </td>
     </tr>
     {% endfor %}
@@ -88,33 +88,33 @@
   </table>
 </div>
 
-<!-- Yanıtla Modal -->
+<!-- YanÄ±tla Modal -->
 <div class="modal fade" id="yanitModal" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title"><i class="bi bi-reply me-2 text-primary"></i>Fiyat Teklifi Yanıtla</h5>
+        <h5 class="modal-title"><i class="bi bi-reply me-2 text-primary"></i>Fiyat Teklifi YanÄ±tla</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <form id="yanit-form" method="POST">
         <div class="modal-body">
           <p class="fw-bold mb-3" id="yanit-urun-ad"></p>
           <div class="mb-3">
-            <label class="form-label fw-bold">Teklif Fiyatı (₺)</label>
+            <label class="form-label fw-bold">Teklif FiyatÄ± (â‚º)</label>
             <input type="number" name="admin_teklif_fiyati" id="yanit-fiyat"
                    class="form-control" step="0.01" min="0"
                    placeholder="0.00">
           </div>
           <div class="mb-3">
-            <label class="form-label fw-bold">Notunuz <span class="text-muted fw-normal">(mağaza görecek)</span></label>
+            <label class="form-label fw-bold">Notunuz <span class="text-muted fw-normal">(maÄŸaza gÃ¶recek)</span></label>
             <textarea name="admin_notu" class="form-control" rows="3"
-                      placeholder="Fiyat geçerlilik süresi, teslimat bilgisi..."></textarea>
+                      placeholder="Fiyat geÃ§erlilik sÃ¼resi, teslimat bilgisi..."></textarea>
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Ä°ptal</button>
           <button type="submit" class="btn btn-primary">
-            <i class="bi bi-send me-1"></i>Yanıtı Gönder
+            <i class="bi bi-send me-1"></i>YanÄ±tÄ± GÃ¶nder
           </button>
         </div>
       </form>
@@ -131,3 +131,4 @@ function yanitlaAc(id, ad, katalogFiyat) {
 }
 </script>
 {% endblock %}
+

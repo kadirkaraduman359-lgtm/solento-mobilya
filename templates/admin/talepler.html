@@ -1,16 +1,16 @@
-{% extends "base.html" %}
-{% block title %}Sipariş Talepleri{% endblock %}
-{% block page_title %}Sipariş Talepleri{% endblock %}
+﻿{% extends "base.html" %}
+{% block title %}SipariÅŸ Talepleri{% endblock %}
+{% block page_title %}SipariÅŸ Talepleri{% endblock %}
 {% block content %}
 
-<!-- Filtre butonları -->
+<!-- Filtre butonlarÄ± -->
 <div class="mb-3 d-flex gap-2 flex-wrap align-items-center">
   {% for d, label, cls in [
       ('beklemede','Beklemede','warning'),
-      ('onaylandi','Onaylandı','primary'),
+      ('onaylandi','OnaylandÄ±','primary'),
       ('sevk_edildi','Sevk Edildi','success'),
-      ('iptal','İptal','secondary'),
-      ('tumu','Tümü','dark')
+      ('iptal','Ä°ptal','secondary'),
+      ('tumu','TÃ¼mÃ¼','dark')
   ] %}
   <a href="?durum={{ d }}"
      class="btn btn-sm {% if durum_filter==d %}btn-{{ cls }}{% else %}btn-outline-{{ cls }}{% endif %}">
@@ -28,11 +28,11 @@
       <tr>
         <th class="ps-3">#</th>
         <th>Tarih</th>
-        <th>Mağaza</th>
-        <th>Ürünler &amp; Stok Durumu</th>
+        <th>MaÄŸaza</th>
+        <th>ÃœrÃ¼nler &amp; Stok Durumu</th>
         <th>Not</th>
         <th>Durum</th>
-        <th class="text-center">İşlem</th>
+        <th class="text-center">Ä°ÅŸlem</th>
       </tr>
     </thead>
     <tbody>
@@ -52,7 +52,7 @@
           <div class="mb-1 p-2 rounded border">
             <div class="d-flex justify-content-between align-items-center gap-2">
               <span class="small fw-bold">{{ k.urun.ad }}</span>
-              <span class="badge bg-dark fs-6">× {{ k.miktar|int }}</span>
+              <span class="badge bg-dark fs-6">Ã— {{ k.miktar|int }}</span>
             </div>
             <div class="d-flex gap-1 mt-1 flex-wrap">
               <span class="badge bg-secondary" style="font-size:10px">
@@ -69,7 +69,7 @@
                 </span>
               {% elif kull > 0 %}
                 <span class="badge bg-warning text-dark" style="font-size:10px">
-                  <i class="bi bi-exclamation"></i> Kısmi: {{ kull|int }}
+                  <i class="bi bi-exclamation"></i> KÄ±smi: {{ kull|int }}
                 </span>
               {% else %}
                 <span class="badge bg-danger" style="font-size:10px">
@@ -81,20 +81,20 @@
         {% endfor %}
       </td>
       <td class="small text-muted" style="max-width:180px">
-        {{ t.notlar or '—' }}
+        {{ t.notlar or 'â€”' }}
         {% if t.durum == 'iptal' and t.iptal_sebebi %}
-          <div class="text-danger mt-1"><i class="bi bi-x-circle me-1"></i>İptal: {{ t.iptal_sebebi }}</div>
+          <div class="text-danger mt-1"><i class="bi bi-x-circle me-1"></i>Ä°ptal: {{ t.iptal_sebebi }}</div>
         {% endif %}
       </td>
       <td>
         {% if t.durum == 'beklemede' %}
           <span class="badge bg-warning text-dark">Beklemede</span>
         {% elif t.durum == 'onaylandi' %}
-          <span class="badge bg-primary">Onaylandı</span>
+          <span class="badge bg-primary">OnaylandÄ±</span>
         {% elif t.durum == 'sevk_edildi' %}
           <span class="badge bg-success">Sevk Edildi</span>
         {% elif t.durum == 'iptal' %}
-          <span class="badge bg-secondary">İptal</span>
+          <span class="badge bg-secondary">Ä°ptal</span>
         {% endif %}
       </td>
       <td class="text-center">
@@ -113,7 +113,7 @@
           </form>
           <button class="btn btn-sm btn-outline-secondary px-3"
                   onclick="iptalAc({{ t.id }})">
-            <i class="bi bi-slash-circle me-1"></i>İptal Et
+            <i class="bi bi-slash-circle me-1"></i>Ä°ptal Et
           </button>
         {% elif t.durum == 'onaylandi' %}
           <button class="btn btn-sm btn-primary px-3"
@@ -122,70 +122,70 @@
           </button>
           <button class="btn btn-sm btn-outline-secondary px-3"
                   onclick="iptalAc({{ t.id }})">
-            <i class="bi bi-slash-circle me-1"></i>İptal Et
+            <i class="bi bi-slash-circle me-1"></i>Ä°ptal Et
           </button>
         {% else %}
-          <span class="text-muted small">—</span>
+          <span class="text-muted small">â€”</span>
         {% endif %}
         </div>
       </td>
     </tr>
     {% else %}
     <tr><td colspan="7" class="text-center text-muted py-4">
-      <i class="bi bi-inbox fs-3 d-block mb-2"></i>Talep bulunamadı.
+      <i class="bi bi-inbox fs-3 d-block mb-2"></i>Talep bulunamadÄ±.
     </td></tr>
     {% endfor %}
     </tbody>
   </table>
 </div>
 
-<!-- İPTAL MODALİ -->
+<!-- Ä°PTAL MODALÄ° -->
 <div class="modal fade" id="iptalModal" tabindex="-1">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title"><i class="bi bi-slash-circle me-2 text-danger"></i>Talep İptal Et</h5>
+        <h5 class="modal-title"><i class="bi bi-slash-circle me-2 text-danger"></i>Talep Ä°ptal Et</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <form method="POST" id="iptalForm">
         <div class="modal-body">
-          <label class="form-label fw-semibold">İptal Sebebi</label>
+          <label class="form-label fw-semibold">Ä°ptal Sebebi</label>
           <textarea name="sebep" class="form-control" rows="3"
-                    placeholder="Örn: Müşteri iptal etti, nakliye almadı..."></textarea>
+                    placeholder="Ã–rn: MÃ¼ÅŸteri iptal etti, nakliye almadÄ±..."></textarea>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Vazgeç</button>
-          <button type="submit" class="btn btn-danger"><i class="bi bi-slash-circle me-1"></i>İptal Et</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">VazgeÃ§</button>
+          <button type="submit" class="btn btn-danger"><i class="bi bi-slash-circle me-1"></i>Ä°ptal Et</button>
         </div>
       </form>
     </div>
   </div>
 </div>
 
-<!-- SEVK NAKLİYE MODALİ -->
+<!-- SEVK NAKLÄ°YE MODALÄ° -->
 <div class="modal fade" id="sevkModal" tabindex="-1">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title"><i class="bi bi-truck me-2 text-primary"></i>Sevk Et — <span id="sevkModalMagaza"></span></h5>
+        <h5 class="modal-title"><i class="bi bi-truck me-2 text-primary"></i>Sevk Et â€” <span id="sevkModalMagaza"></span></h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <form method="POST" id="sevkModalForm">
         <div class="modal-body">
           <div class="row g-2 mb-2">
             <div class="col">
-              <label class="form-label fw-semibold">Nakliye (₺)</label>
+              <label class="form-label fw-semibold">Nakliye (â‚º)</label>
               <input type="number" name="nakliye_ucreti" class="form-control form-control-sm"
                      step="0.01" min="0" value="0" id="sNavliye" oninput="sKdvHesapla()">
             </div>
             <div class="col">
-              <label class="form-label fw-semibold">İşçilik (₺)</label>
+              <label class="form-label fw-semibold">Ä°ÅŸÃ§ilik (â‚º)</label>
               <input type="number" name="iscilik" class="form-control form-control-sm"
                      step="0.01" min="0" value="0" id="sIscilik" oninput="sKdvHesapla()">
             </div>
           </div>
           <div class="mb-2">
-            <label class="form-label fw-semibold">KDV Oranı</label>
+            <label class="form-label fw-semibold">KDV OranÄ±</label>
             <select name="kdv_oran" id="sKdv" class="form-select form-select-sm" onchange="sKdvHesapla()">
               <option value="0">KDV Yok (%0)</option>
               <option value="10">%10 KDV</option>
@@ -193,13 +193,13 @@
             </select>
           </div>
           <div class="mb-2 p-2 rounded border bg-light small d-flex justify-content-between">
-            <span>KDV: <strong id="sKdvTutar">0 ₺</strong></span>
-            <span>Toplam: <strong id="sGenelToplam" class="text-primary">0 ₺</strong></span>
+            <span>KDV: <strong id="sKdvTutar">0 â‚º</strong></span>
+            <span>Toplam: <strong id="sGenelToplam" class="text-primary">0 â‚º</strong></span>
           </div>
           <div class="mb-2 form-check">
             <input class="form-check-input" type="checkbox" name="nakliye_goster" value="1" id="sNavliyeGoster">
             <label class="form-check-label" for="sNavliyeGoster">
-              Nakliye ve KDV bilgisini mağazaya göster
+              Nakliye ve KDV bilgisini maÄŸazaya gÃ¶ster
             </label>
           </div>
           <div class="mb-2">
@@ -209,7 +209,7 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Vazgeç</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">VazgeÃ§</button>
           <button type="submit" class="btn btn-primary"><i class="bi bi-truck me-1"></i>Sevk Et</button>
         </div>
       </form>
@@ -242,8 +242,9 @@ function sKdvHesapla() {
   const oran = parseInt(document.getElementById('sKdv').value) || 0;
   const ara = n + i;
   const kdv = ara * oran / 100;
-  document.getElementById('sKdvTutar').textContent = kdv.toLocaleString('tr-TR', {maximumFractionDigits:2}) + ' ₺';
-  document.getElementById('sGenelToplam').textContent = (ara + kdv).toLocaleString('tr-TR', {maximumFractionDigits:2}) + ' ₺';
+  document.getElementById('sKdvTutar').textContent = kdv.toLocaleString('tr-TR', {maximumFractionDigits:2}) + ' â‚º';
+  document.getElementById('sGenelToplam').textContent = (ara + kdv).toLocaleString('tr-TR', {maximumFractionDigits:2}) + ' â‚º';
 }
 </script>
 {% endblock %}
+

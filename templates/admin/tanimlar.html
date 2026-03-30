@@ -1,39 +1,39 @@
-{% extends "base.html" %}
-{% block title %}Tanımlar – Solento Mobilya{% endblock %}
-{% block page_title %}Tanımlar{% endblock %}
+﻿{% extends "base.html" %}
+{% block title %}TanÄ±mlar â€“ Solento Mobilya{% endblock %}
+{% block page_title %}TanÄ±mlar{% endblock %}
 
 {% block content %}
 <div class="d-flex align-items-center justify-content-between mb-3">
-  <h5 class="fw-bold mb-0"><i class="bi bi-list-ul me-2 text-primary"></i>Tanımlar</h5>
+  <h5 class="fw-bold mb-0"><i class="bi bi-list-ul me-2 text-primary"></i>TanÄ±mlar</h5>
 </div>
 
 <ul class="nav nav-tabs mb-4" id="tanimTabs" role="tablist">
   <li class="nav-item">
     <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-sehir" type="button">
-      <i class="bi bi-geo-alt me-1"></i>Şehirler
+      <i class="bi bi-geo-alt me-1"></i>Åehirler
     </button>
   </li>
   <li class="nav-item">
     <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-magaza" type="button">
-      <i class="bi bi-shop me-1"></i>Mağazalar
+      <i class="bi bi-shop me-1"></i>MaÄŸazalar
     </button>
   </li>
   <li class="nav-item">
     <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-urun" type="button">
-      <i class="bi bi-box me-1"></i>Ürünler
+      <i class="bi bi-box me-1"></i>ÃœrÃ¼nler
     </button>
   </li>
 </ul>
 
 <div class="tab-content">
 
-  <!-- ===== SEHİRLER ===== -->
+  <!-- ===== SEHÄ°RLER ===== -->
   <div class="tab-pane fade show active" id="tab-sehir">
     <div class="card">
       <div class="card-header d-flex align-items-center justify-content-between py-2">
-        <span class="fw-semibold">Şehirler</span>
+        <span class="fw-semibold">Åehirler</span>
         <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalSehirEkle">
-          <i class="bi bi-plus-lg me-1"></i>Şehir Ekle
+          <i class="bi bi-plus-lg me-1"></i>Åehir Ekle
         </button>
       </div>
       <div class="card-body p-0">
@@ -41,7 +41,7 @@
           <thead class="table-light">
             <tr>
               <th>#</th>
-              <th>Şehir Adı</th>
+              <th>Åehir AdÄ±</th>
               <th style="width:80px">Sil</th>
             </tr>
           </thead>
@@ -63,14 +63,14 @@
               <div class="modal-dialog modal-sm">
                 <div class="modal-content">
                   <div class="modal-header">
-                    <h6 class="modal-title">Şehir Sil</h6>
+                    <h6 class="modal-title">Åehir Sil</h6>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                   </div>
                   <div class="modal-body">
-                    <strong>{{ s.ad }}</strong> şehrini silmek istediğinizden emin misiniz?
+                    <strong>{{ s.ad }}</strong> ÅŸehrini silmek istediÄŸinizden emin misiniz?
                   </div>
                   <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Vazgeç</button>
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">VazgeÃ§</button>
                     <form method="POST" action="{{ url_for('admin.sehir_sil', id=s.id) }}" class="d-inline">
                       <button type="submit" class="btn btn-danger btn-sm">Sil</button>
                     </form>
@@ -79,7 +79,7 @@
               </div>
             </div>
             {% else %}
-            <tr><td colspan="3" class="text-center text-muted py-3">Kayıt yok.</td></tr>
+            <tr><td colspan="3" class="text-center text-muted py-3">KayÄ±t yok.</td></tr>
             {% endfor %}
           </tbody>
         </table>
@@ -87,13 +87,13 @@
     </div>
   </div>
 
-  <!-- ===== MAĞAZALAR ===== -->
+  <!-- ===== MAÄAZALAR ===== -->
   <div class="tab-pane fade" id="tab-magaza">
     <div class="card">
       <div class="card-header d-flex align-items-center justify-content-between py-2">
-        <span class="fw-semibold">Mağazalar</span>
+        <span class="fw-semibold">MaÄŸazalar</span>
         <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalMagazaEkle">
-          <i class="bi bi-plus-lg me-1"></i>Mağaza Ekle
+          <i class="bi bi-plus-lg me-1"></i>MaÄŸaza Ekle
         </button>
       </div>
       <div class="card-body p-0">
@@ -102,8 +102,8 @@
             <thead class="table-light">
               <tr>
                 <th>#</th>
-                <th>Mağaza Adı</th>
-                <th>Şehir</th>
+                <th>MaÄŸaza AdÄ±</th>
+                <th>Åehir</th>
                 <th>Adres</th>
                 <th>Telefon</th>
                 <th style="width:80px">Sil</th>
@@ -114,9 +114,9 @@
               <tr>
                 <td class="text-muted">{{ loop.index }}</td>
                 <td class="fw-semibold">{{ m.ad }}</td>
-                <td>{{ m.sehir.ad if m.sehir else '—' }}</td>
-                <td>{{ m.adres or '—' }}</td>
-                <td>{{ m.telefon or '—' }}</td>
+                <td>{{ m.sehir.ad if m.sehir else 'â€”' }}</td>
+                <td>{{ m.adres or 'â€”' }}</td>
+                <td>{{ m.telefon or 'â€”' }}</td>
                 <td>
                   <button class="btn btn-danger btn-sm" data-bs-toggle="modal"
                           data-bs-target="#modalMagazaSil{{ m.id }}">
@@ -130,14 +130,14 @@
                 <div class="modal-dialog modal-sm">
                   <div class="modal-content">
                     <div class="modal-header">
-                      <h6 class="modal-title">Mağaza Sil</h6>
+                      <h6 class="modal-title">MaÄŸaza Sil</h6>
                       <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body">
-                      <strong>{{ m.ad }}</strong> mağazasını silmek istiyor musunuz?
+                      <strong>{{ m.ad }}</strong> maÄŸazasÄ±nÄ± silmek istiyor musunuz?
                     </div>
                     <div class="modal-footer">
-                      <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Vazgeç</button>
+                      <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">VazgeÃ§</button>
                       <form method="POST" action="{{ url_for('admin.magaza_sil', id=m.id) }}" class="d-inline">
                         <button type="submit" class="btn btn-danger btn-sm">Sil</button>
                       </form>
@@ -146,7 +146,7 @@
                 </div>
               </div>
               {% else %}
-              <tr><td colspan="6" class="text-center text-muted py-3">Kayıt yok.</td></tr>
+              <tr><td colspan="6" class="text-center text-muted py-3">KayÄ±t yok.</td></tr>
               {% endfor %}
             </tbody>
           </table>
@@ -155,13 +155,13 @@
     </div>
   </div>
 
-  <!-- ===== ÜRÜNLER ===== -->
+  <!-- ===== ÃœRÃœNLER ===== -->
   <div class="tab-pane fade" id="tab-urun">
     <div class="card">
       <div class="card-header d-flex align-items-center justify-content-between py-2">
-        <span class="fw-semibold">Ürünler</span>
+        <span class="fw-semibold">ÃœrÃ¼nler</span>
         <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalUrunEkle">
-          <i class="bi bi-plus-lg me-1"></i>Ürün Ekle
+          <i class="bi bi-plus-lg me-1"></i>ÃœrÃ¼n Ekle
         </button>
       </div>
       <div class="card-body p-0">
@@ -170,10 +170,10 @@
             <thead class="table-light">
               <tr>
                 <th>#</th>
-                <th>Ürün Adı</th>
+                <th>ÃœrÃ¼n AdÄ±</th>
                 <th>Kod</th>
-                <th>Paket Sayısı</th>
-                <th>Paket Yönet</th>
+                <th>Paket SayÄ±sÄ±</th>
+                <th>Paket YÃ¶net</th>
                 <th style="width:80px">Sil</th>
               </tr>
             </thead>
@@ -202,14 +202,14 @@
                 <div class="modal-dialog modal-sm">
                   <div class="modal-content">
                     <div class="modal-header">
-                      <h6 class="modal-title">Ürün Sil</h6>
+                      <h6 class="modal-title">ÃœrÃ¼n Sil</h6>
                       <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body">
-                      <strong>{{ u.ad }}</strong> ürününü silmek istiyor musunuz?
+                      <strong>{{ u.ad }}</strong> Ã¼rÃ¼nÃ¼nÃ¼ silmek istiyor musunuz?
                     </div>
                     <div class="modal-footer">
-                      <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Vazgeç</button>
+                      <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">VazgeÃ§</button>
                       <form method="POST" action="{{ url_for('admin.urun_sil', id=u.id) }}" class="d-inline">
                         <button type="submit" class="btn btn-danger btn-sm">Sil</button>
                       </form>
@@ -218,7 +218,7 @@
                 </div>
               </div>
               {% else %}
-              <tr><td colspan="6" class="text-center text-muted py-3">Kayıt yok.</td></tr>
+              <tr><td colspan="6" class="text-center text-muted py-3">KayÄ±t yok.</td></tr>
               {% endfor %}
             </tbody>
           </table>
@@ -230,21 +230,21 @@
 </div><!-- /tab-content -->
 
 
-<!-- ===== MODAL: Şehir Ekle ===== -->
+<!-- ===== MODAL: Åehir Ekle ===== -->
 <div class="modal fade" id="modalSehirEkle" tabindex="-1">
   <div class="modal-dialog">
     <div class="modal-content">
       <form method="POST" action="{{ url_for('admin.sehir_ekle') }}">
         <div class="modal-header">
-          <h5 class="modal-title"><i class="bi bi-geo-alt me-2"></i>Yeni Şehir Ekle</h5>
+          <h5 class="modal-title"><i class="bi bi-geo-alt me-2"></i>Yeni Åehir Ekle</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body">
-          <label class="form-label fw-semibold" for="sehir_ad">Şehir Adı</label>
-          <input type="text" class="form-control" id="sehir_ad" name="ad" placeholder="İstanbul" required/>
+          <label class="form-label fw-semibold" for="sehir_ad">Åehir AdÄ±</label>
+          <input type="text" class="form-control" id="sehir_ad" name="ad" placeholder="Ä°stanbul" required/>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Vazgeç</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">VazgeÃ§</button>
           <button type="submit" class="btn btn-primary"><i class="bi bi-plus-lg me-1"></i>Ekle</button>
         </div>
       </form>
@@ -253,23 +253,23 @@
 </div>
 
 
-<!-- ===== MODAL: Mağaza Ekle ===== -->
+<!-- ===== MODAL: MaÄŸaza Ekle ===== -->
 <div class="modal fade" id="modalMagazaEkle" tabindex="-1">
   <div class="modal-dialog">
     <div class="modal-content">
       <form method="POST" action="{{ url_for('admin.magaza_ekle') }}">
         <div class="modal-header">
-          <h5 class="modal-title"><i class="bi bi-shop me-2"></i>Yeni Mağaza Ekle</h5>
+          <h5 class="modal-title"><i class="bi bi-shop me-2"></i>Yeni MaÄŸaza Ekle</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body">
           <div class="mb-3">
-            <label class="form-label fw-semibold">Mağaza Adı</label>
-            <input type="text" class="form-control" name="ad" placeholder="Mağaza adı" required/>
+            <label class="form-label fw-semibold">MaÄŸaza AdÄ±</label>
+            <input type="text" class="form-control" name="ad" placeholder="MaÄŸaza adÄ±" required/>
           </div>
           <div class="mb-3">
-            <label class="form-label fw-semibold">Şehir</label>
-            <input type="text" class="form-control" name="sehir_ad" placeholder="Şehir adı" required/>
+            <label class="form-label fw-semibold">Åehir</label>
+            <input type="text" class="form-control" name="sehir_ad" placeholder="Åehir adÄ±" required/>
           </div>
           <div class="mb-3">
             <label class="form-label fw-semibold">Adres</label>
@@ -281,7 +281,7 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Vazgeç</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">VazgeÃ§</button>
           <button type="submit" class="btn btn-primary"><i class="bi bi-plus-lg me-1"></i>Ekle</button>
         </div>
       </form>
@@ -290,31 +290,31 @@
 </div>
 
 
-<!-- ===== MODAL: Ürün Ekle ===== -->
+<!-- ===== MODAL: ÃœrÃ¼n Ekle ===== -->
 <div class="modal fade" id="modalUrunEkle" tabindex="-1">
   <div class="modal-dialog">
     <div class="modal-content">
       <form method="POST" action="{{ url_for('admin.urun_ekle') }}">
         <div class="modal-header">
-          <h5 class="modal-title"><i class="bi bi-box me-2"></i>Yeni Ürün Ekle</h5>
+          <h5 class="modal-title"><i class="bi bi-box me-2"></i>Yeni ÃœrÃ¼n Ekle</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body">
           <div class="mb-3">
-            <label class="form-label fw-semibold">Ürün Adı</label>
-            <input type="text" class="form-control" name="ad" placeholder="Ürün adı" required/>
+            <label class="form-label fw-semibold">ÃœrÃ¼n AdÄ±</label>
+            <input type="text" class="form-control" name="ad" placeholder="ÃœrÃ¼n adÄ±" required/>
           </div>
           <div class="mb-3">
-            <label class="form-label fw-semibold">Ürün Kodu</label>
+            <label class="form-label fw-semibold">ÃœrÃ¼n Kodu</label>
             <input type="text" class="form-control" name="kod" placeholder="URUN-001" required/>
           </div>
           <div class="mb-3">
-            <label class="form-label fw-semibold">Paket Sayısı</label>
+            <label class="form-label fw-semibold">Paket SayÄ±sÄ±</label>
             <input type="number" class="form-control" name="paket_sayisi" min="1" value="1" required/>
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Vazgeç</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">VazgeÃ§</button>
           <button type="submit" class="btn btn-primary"><i class="bi bi-plus-lg me-1"></i>Ekle</button>
         </div>
       </form>
@@ -322,3 +322,4 @@
   </div>
 </div>
 {% endblock %}
+

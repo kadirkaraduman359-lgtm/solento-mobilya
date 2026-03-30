@@ -1,22 +1,22 @@
-{% extends "base.html" %}
-{% block title %}Sipariş Talebi{% endblock %}
-{% block page_title %}Yeni Sipariş Talebi{% endblock %}
+﻿{% extends "base.html" %}
+{% block title %}SipariÅŸ Talebi{% endblock %}
+{% block page_title %}Yeni SipariÅŸ Talebi{% endblock %}
 {% block content %}
 <div class="row justify-content-center">
   <div class="col-xl-8">
     <div class="card p-4">
-      <p class="text-muted">İstediğiniz ürünleri ve adetleri girin. Yönetici onayladıktan sonra sevk edilecek.</p>
+      <p class="text-muted">Ä°stediÄŸiniz Ã¼rÃ¼nleri ve adetleri girin. YÃ¶netici onayladÄ±ktan sonra sevk edilecek.</p>
       <form method="POST">
         <div id="urunContainer"></div>
         <button type="button" class="btn btn-outline-primary mb-3" onclick="urunEkle()">
-          <i class="bi bi-plus"></i> Ürün Ekle
+          <i class="bi bi-plus"></i> ÃœrÃ¼n Ekle
         </button>
         <div class="mb-3">
-          <label class="form-label">Not / Açıklama</label>
-          <textarea name="notlar" class="form-control" rows="2" placeholder="Ek bilgi varsa yazın..."></textarea>
+          <label class="form-label">Not / AÃ§Ä±klama</label>
+          <textarea name="notlar" class="form-control" rows="2" placeholder="Ek bilgi varsa yazÄ±n..."></textarea>
         </div>
-        <button type="submit" class="btn btn-primary px-4"><i class="bi bi-send me-1"></i>Talep Gönder</button>
-        <a href="{{ url_for('magaza.dashboard') }}" class="btn btn-secondary ms-2">İptal</a>
+        <button type="submit" class="btn btn-primary px-4"><i class="bi bi-send me-1"></i>Talep GÃ¶nder</button>
+        <a href="{{ url_for('magaza.dashboard') }}" class="btn btn-secondary ms-2">Ä°ptal</a>
       </form>
     </div>
   </div>
@@ -32,7 +32,7 @@ function urunEkle() {
   const c = document.getElementById("urunContainer");
   const div = document.createElement("div");
   div.className = "row g-2 mb-2 align-items-center";
-  let opts = '<option value="">-- Ürün Seçin --</option>';
+  let opts = '<option value="">-- ÃœrÃ¼n SeÃ§in --</option>';
   urunler.forEach(u => opts += `<option value="${u.id}">${u.ad}</option>`);
   div.innerHTML = `
     <div class="col-8"><select name="urun_id[]" class="form-select" required>${opts}</select></div>
@@ -45,3 +45,4 @@ function urunEkle() {
 urunEkle();
 </script>
 {% endblock %}
+

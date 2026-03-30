@@ -1,5 +1,5 @@
-{% extends "base.html" %}
-{% block title %}SSH Takibim – Solento Mobilya{% endblock %}
+﻿{% extends "base.html" %}
+{% block title %}SSH Takibim â€“ Solento Mobilya{% endblock %}
 {% block page_title %}SSH Takibim{% endblock %}
 
 {% block content %}
@@ -15,7 +15,7 @@
           <tr>
             <th>#</th>
             <th>Tarih</th>
-            <th>Ürün</th>
+            <th>ÃœrÃ¼n</th>
             <th>Paket</th>
             <th>Hasar</th>
             <th class="text-end">Talep Miktar</th>
@@ -27,16 +27,16 @@
           {% for b in bildirimleri %}
           <tr>
             <td class="text-muted">{{ b.id }}</td>
-            <td class="small">{{ b.tarih.strftime('%d.%m.%Y') if b.tarih else '—' }}</td>
-            <td>{{ b.urun.ad if b.urun else '—' }}</td>
-            <td class="small">{{ b.paket.paket_adi if b.paket else '—' }}</td>
+            <td class="small">{{ b.tarih if b.tarih else 'â€”' }}</td>
+            <td>{{ b.urun.ad if b.urun else 'â€”' }}</td>
+            <td class="small">{{ b.paket.paket_adi if b.paket else 'â€”' }}</td>
             <td class="small" style="max-width:200px">{{ b.hasar_aciklamasi }}</td>
             <td class="text-end">{{ b.talep_miktar }}</td>
             <td>
               {% if b.durum == 'beklemede' %}
                 <span class="badge bg-warning text-dark">Beklemede</span>
               {% elif b.durum == 'islemde' %}
-                <span class="badge bg-primary">İşlemde</span>
+                <span class="badge bg-primary">Ä°ÅŸlemde</span>
               {% elif b.durum == 'teslim_edildi' %}
                 <span class="badge bg-success">Teslim Edildi</span>
               {% else %}
@@ -44,7 +44,7 @@
               {% endif %}
             </td>
             <td class="small text-muted">
-              {{ b.admin_notu or '—' }}
+              {{ b.admin_notu or 'â€”' }}
             </td>
           </tr>
           {% else %}
@@ -56,3 +56,4 @@
   </div>
 </div>
 {% endblock %}
+
