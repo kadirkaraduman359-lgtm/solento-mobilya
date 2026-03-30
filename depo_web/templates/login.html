@@ -1,301 +1,143 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Solento Mobilya — Giriş</title>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-<style>
-  * { box-sizing: border-box; }
-  body {
-    min-height: 100vh;
-    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: 'Segoe UI', sans-serif;
-  }
-  .login-wrapper {
-    width: 100%;
-    max-width: 460px;
-    padding: 16px;
-  }
-  .brand-header {
-    text-align: center;
-    margin-bottom: 32px;
-  }
-  .brand-logo {
-    width: 72px;
-    height: 72px;
-    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-    border-radius: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 16px;
-    box-shadow: 0 8px 32px rgba(59,130,246,0.35);
-  }
-  .brand-logo i { font-size: 36px; color: #fff; }
-  .brand-name { color: #f1f5f9; font-size: 26px; font-weight: 800; letter-spacing: 0.5px; }
-  .brand-sub { color: #64748b; font-size: 13px; margin-top: 4px; }
-
-  .login-card {
-    background: #1e293b;
-    border-radius: 20px;
-    border: 1px solid #334155;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
-    overflow: hidden;
-  }
-  .tab-nav {
-    display: flex;
-    background: #0f172a;
-    border-bottom: 1px solid #334155;
-  }
-  .tab-btn {
-    flex: 1;
-    padding: 14px;
-    background: none;
-    border: none;
-    color: #64748b;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    border-bottom: 3px solid transparent;
-  }
-  .tab-btn.active { color: #3b82f6; border-bottom-color: #3b82f6; background: #1e293b; }
-  .tab-btn:hover:not(.active) { color: #94a3b8; background: #1a2540; }
-
-  .tab-pane { display: none; padding: 32px; }
-  .tab-pane.active { display: block; }
-
-  .form-label { color: #94a3b8; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
-  .form-control {
-    background: #0f172a;
-    border: 1px solid #334155;
-    border-radius: 10px;
-    color: #f1f5f9;
-    padding: 12px 14px;
-    font-size: 14px;
-    transition: border-color 0.2s;
-  }
-  .form-control:focus { background: #0f172a; border-color: #3b82f6; color: #f1f5f9; box-shadow: 0 0 0 3px rgba(59,130,246,0.15); }
-  .form-control::placeholder { color: #475569; }
-  .input-group-text {
-    background: #0f172a;
-    border: 1px solid #334155;
-    border-right: none;
-    color: #64748b;
-    border-radius: 10px 0 0 10px;
-  }
-  .input-group .form-control { border-left: none; border-radius: 0 10px 10px 0; }
-  .input-group:focus-within .input-group-text { border-color: #3b82f6; }
-
-  .btn-login {
-    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-    border: none;
-    border-radius: 10px;
-    color: #fff;
-    font-weight: 700;
-    font-size: 15px;
-    padding: 13px;
-    width: 100%;
-    transition: all 0.2s;
-    box-shadow: 0 4px 16px rgba(59,130,246,0.3);
-  }
-  .btn-login:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(59,130,246,0.45); color: #fff; }
-
-  .btn-register {
-    background: linear-gradient(135deg, #059669, #047857);
-    border: none;
-    border-radius: 10px;
-    color: #fff;
-    font-weight: 700;
-    font-size: 15px;
-    padding: 13px;
-    width: 100%;
-    transition: all 0.2s;
-    box-shadow: 0 4px 16px rgba(5,150,105,0.3);
-  }
-  .btn-register:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(5,150,105,0.4); color: #fff; }
-
-  .divider { position: relative; text-align: center; margin: 20px 0; }
-  .divider::before { content: ''; position: absolute; left: 0; top: 50%; width: 100%; height: 1px; background: #334155; }
-  .divider span { position: relative; background: #1e293b; padding: 0 12px; color: #64748b; font-size: 12px; }
-
-  .switch-link { color: #3b82f6; cursor: pointer; font-size: 13px; text-decoration: none; }
-  .switch-link:hover { color: #60a5fa; text-decoration: underline; }
-  .text-muted-light { color: #64748b; font-size: 12px; }
-
-  .alert { border-radius: 10px; font-size: 13px; border: none; }
-  .alert-danger { background: rgba(239,68,68,0.15); color: #fca5a5; }
-  .alert-warning { background: rgba(245,158,11,0.15); color: #fcd34d; }
-  .alert-success { background: rgba(34,197,94,0.15); color: #86efac; }
-
-  .footer-note { text-align: center; margin-top: 20px; color: #475569; font-size: 12px; }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Giriş - Solento Mobilya</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"/>
+  <style>
+    body { background: linear-gradient(135deg,#1a1f2e 0%,#2d3550 60%,#4f6df5 100%); min-height:100vh; display:flex; align-items:center; justify-content:center; font-family:"Segoe UI",sans-serif; }
+    .login-card { background:#fff; border-radius:16px; box-shadow:0 20px 60px rgba(0,0,0,.35); width:100%; max-width:460px; padding:2.5rem 2rem; }
+    .brand-icon { width:64px; height:64px; background:#4f6df5; border-radius:14px; display:inline-flex; align-items:center; justify-content:center; color:#fff; font-size:1.8rem; margin-bottom:.75rem; }
+    .nav-tabs .nav-link { color:#7b8ab8; font-weight:500; border:none; padding:.5rem .75rem; }
+    .nav-tabs .nav-link.active { color:#4f6df5; font-weight:700; border-bottom:3px solid #4f6df5; background:none; }
+    .btn-primary { background:#4f6df5; border-color:#4f6df5; }
+    .btn-primary:hover { background:#3a56d4; }
+    .form-control:focus { border-color:#4f6df5; box-shadow:0 0 0 .2rem rgba(79,109,245,.2); }
+  </style>
 </head>
 <body>
-<div class="login-wrapper">
-  <div class="brand-header">
-    <div class="brand-logo">
-      <i class="bi bi-box-seam"></i>
-    </div>
-    <div class="brand-name">SOLENTO MOBİLYA</div>
-    <div class="brand-sub">Depo & Sevk Yönetim Sistemi</div>
+<div class="login-card">
+  <div class="text-center mb-4">
+    <div class="brand-icon mx-auto"><i class="bi bi-box-seam"></i></div>
+    <h1 class="fs-4 fw-bold text-dark mb-0">Solento Mobilya</h1>
+    <p class="text-muted small">Yönetim &amp; Mağaza Paneli</p>
   </div>
 
-  <div class="login-card">
-    <div class="tab-nav">
-      <button class="tab-btn {% if aktif_sekme == 'yonetici' %}active{% endif %}"
-              onclick="switchTab('yonetici')" id="tab-yonetici">
-        <i class="bi bi-shield-lock"></i> Yönetici
-      </button>
-      <button class="tab-btn {% if aktif_sekme in ['magaza', 'kayit'] %}active{% endif %}"
-              onclick="switchTab('magaza')" id="tab-magaza">
-        <i class="bi bi-shop"></i> Mağaza
-      </button>
-    </div>
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}
+      <div class="alert alert-{{ category }} alert-dismissible fade show py-2">
+        {{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    {% endfor %}
+  {% endwith %}
 
-    <!-- Flash mesajları -->
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% for cat, msg in messages %}
-        <div class="alert alert-{{ cat }} mx-4 mt-4 mb-0 py-2">
-          <i class="bi bi-{% if cat=='danger' %}exclamation-circle{% elif cat=='warning' %}exclamation-triangle{% else %}check-circle{% endif %} me-1"></i>{{ msg }}
-        </div>
-      {% endfor %}
-    {% endwith %}
+  <ul class="nav nav-tabs mb-3">
+    <li class="nav-item flex-fill">
+      <button class="nav-link w-100 {% if aktif_sekme != 'magaza' and aktif_sekme != 'kayit' %}active{% endif %}" data-bs-toggle="tab" data-bs-target="#pYonetici">
+        <i class="bi bi-shield-lock me-1"></i>Yönetici
+      </button>
+    </li>
+    <li class="nav-item flex-fill">
+      <button class="nav-link w-100 {% if aktif_sekme == 'magaza' %}active{% endif %}" data-bs-toggle="tab" data-bs-target="#pMagaza">
+        <i class="bi bi-shop me-1"></i>Mağaza Girişi
+      </button>
+    </li>
+    <li class="nav-item flex-fill">
+      <button class="nav-link w-100 {% if aktif_sekme == 'kayit' %}active{% endif %}" data-bs-toggle="tab" data-bs-target="#pKayit">
+        <i class="bi bi-person-plus me-1"></i>Kayıt Ol
+      </button>
+    </li>
+  </ul>
 
-    <!-- YÖNETİCİ GİRİŞ -->
-    <div class="tab-pane {% if aktif_sekme == 'yonetici' or not aktif_sekme %}active{% endif %}" id="pane-yonetici">
+  <div class="tab-content">
+    <div class="tab-pane fade {% if aktif_sekme != 'magaza' and aktif_sekme != 'kayit' %}show active{% endif %}" id="pYonetici">
       <form method="POST" action="{{ url_for('auth.login') }}">
-        <input type="hidden" name="tip" value="yonetici">
+        <input type="hidden" name="tip" value="yonetici"/>
         <div class="mb-3">
-          <label class="form-label">E-posta Adresi</label>
+          <label class="form-label fw-semibold">E-posta</label>
           <div class="input-group">
             <span class="input-group-text"><i class="bi bi-envelope"></i></span>
-            <input type="email" name="email" class="form-control" placeholder="ornek@email.com" required autocomplete="email">
+            <input type="email" class="form-control" name="email" placeholder="admin@mail.com" required/>
           </div>
         </div>
-        <div class="mb-4">
-          <label class="form-label">Şifre</label>
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Şifre</label>
           <div class="input-group">
             <span class="input-group-text"><i class="bi bi-lock"></i></span>
-            <input type="password" name="sifre" class="form-control" placeholder="••••••••" required autocomplete="current-password">
+            <input type="password" class="form-control" name="sifre" placeholder="********" required/>
           </div>
         </div>
-        <button type="submit" class="btn-login">
+        <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">
           <i class="bi bi-box-arrow-in-right me-2"></i>Yönetici Girişi
         </button>
       </form>
     </div>
 
-    <!-- MAĞAZA GİRİŞ / KAYIT -->
-    <div class="tab-pane {% if aktif_sekme in ['magaza', 'kayit'] %}active{% endif %}" id="pane-magaza">
-      <!-- Giriş formu -->
-      <div id="magaza-giris" {% if aktif_sekme == 'kayit' %}style="display:none"{% endif %}>
-        <form method="POST" action="{{ url_for('auth.login') }}">
-          <input type="hidden" name="tip" value="magaza">
-          <div class="mb-3">
-            <label class="form-label">Kullanıcı Adı</label>
-            <div class="input-group">
-              <span class="input-group-text"><i class="bi bi-person"></i></span>
-              <input type="text" name="kullanici_adi" class="form-control" placeholder="kullaniciadi" required autocomplete="username">
-            </div>
+    <div class="tab-pane fade {% if aktif_sekme == 'magaza' %}show active{% endif %}" id="pMagaza">
+      <form method="POST" action="{{ url_for('auth.login') }}">
+        <input type="hidden" name="tip" value="magaza"/>
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Kullanıcı Adı</label>
+          <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-person"></i></span>
+            <input type="text" class="form-control" name="kullanici_adi" placeholder="kullanici_adi" required/>
           </div>
-          <div class="mb-4">
-            <label class="form-label">Şifre</label>
-            <div class="input-group">
-              <span class="input-group-text"><i class="bi bi-lock"></i></span>
-              <input type="password" name="sifre" class="form-control" placeholder="••••••••" required autocomplete="current-password">
-            </div>
-          </div>
-          <button type="submit" class="btn-login mb-3">
-            <i class="bi bi-box-arrow-in-right me-2"></i>Mağaza Girişi
-          </button>
-        </form>
-        <div class="divider"><span>YENİ HESAP</span></div>
-        <div class="text-center">
-          <span class="text-muted-light">Hesabınız yok mu? </span>
-          <a class="switch-link" onclick="toggleKayit(true)">Kayıt Ol →</a>
         </div>
-      </div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Şifre</label>
+          <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-lock"></i></span>
+            <input type="password" class="form-control" name="sifre" placeholder="********" required/>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">
+          <i class="bi bi-box-arrow-in-right me-2"></i>Mağaza Girişi
+        </button>
+      </form>
+    </div>
 
-      <!-- Kayıt formu -->
-      <div id="magaza-kayit" {% if aktif_sekme != 'kayit' %}style="display:none"{% endif %}>
-        <form method="POST" action="{{ url_for('auth.kayit') }}">
-          <div class="row g-2 mb-2">
-            <div class="col-12">
-              <label class="form-label">Ad Soyad *</label>
-              <input type="text" name="ad_soyad" class="form-control" placeholder="Ahmet Yılmaz" required>
-            </div>
-          </div>
-          <div class="row g-2 mb-2">
-            <div class="col-6">
-              <label class="form-label">Mağaza Adı *</label>
-              <input type="text" name="magaza_adi" class="form-control" placeholder="Kayseri Mağaza" required>
-            </div>
-            <div class="col-6">
-              <label class="form-label">Şehir *</label>
-              <input type="text" name="sehir_adi" class="form-control" placeholder="KAYSERİ" required>
-            </div>
-          </div>
-          <div class="mb-2">
-            <label class="form-label">Telefon</label>
-            <input type="text" name="telefon" class="form-control" placeholder="05xx xxx xx xx">
-          </div>
-          <div class="mb-2">
-            <label class="form-label">Kullanıcı Adı *</label>
-            <div class="input-group">
-              <span class="input-group-text"><i class="bi bi-person"></i></span>
-              <input type="text" name="kullanici_adi" class="form-control" placeholder="benzersiz_ad" required>
-            </div>
-          </div>
-          <div class="row g-2 mb-4">
-            <div class="col-6">
-              <label class="form-label">Şifre *</label>
-              <input type="password" name="sifre" class="form-control" placeholder="••••" required minlength="4">
-            </div>
-            <div class="col-6">
-              <label class="form-label">Şifre Tekrar *</label>
-              <input type="password" name="sifre2" class="form-control" placeholder="••••" required minlength="4">
-            </div>
-          </div>
-          <button type="submit" class="btn-register mb-3">
-            <i class="bi bi-person-plus me-2"></i>Kayıt Talebi Gönder
-          </button>
-        </form>
-        <div class="text-center">
-          <a class="switch-link" onclick="toggleKayit(false)">← Girişe Dön</a>
+    <div class="tab-pane fade {% if aktif_sekme == 'kayit' %}show active{% endif %}" id="pKayit">
+      <form method="POST" action="{{ url_for('auth.kayit') }}">
+        <div class="mb-2">
+          <label class="form-label fw-semibold">Ad Soyad <span class="text-danger">*</span></label>
+          <input type="text" class="form-control" name="ad_soyad" placeholder="Ahmet Yılmaz" required/>
         </div>
-        <div class="text-muted-light text-center mt-2">
-          <i class="bi bi-info-circle me-1"></i>Kaydınız yönetici onayından sonra aktif olur.
+        <div class="mb-2">
+          <label class="form-label fw-semibold">Kullanıcı Adı <span class="text-danger">*</span></label>
+          <input type="text" class="form-control" name="kullanici_adi" placeholder="kullanici_adi" required/>
         </div>
-      </div>
+        <div class="mb-2">
+          <label class="form-label fw-semibold">Mağaza Adı <span class="text-danger">*</span></label>
+          <input type="text" class="form-control" name="magaza_adi" placeholder="Kadir Mobilya" required/>
+        </div>
+        <div class="mb-2">
+          <label class="form-label fw-semibold">Şehir <span class="text-danger">*</span></label>
+          <input type="text" class="form-control" name="sehir_adi" placeholder="KAYSERİ" required/>
+        </div>
+        <div class="mb-2">
+          <label class="form-label fw-semibold">Telefon <span class="text-danger">*</span></label>
+          <input type="tel" class="form-control" name="telefon" placeholder="05xx xxx xxxx" required/>
+        </div>
+        <div class="mb-2">
+          <label class="form-label fw-semibold">Şifre <span class="text-danger">*</span></label>
+          <input type="password" class="form-control" name="sifre" placeholder="********" minlength="6" required/>
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Şifre Tekrar <span class="text-danger">*</span></label>
+          <input type="password" class="form-control" name="sifre2" placeholder="********" minlength="6" required/>
+        </div>
+        <button type="submit" class="btn btn-success w-100 py-2 fw-semibold">
+          <i class="bi bi-person-check me-2"></i>Kayıt Talebi Gönder
+        </button>
+        <p class="text-muted text-center mt-2" style="font-size:.8rem;">
+          Kayıdınız yönetici onayından sonra aktif olur.
+        </p>
+      </form>
     </div>
   </div>
-
-  <div class="footer-note">
-    © 2025 Solento Mobilya — Tüm hakları saklıdır.
-  </div>
 </div>
-
-<script>
-function switchTab(tab) {
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
-  document.getElementById('tab-' + tab).classList.add('active');
-  document.getElementById('pane-' + tab).classList.add('active');
-}
-function toggleKayit(show) {
-  document.getElementById('magaza-giris').style.display = show ? 'none' : 'block';
-  document.getElementById('magaza-kayit').style.display = show ? 'block' : 'none';
-}
-</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

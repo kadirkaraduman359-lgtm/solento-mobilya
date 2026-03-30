@@ -52,7 +52,7 @@ def kayit():
     sehir_adi = request.form.get("sehir_adi", "").strip()
     telefon = request.form.get("telefon", "").strip()
 
-    if not all([ad_soyad, kullanici_adi, sifre, magaza_adi, sehir_adi]):
+    if not all([ad_soyad, kullanici_adi, sifre, magaza_adi, sehir_adi, telefon]):
         flash("Tüm zorunlu alanları doldurunuz.", "danger")
         return render_template("login.html", aktif_sekme="kayit")
 
@@ -60,8 +60,8 @@ def kayit():
         flash("Şifreler eşleşmiyor.", "danger")
         return render_template("login.html", aktif_sekme="kayit")
 
-    if len(sifre) < 4:
-        flash("Şifre en az 4 karakter olmalı.", "danger")
+    if len(sifre) < 6:
+        flash("Şifre en az 6 karakter olmalı.", "danger")
         return render_template("login.html", aktif_sekme="kayit")
 
     if Kullanici.query.filter_by(kullanici_adi=kullanici_adi).first():
