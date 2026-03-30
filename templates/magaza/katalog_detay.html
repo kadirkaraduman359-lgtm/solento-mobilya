@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}{{ ku.ad }}{% endblock %}
+{% block page_title %}{{ ku.ad }}{% endblock %}
+{% block content %}
+<div class="row g-4">
+  <!-- Resimler -->
+  <div class="col-md-6">
+    {% if ku.resimler %}
+    <div id="resimCarousel" class="carousel slide" data-bs-ride="carousel">
+      <div class="carousel-inner" style="border-radius:12px;overflow:hidden">
+        {% for r in ku.resimler %}
+        <div class="carousel-item {% if loop.first %}active{% endif %}">
+          <img src="{{ url_for('static', filename='katalog/' + r.dosya_adi) }}"
+               class="d-block w-100" style="max-height:380px;object-fit:contain;background:#0f172a">
+        </div>
+        {% endfor %}
+      </div>
+      {% if ku.resimler|length > 1 %}
+      <button class="carousel-control-prev" type="button" data-bs-target="#resimCarousel" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon"></span>
+      </button>
+      <button class="carousel-control-next" type="button" data-bs-target="#resimCarousel" data-bs-slide="next">
+        <span class="carousel-control-next-icon"></span>
+      </button>
+      {% endif %}
+    </div>
+    {% else %}
+    <div style="height:280px;background:#1e293b;border-radius:12px;display:flex;align-items:center;justify-content:center">
+      <i class="bi bi-image text-muted" style="font-size:64px"></i>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Detaylar -->
+  <div class="col-md-6">
+    <div class="card p-4 h-100">
+      {% if ku.kategori %}
+      <span class="badge bg-secondary mb-2 d-inline-block">{{ ku.kategori }}</span>
+      {% endif %}
+      <h4 class="fw-bold text-white mb-1">{{ ku.ad }}</h4>
+      {% if ku.kod %}<div class="text-muted small mb-3">Kod: <code>{{ ku.kod }}</code></div>{% endif %}
+
+      {% if ku.aciklama %}
+      <p class="text-muted small mb-3">{{ ku.aciklama }}</p>
+      {% endif %}
+
+      {% if ku.boy or ku.en or ku.derinlik or ku.agirlik %}
+      <div class="mb-3 p-3 rounded" style="background:#0f172a">
+        <div class="text-muted small fw-bold mb-2"><i class="bi bi-rulers me-1"></i>ÖLÇÜLER</div>
+        <div class="row g-2">
+          {% if ku.boy %}
+          <div class="col-6"><span class="text-muted small">Boy:</span> <strong>{{ ku.boy }}cm</strong></div>
+          {% endif %}
+          {% if ku.en %}
+          <div class="col-6"><span class="text-muted small">En:</span> <strong>{{ ku.en }}cm</strong></div>
+          {% endif %}
+          {% if ku.derinlik %}
+          <div class="col-6"><span class="text-muted small">Derinlik:</span> <strong>{{ ku.derinlik }}cm</strong></div>
+          {% endif %}
+          {% if ku.agirlik %}
+          <div class="col-6"><span class="text-muted small">Ağırlık:</span> <strong>{{ ku.agirlik }}kg</strong></div>
+          {% endif %}
+        </div>
+      </div>
+      {% endif %}
+
+      {% if fiyat_gorunsun and ku.fiyat %}
+      <div class="p-3 rounded mb-3" style="background:#052e16">
+        <div class="text-muted small mb-1">FİYAT</div>
+        <div class="fs-3 fw-bold text-success">{{ "{:,.0f}".format(ku.fiyat) }} â‚º</div>
+      </div>
+      {% endif %}
+
+      <a href="{{ url_for('magaza.katalog') }}" class="btn btn-outline-secondary mt-auto">
+        <i class="bi bi-arrow-left me-1"></i>Kataloğa Dön
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}
+

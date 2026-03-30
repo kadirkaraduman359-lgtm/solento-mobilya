@@ -1,0 +1,87 @@
+﻿{% extends "base.html" %}
+{% block title %}Sevklerim – Solento Mobilya{% endblock %}
+{% block page_title %}Sevklerim{% endblock %}
+{% block content %}
+
+<div class="card border-0 shadow-sm">
+  <div class="card-header bg-white fw-semibold">
+    <i class="bi bi-truck me-2 text-primary"></i>Gelen Sevkler
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>#</th>
+            <th>Tarih</th>
+            <th>Ürünler</th>
+            <th>Nakliye</th>
+            <th>Durum</th>
+            <th class="text-end">İşlem</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for sv in sevkler %}
+          <tr>
+            <td class="text-muted small">{{ loop.index }}</td>
+            <td class="small text-muted">{{ sv.tarih }}</td>
+            <td class="small">
+              {% for kalem in sv.kalemler %}
+              <div>{{ kalem.urun.ad if kalem.urun else '?' }}: <strong>{{ kalem.miktar|int }}</strong></div>
+              {% endfor %}
+            </td>
+            <td class="small">
+              {% if sv.nakliye_goster and sv.nakliye_ucreti %}
+              {{ sv.nakliye_ucreti }}₺
+              {% else %}
+              —
+              {% endif %}
+            </td>
+            <td>
+              {% if sv.teslim_alindi %}
+                <span class="badge durum-teslim_edildi">Teslim Alındı</span>
+              {% else %}
+                <span class="badge durum-sevk_edildi">Sevk Edildi</span>
+              {% endif %}
+            </td>
+            <td class="text-end">
+              {% if not sv.teslim_alindi %}
+              <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#modalTeslim{{ sv.id }}">
+                <i class="bi bi-check-circle"></i> Teslim Aldım
+              </button>
+              <!-- Teslim Al Onayla Modal -->
+              <div class="modal fade" id="modalTeslim{{ sv.id }}" tabindex="-1">
+                <div class="modal-dialog modal-sm">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h6 class="modal-title">Teslim Alma Onayı</h6>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                      Bu sevki teslim aldığınızı onaylamak istiyor musunuz?
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Vazgeç</button>
+                      <form method="post" action="{{ url_for('magaza.teslim_al', sevk_id=sv.id) }}" class="d-inline">
+                        <button type="submit" class="btn btn-success btn-sm">Teslim Aldım</button>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {% else %}
+              <span class="text-muted small">—</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+          {% if not sevkler %}
+          <tr><td colspan="6" class="text-center text-muted py-4">Henüz sevk bulunmuyor.</td></tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

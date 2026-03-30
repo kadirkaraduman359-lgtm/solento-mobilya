@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Paket Miktarı Gir{% endblock %}
+{% block page_title %}Paket Miktarı Girişi{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-xl-7">
+    <div class="card p-4">
+      <h5 class="fw-bold mb-1">{{ siparis.urun.ad }}</h5>
+      <p class="text-muted mb-4">Sipariş: <strong>{{ siparis.siparis_adeti|int }}</strong> takım &nbsp;|&nbsp; Tarih: {{ siparis.tarih }}</p>
+
+      <form method="POST">
+        {% for p in siparis.urun.paketler %}
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Paket {{ p.paket_no }} â€” {{ p.paket_adi }}</label>
+          <input type="number" name="paket_{{ p.id }}" class="form-control"
+                 value="{{ mevcut.get(p.id, 0)|int }}" min="0" step="1">
+          <div class="form-text">Hedef: {{ siparis.siparis_adeti|int }} adet</div>
+        </div>
+        {% endfor %}
+        <hr>
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> Kaydet</button>
+          <a href="{{ url_for('admin.uretim') }}" class="btn btn-secondary">Geri</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+

@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+{% block title %}Dashboard – Solento Mobilya{% endblock %}
+{% block page_title %}Ana Dashboard{% endblock %}
+{% block content %}
+<div class="row g-3 mb-4">
+  <div class="col-6 col-xl-3">
+    <div class="card h-100 border-0 shadow-sm">
+      <div class="card-body">
+        <div class="text-muted small mb-1">Bekleyen Talepler</div>
+        <div class="h2 fw-bold text-danger mb-1">{{ bekleyen_talepler }}</div>
+        <a href="{{ url_for('admin.talepler') }}" class="text-decoration-none small">Görüntüle →</a>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-xl-3">
+    <div class="card h-100 border-0 shadow-sm">
+      <div class="card-body">
+        <div class="text-muted small mb-1">Açık SSH Bildirimleri</div>
+        <div class="h2 fw-bold text-warning mb-1">{{ acik_ssh }}</div>
+        <a href="{{ url_for('admin.ssh_listesi') }}" class="text-decoration-none small">Görüntüle →</a>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-xl-3">
+    <div class="card h-100 border-0 shadow-sm">
+      <div class="card-body">
+        <div class="text-muted small mb-1">Aktif Siparişler</div>
+        <div class="h2 fw-bold text-primary mb-1">{{ aktif_siparisler|length }}</div>
+        <a href="{{ url_for('admin.uretim') }}" class="text-decoration-none small">Görüntüle →</a>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-xl-3">
+    <div class="card h-100 border-0 shadow-sm">
+      <div class="card-body">
+        <div class="text-muted small mb-1">Toplam Ürün Çeşidi</div>
+        <div class="h2 fw-bold text-success mb-1">{{ stok_ozet|length }}</div>
+        <a href="{{ url_for('admin.stok') }}" class="text-decoration-none small">Stok →</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-12 col-xl-7">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white fw-semibold">
+        <i class="bi bi-gear me-2 text-primary"></i>Aktif Üretim Siparişleri
+      </div>
+      <div class="card-body p-0">
+        {% if aktif_siparisler %}
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>Ürün</th>
+                <th>Sipariş</th>
+                <th>Sevk Hazır</th>
+                <th>Durum</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for s in aktif_siparisler %}
+              <tr>
+                <td class="small">{{ s.urun.ad }}</td>
+                <td>{{ s.siparis_adeti|int }}</td>
+                <td class="fw-bold {% if s._sevk_edilebilir == s.siparis_adeti %}text-success{% elif s._sevk_edilebilir == 0 %}text-danger{% else %}text-warning{% endif %}">
+                  {{ s._sevk_edilebilir|int }}
+                </td>
+                <td>
+                  {% if s.durum == 'hazir' %}
+                    <span class="badge durum-hazir">Hazır</span>
+                  {% elif s.durum == 'uretimde' %}
+                    <span class="badge durum-uretimde">Üretimde</span>
+                  {% else %}
+                    <span class="badge durum-tamamlandi">{{ s.durum }}</span>
+                  {% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="text-center text-muted py-4">Aktif sipariş yok.</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-xl-5">
+    <div class="card border-0 shadow-sm mb-3">
+      <div class="card-header bg-white fw-semibold">
+        <i class="bi bi-archive me-2 text-success"></i>Depo Stok Özeti
+      </div>
+      <div class="card-body p-0">
+        <table class="table table-sm mb-0">
+          <thead class="table-light">
+            <tr><th>Ürün</th><th class="text-end">Bakiye</th></tr>
+          </thead>
+          <tbody>
+            {% for item in stok_ozet %}
+            <tr>
+              <td class="small">{{ item.urun.ad }}</td>
+              <td class="text-end fw-bold">{{ item.bakiye|int }} takım</td>
+            </tr>
+            {% endfor %}
+            {% if not stok_ozet %}
+            <tr><td colspan="2" class="text-center text-muted py-3">Stok yok.</td></tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white fw-semibold">
+        <i class="bi bi-truck me-2 text-info"></i>Son Sevkler
+      </div>
+      <div class="card-body p-0">
+        <table class="table table-sm mb-0">
+          <thead class="table-light">
+            <tr><th>Alıcı</th><th class="text-end">Tarih</th></tr>
+          </thead>
+          <tbody>
+            {% for sv in son_sevkler %}
+            <tr>
+              <td class="small">{{ sv.magaza.ad if sv.magaza else sv.alici_adi or '—' }}</td>
+              <td class="text-end text-muted small">{{ sv.tarih }}</td>
+            </tr>
+            {% endfor %}
+            {% if not son_sevkler %}
+            <tr><td colspan="2" class="text-center text-muted py-3">Sevk yok.</td></tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

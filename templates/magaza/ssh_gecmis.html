@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}SSH Takibim – Solento Mobilya{% endblock %}
+{% block page_title %}SSH Takibim{% endblock %}
+{% block content %}
+
+<div class="card border-0 shadow-sm">
+  <div class="card-header bg-white fw-semibold">
+    <i class="bi bi-clock-history me-2 text-secondary"></i>SSH Bildirimlerim
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>#</th>
+            <th>Tarih</th>
+            <th>Ürün</th>
+            <th>Paket</th>
+            <th>Hasar Açıklaması</th>
+            <th class="text-end">Talep</th>
+            <th>Durum</th>
+            <th>Admin Notu</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for b in bildirimleri %}
+          <tr>
+            <td class="text-muted small">{{ loop.index }}</td>
+            <td class="small text-muted">{{ b.tarih }}</td>
+            <td class="small fw-semibold">{{ b.urun.ad if b.urun else '—' }}</td>
+            <td class="small">
+              {% if b.paket %}
+                {{ b.paket.paket_no or ('Paket ' ~ b.paket.id) }}
+              {% else %}
+                —
+              {% endif %}
+            </td>
+            <td class="small">{{ b.hasar_aciklamasi or '—' }}</td>
+            <td class="text-end small">{{ b.talep_miktar or '—' }}</td>
+            <td>
+              {% if b.durum == 'beklemede' %}
+                <span class="badge durum-beklemede">Beklemede</span>
+              {% elif b.durum == 'islemde' %}
+                <span class="badge durum-islemde">İşlemde</span>
+              {% elif b.durum == 'teslim_edildi' %}
+                <span class="badge durum-teslim_edildi">Teslim Edildi</span>
+              {% else %}
+                <span class="badge bg-secondary">{{ b.durum }}</span>
+              {% endif %}
+            </td>
+            <td class="small text-muted">{{ b.admin_notu or '—' }}</td>
+          </tr>
+          {% endfor %}
+          {% if not bildirimleri %}
+          <tr>
+            <td colspan="8" class="text-center text-muted py-5">
+              <i class="bi bi-check-circle fs-1 d-block mb-2 text-success"></i>
+              Henüz SSH bildirimi bulunmuyor.
+            </td>
+          </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

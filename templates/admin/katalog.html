@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% block title %}Katalog Yönetimi{% endblock %}
+{% block page_title %}Ürün Kataloğu{% endblock %}
+{% block content %}
+
+<!-- Bekleyen Bildirimler -->
+{% if bekleyen_teklifler or katalog_siparisler %}
+<div class="row g-3 mb-4">
+  {% if katalog_siparisler %}
+  <div class="col-md-6">
+    <div class="card border-primary p-3">
+      <h6 class="fw-bold mb-3 text-primary">
+        <i class="bi bi-cart me-1"></i>Katalogdan Gelen Siparişler
+        <span class="badge bg-danger ms-1">{{ katalog_siparisler|length }}</span>
+      </h6>
+      {% for t in katalog_siparisler %}
+      <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+        <div>
+          <strong class="small">{{ t.magaza.ad }}</strong>
+          <div class="text-muted" style="font-size:11px">{{ t.tarih }}</div>
+          <div class="text-muted small">{{ t.notlar }}</div>
+        </div>
+        <div class="d-flex gap-1 flex-column align-items-end">
+          {% if t.durum == 'beklemede' %}
+            <form method="POST" action="{{ url_for('admin.talep_onayla', id=t.id) }}">
+              <button class="btn btn-sm btn-success py-0 px-2">
+                <i class="bi bi-check me-1"></i>Onayla
+              </button>
+            </form>
+          {% else %}
+            <span class="badge bg-primary">Onaylandı</span>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+  {% if bekleyen_teklifler %}
+  <div class="col-md-6">
+    <div class="card border-warning p-3">
+      <h6 class="fw-bold mb-3 text-warning">
+        <i class="bi bi-tag me-1"></i>Bekleyen Fiyat Teklifleri
+        <span class="badge bg-danger ms-1">{{ bekleyen_teklifler }}</span>
+      </h6>
+      <a href="{{ url_for('admin.fiyat_teklifleri') }}" class="btn btn-warning btn-sm w-100">
+        <i class="bi bi-reply me-1"></i>Teklifleri Yanıtla
+      </a>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endif %}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <span class="text-muted">{{ urunler|length }} ürün</span>
+  <a href="{{ url_for('admin.katalog_yeni') }}" class="btn btn-primary">
+    <i class="bi bi-plus-lg me-1"></i>Yeni Ürün Ekle
+  </a>
+</div>
+
+<div class="row g-3">
+{% for ku in urunler %}
+<div class="col-lg-4 col-md-6">
+  <div class="card h-100" style="border-radius:12px;overflow:hidden;{% if not ku.aktif %}opacity:.5{% endif %}">
+    <!-- Resim -->
+    {% if ku.resimler %}
+    <img src="{{ url_for('static', filename='katalog/' + ku.resimler[0].dosya_adi) }}"
+         style="height:180px;object-fit:cover;width:100%">
+    {% else %}
+    <div style="height:120px;background:#1e293b;display:flex;align-items:center;justify-content:center">
+      <i class="bi bi-image text-muted" style="font-size:40px"></i>
+    </div>
+    {% endif %}
+    <div class="p-3">
+      <div class="d-flex justify-content-between align-items-start mb-1">
+        <strong class="text-white">{{ ku.ad }}</strong>
+        {% if ku.gorunurluk == 'herkes' %}<span class="badge bg-success">Herkese</span>
+        {% elif ku.gorunurluk == 'secili' %}<span class="badge bg-warning text-dark">Seçili</span>
+        {% else %}<span class="badge bg-secondary">Gizli</span>{% endif %}
+      </div>
+      {% if ku.kod %}<div class="text-muted small mb-1">Kod: {{ ku.kod }}</div>{% endif %}
+      {% if ku.kategori %}<div class="text-muted small mb-2"><i class="bi bi-tag me-1"></i>{{ ku.kategori }}</div>{% endif %}
+
+      {% if ku.boy or ku.en or ku.derinlik %}
+      <div class="text-muted small mb-2">
+        <i class="bi bi-rulers me-1"></i>
+        {% if ku.boy %}{{ ku.boy|int }}cm {% endif %}
+        {% if ku.en %}Ã— {{ ku.en|int }}cm {% endif %}
+        {% if ku.derinlik %}Ã— {{ ku.derinlik|int }}cm{% endif %}
+      </div>
+      {% endif %}
+
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        {% if ku.fiyat %}
+        <div>
+          <span class="fw-bold text-success">{{ "{:,.0f}".format(ku.fiyat) }} â‚º</span>
+          <form method="POST" action="{{ url_for('admin.katalog_fiyat_onayla', id=ku.id) }}" class="d-inline ms-2">
+            {% if ku.fiyat_onaylandi %}
+              <button class="btn btn-xs" style="font-size:11px;padding:2px 8px;background:#16a34a;color:#fff;border:none;border-radius:6px" title="Fiyat görünür â€” tıkla gizle">
+                <i class="bi bi-eye"></i> Görünür
+              </button>
+            {% else %}
+              <button class="btn btn-xs" style="font-size:11px;padding:2px 8px;background:#475569;color:#fff;border:none;border-radius:6px" title="Fiyat gizli â€” tıkla onayla">
+                <i class="bi bi-eye-slash"></i> Gizli
+              </button>
+            {% endif %}
+          </form>
+        </div>
+        {% else %}
+        <span class="text-muted small">Fiyat yok</span>
+        {% endif %}
+        {% if ku.resimler|length > 1 %}
+        <span class="text-muted small"><i class="bi bi-images"></i> {{ ku.resimler|length }}</span>
+        {% endif %}
+      </div>
+
+      <div class="d-flex gap-2">
+        <a href="{{ url_for('admin.katalog_duzenle', id=ku.id) }}" class="btn btn-sm btn-outline-primary flex-fill">
+          <i class="bi bi-pencil me-1"></i>Düzenle
+        </a>
+        <form method="POST" action="{{ url_for('admin.katalog_sil', id=ku.id) }}"
+              onsubmit="return confirm('Bu ürün kataloğdan silinsin mi?')">
+          <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% else %}
+<div class="col-12 text-center text-muted py-5">
+  <i class="bi bi-grid" style="font-size:48px"></i>
+  <p class="mt-2">Henüz katalog ürünü eklenmedi.</p>
+  <a href="{{ url_for('admin.katalog_yeni') }}" class="btn btn-primary">İlk Ürünü Ekle</a>
+</div>
+{% endfor %}
+</div>
+{% endblock %}
+

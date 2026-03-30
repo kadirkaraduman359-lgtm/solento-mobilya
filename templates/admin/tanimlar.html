@@ -1,0 +1,302 @@
+{% extends "base.html" %}
+{% block title %}Tanımlar – Solento Mobilya{% endblock %}
+{% block page_title %}Tanımlar{% endblock %}
+{% block content %}
+
+<ul class="nav nav-tabs mb-4" id="tanimTab" role="tablist">
+  <li class="nav-item">
+    <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-sehir" type="button">
+      <i class="bi bi-geo-alt me-1"></i> Şehirler
+    </button>
+  </li>
+  <li class="nav-item">
+    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-magaza" type="button">
+      <i class="bi bi-shop me-1"></i> Mağazalar
+    </button>
+  </li>
+  <li class="nav-item">
+    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-urun" type="button">
+      <i class="bi bi-box me-1"></i> Ürünler
+    </button>
+  </li>
+</ul>
+
+<div class="tab-content" id="tanimTabContent">
+
+  <!-- ŞEHİRLER -->
+  <div class="tab-pane fade show active" id="tab-sehir">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <span class="fw-semibold"><i class="bi bi-geo-alt me-2 text-primary"></i>Şehirler</span>
+        <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalSehirEkle">
+          <i class="bi bi-plus-lg me-1"></i> Ekle
+        </button>
+      </div>
+      <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+          <thead class="table-light">
+            <tr><th>#</th><th>Şehir Adı</th><th class="text-end">İşlem</th></tr>
+          </thead>
+          <tbody>
+            {% for s in sehirler %}
+            <tr>
+              <td class="text-muted small">{{ loop.index }}</td>
+              <td>{{ s.ad }}</td>
+              <td class="text-end">
+                <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#modalSehirSil{{ s.id }}">
+                  <i class="bi bi-trash"></i> Sil
+                </button>
+              </td>
+            </tr>
+            <!-- Sehir Sil Modal -->
+            <div class="modal fade" id="modalSehirSil{{ s.id }}" tabindex="-1">
+              <div class="modal-dialog modal-sm">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h6 class="modal-title">Şehir Sil</h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                  </div>
+                  <div class="modal-body">
+                    <strong>{{ s.ad }}</strong> şehrini silmek istediğinize emin misiniz?
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Vazgeç</button>
+                    <form method="post" action="{{ url_for('admin.sehir_sil', id=s.id) }}" class="d-inline">
+                      <button type="submit" class="btn btn-danger btn-sm">Sil</button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+            {% if not sehirler %}
+            <tr><td colspan="3" class="text-center text-muted py-3">Henüz şehir eklenmemiş.</td></tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAĞAZALAR -->
+  <div class="tab-pane fade" id="tab-magaza">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <span class="fw-semibold"><i class="bi bi-shop me-2 text-success"></i>Mağazalar</span>
+        <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalMagazaEkle">
+          <i class="bi bi-plus-lg me-1"></i> Ekle
+        </button>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead class="table-light">
+              <tr><th>#</th><th>Ad</th><th>Şehir</th><th>Adres</th><th>Telefon</th><th class="text-end">İşlem</th></tr>
+            </thead>
+            <tbody>
+              {% for m in magazalar %}
+              <tr>
+                <td class="text-muted small">{{ loop.index }}</td>
+                <td class="fw-semibold">{{ m.ad }}</td>
+                <td>{{ m.sehir_adi or '—' }}</td>
+                <td class="small text-muted">{{ m.adres or '—' }}</td>
+                <td class="small">{{ m.telefon or '—' }}</td>
+                <td class="text-end">
+                  <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#modalMagazaSil{{ m.id }}">
+                    <i class="bi bi-trash"></i> Sil
+                  </button>
+                </td>
+              </tr>
+              <!-- Magaza Sil Modal -->
+              <div class="modal fade" id="modalMagazaSil{{ m.id }}" tabindex="-1">
+                <div class="modal-dialog modal-sm">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h6 class="modal-title">Mağaza Sil</h6>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                      <strong>{{ m.ad }}</strong> mağazasını silmek istediğinize emin misiniz?
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Vazgeç</button>
+                      <form method="post" action="{{ url_for('admin.magaza_sil', id=m.id) }}" class="d-inline">
+                        <button type="submit" class="btn btn-danger btn-sm">Sil</button>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {% endfor %}
+              {% if not magazalar %}
+              <tr><td colspan="6" class="text-center text-muted py-3">Henüz mağaza eklenmemiş.</td></tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ÜRÜNLER -->
+  <div class="tab-pane fade" id="tab-urun">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <span class="fw-semibold"><i class="bi bi-box me-2 text-warning"></i>Ürünler</span>
+        <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalUrunEkle">
+          <i class="bi bi-plus-lg me-1"></i> Ekle
+        </button>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead class="table-light">
+              <tr><th>#</th><th>Ürün Adı</th><th>Kod</th><th>Paket Sayısı</th><th class="text-end">İşlem</th></tr>
+            </thead>
+            <tbody>
+              {% for u in urunler %}
+              <tr>
+                <td class="text-muted small">{{ loop.index }}</td>
+                <td class="fw-semibold">{{ u.ad }}</td>
+                <td><code>{{ u.kod or '—' }}</code></td>
+                <td>{{ u.paket_sayisi }}</td>
+                <td class="text-end">
+                  <a href="{{ url_for('admin.paket_duzenle', id=u.id) }}" class="btn btn-warning btn-sm">
+                    <i class="bi bi-box-seam"></i> Paket Yönet
+                  </a>
+                  <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#modalUrunSil{{ u.id }}">
+                    <i class="bi bi-trash"></i> Sil
+                  </button>
+                </td>
+              </tr>
+              <!-- Urun Sil Modal -->
+              <div class="modal fade" id="modalUrunSil{{ u.id }}" tabindex="-1">
+                <div class="modal-dialog modal-sm">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h6 class="modal-title">Ürün Sil</h6>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                      <strong>{{ u.ad }}</strong> ürününü silmek istediğinize emin misiniz?
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Vazgeç</button>
+                      <form method="post" action="{{ url_for('admin.urun_sil', id=u.id) }}" class="d-inline">
+                        <button type="submit" class="btn btn-danger btn-sm">Sil</button>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {% endfor %}
+              {% if not urunler %}
+              <tr><td colspan="5" class="text-center text-muted py-3">Henüz ürün eklenmemiş.</td></tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Şehir Ekle Modal -->
+<div class="modal fade" id="modalSehirEkle" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="post" action="{{ url_for('admin.sehir_ekle') }}">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="bi bi-geo-alt me-2"></i>Yeni Şehir Ekle</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Şehir Adı <span class="text-danger">*</span></label>
+            <input type="text" name="ad" class="form-control" placeholder="Şehir adı giriniz" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Vazgeç</button>
+          <button type="submit" class="btn btn-primary">Ekle</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Mağaza Ekle Modal -->
+<div class="modal fade" id="modalMagazaEkle" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="post" action="{{ url_for('admin.magaza_ekle') }}">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="bi bi-shop me-2"></i>Yeni Mağaza Ekle</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Mağaza Adı <span class="text-danger">*</span></label>
+            <input type="text" name="ad" class="form-control" placeholder="Mağaza adı" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Şehir</label>
+            <input type="text" name="sehir_adi" class="form-control" placeholder="Şehir adı" list="sehirListesi">
+            <datalist id="sehirListesi">
+              {% for s in sehirler %}
+              <option value="{{ s.ad }}">
+              {% endfor %}
+            </datalist>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Adres</label>
+            <input type="text" name="adres" class="form-control" placeholder="Adres">
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Telefon</label>
+            <input type="text" name="telefon" class="form-control" placeholder="Telefon">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Vazgeç</button>
+          <button type="submit" class="btn btn-primary">Ekle</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Ürün Ekle Modal -->
+<div class="modal fade" id="modalUrunEkle" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="post" action="{{ url_for('admin.urun_ekle') }}">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="bi bi-box me-2"></i>Yeni Ürün Ekle</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Ürün Adı <span class="text-danger">*</span></label>
+            <input type="text" name="ad" class="form-control" placeholder="Ürün adı" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Ürün Kodu</label>
+            <input type="text" name="kod" class="form-control" placeholder="Örn: SLT-001">
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Paket Sayısı <span class="text-danger">*</span></label>
+            <input type="number" name="paket_sayisi" class="form-control" placeholder="1" min="1" value="1" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Vazgeç</button>
+          <button type="submit" class="btn btn-primary">Ekle</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% block title %}SSH Bildir – Solento Mobilya{% endblock %}
+{% block page_title %}SSH Bildir{% endblock %}
+{% block content %}
+
+<div class="row justify-content-center">
+  <div class="col-12 col-lg-7">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white fw-semibold">
+        <i class="bi bi-exclamation-circle me-2 text-danger"></i>SSH Hasarı Bildir
+      </div>
+      <div class="card-body">
+        <form method="post" action="{{ url_for('magaza.ssh_bildir') }}" id="sshForm">
+
+          <!-- Adım 1: Ürün Seç -->
+          <div class="mb-3">
+            <label class="form-label fw-semibold">
+              <span class="badge bg-primary me-1">1</span> Ürün Seçin <span class="text-danger">*</span>
+            </label>
+            <select name="urun_id" id="urunSelect" class="form-select" required onchange="paketlerYukle(this.value)">
+              <option value="">— Ürün Seçin —</option>
+              {% for u in urunler %}
+              <option value="{{ u.id }}">{{ u.ad }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <!-- Adım 2: Paket Seç -->
+          <div class="mb-3" id="paketAlani" style="display:none;">
+            <label class="form-label fw-semibold">
+              <span class="badge bg-primary me-1">2</span> Paket Seçin <span class="text-danger">*</span>
+            </label>
+            <select name="paket_id" id="paketSelect" class="form-select" required>
+              <option value="">— Önce ürün seçin —</option>
+            </select>
+            <div id="paketYukleniyor" class="text-muted small mt-1" style="display:none;">
+              <i class="bi bi-arrow-repeat"></i> Paketler yükleniyor...
+            </div>
+          </div>
+
+          <!-- Adım 3: Hasar Açıklaması -->
+          <div class="mb-3" id="hasarAlani" style="display:none;">
+            <label class="form-label fw-semibold">
+              <span class="badge bg-primary me-1">3</span> Hasar Açıklaması <span class="text-danger">*</span>
+            </label>
+            <textarea name="hasar_aciklamasi" id="hasarAciklamasi" class="form-control" rows="3"
+              placeholder="Hasarı detaylıca açıklayın..." required></textarea>
+          </div>
+
+          <!-- Adım 4: Talep Miktarı -->
+          <div class="mb-4" id="miktarAlani" style="display:none;">
+            <label class="form-label fw-semibold">
+              <span class="badge bg-primary me-1">4</span> Talep Miktarı
+            </label>
+            <input type="number" name="talep_miktar" id="talepMiktar" class="form-control"
+              placeholder="0" min="0" step="1">
+            <div class="form-text">Kaç adet yedek parça/ürün talep ediyorsunuz? (İsteğe bağlı)</div>
+          </div>
+
+          <div id="gonderBtn" style="display:none;">
+            <button type="submit" class="btn btn-danger w-100">
+              <i class="bi bi-exclamation-circle me-2"></i>SSH Bildir
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+{% block extra_js %}
+<script>
+function paketlerYukle(urunId) {
+  const paketAlani = document.getElementById('paketAlani');
+  const hasarAlani = document.getElementById('hasarAlani');
+  const miktarAlani = document.getElementById('miktarAlani');
+  const gonderBtn = document.getElementById('gonderBtn');
+  const paketSelect = document.getElementById('paketSelect');
+  const yukleniyor = document.getElementById('paketYukleniyor');
+
+  if (!urunId) {
+    paketAlani.style.display = 'none';
+    hasarAlani.style.display = 'none';
+    miktarAlani.style.display = 'none';
+    gonderBtn.style.display = 'none';
+    return;
+  }
+
+  paketAlani.style.display = 'block';
+  yukleniyor.style.display = 'block';
+  paketSelect.innerHTML = '<option value="">Yükleniyor...</option>';
+
+  fetch(`/m/api/urun-paketleri/${urunId}`)
+    .then(r => r.json())
+    .then(data => {
+      yukleniyor.style.display = 'none';
+      paketSelect.innerHTML = '<option value="">— Paket Seçin —</option>';
+      data.forEach(p => {
+        paketSelect.innerHTML += `<option value="${p.id}">${p.paket_no || ('Paket ' + p.id)}</option>`;
+      });
+      hasarAlani.style.display = 'block';
+      miktarAlani.style.display = 'block';
+      gonderBtn.style.display = 'block';
+    })
+    .catch(() => {
+      yukleniyor.style.display = 'none';
+      paketSelect.innerHTML = '<option value="">Hata oluştu, tekrar deneyin</option>';
+    });
+}
+</script>
+{% endblock %}
