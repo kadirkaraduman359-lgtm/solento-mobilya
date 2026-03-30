@@ -16,10 +16,10 @@
                  value="{{ now if now else '' }}" required>
         </div>
 
-        <label class="form-label fw-semibold">Satılan �rünler</label>
+        <label class="form-label fw-semibold">Satılan Ürünler</label>
         <div id="satisContainer"></div>
         <button type="button" class="btn btn-outline-primary mb-4" onclick="satirEkle()">
-          <i class="bi bi-plus"></i> �rün Ekle
+          <i class="bi bi-plus"></i> Ürün Ekle
         </button>
 
         <div class="d-flex gap-2">
@@ -36,7 +36,7 @@
     <div class="card p-3">
       <h6 class="fw-bold mb-3"><i class="bi bi-archive me-1 text-success"></i>Mevcut Stoğunuz</h6>
       <table class="table table-sm mb-0">
-        <thead><tr><th>�rün</th><th class="text-end">Eldeki</th></tr></thead>
+        <thead><tr><th>Ürün</th><th class="text-end">Eldeki</th></tr></thead>
         <tbody>
         {% for s in stok %}
         <tr>
@@ -66,7 +66,7 @@ function satirEkle() {
   const c = document.getElementById("satisContainer");
   const div = document.createElement("div");
   div.className = "row g-2 mb-2 align-items-center";
-  let opts = '<option value="">-- �rün Seçin --</option>';
+  let opts = '<option value="">-- Ürün Seçin --</option>';
   urunler.forEach(u => opts += `<option value="${u.id}">${u.ad} (Eldeki: ${u.eldeki})</option>`);
   div.innerHTML = `
     <div class="col-5">

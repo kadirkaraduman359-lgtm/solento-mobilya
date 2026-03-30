@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 {% block title %}Sevklerim – Solento Mobilya{% endblock %}
 {% block page_title %}Sevklerim{% endblock %}
 {% block content %}
@@ -62,7 +62,7 @@
                     </div>
                     <div class="modal-footer">
                       <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Vazgeç</button>
-                      <form method="post" action="{{ url_for('magaza.sevk_teslim_al', id=sv.id) }}" class="d-inline">
+                      <form method="post" action="{{ url_for('magaza.teslim_al', id=sv.id) }}" class="d-inline">
                         <button type="submit" class="btn btn-success btn-sm">Teslim Aldım</button>
                       </form>
                     </div>

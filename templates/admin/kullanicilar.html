@@ -30,14 +30,14 @@
             <td class="small">{{ k.magaza.ad if k.magaza else '—' }}</td>
             <td class="small text-muted">{{ k.kayit_tarihi }}</td>
             <td>
-              {% if k.aktif %}
+              {% if k.onay_durumu == 'onaylandi' %}
                 <span class="badge bg-success">Aktif</span>
               {% else %}
                 <span class="badge bg-warning text-dark">Beklemede</span>
               {% endif %}
             </td>
             <td class="text-end">
-              {% if not k.aktif %}
+              {% if k.onay_durumu == 'beklemede' %}
               <form method="post" action="{{ url_for('admin.kullanici_onayla', id=k.id) }}" class="d-inline">
                 <button type="submit" class="btn btn-sm btn-success">
                   <i class="bi bi-check-lg"></i> Onayla

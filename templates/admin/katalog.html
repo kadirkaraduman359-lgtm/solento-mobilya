@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block title %}Katalog Yönetimi{% endblock %}
-{% block page_title %}�rün Kataloğu{% endblock %}
+{% block page_title %}Ürün Kataloğu{% endblock %}
 {% block content %}
 
 <!-- Bekleyen Bildirimler -->
@@ -55,7 +55,7 @@
 <div class="d-flex justify-content-between align-items-center mb-3">
   <span class="text-muted">{{ urunler|length }} ürün</span>
   <a href="{{ url_for('admin.katalog_yeni') }}" class="btn btn-primary">
-    <i class="bi bi-plus-lg me-1"></i>Yeni �rün Ekle
+    <i class="bi bi-plus-lg me-1"></i>Yeni Ürün Ekle
   </a>
 </div>
 
@@ -131,7 +131,7 @@
 <div class="col-12 text-center text-muted py-5">
   <i class="bi bi-grid" style="font-size:48px"></i>
   <p class="mt-2">Henüz katalog ürünü eklenmedi.</p>
-  <a href="{{ url_for('admin.katalog_yeni') }}" class="btn btn-primary">İlk �rünü Ekle</a>
+  <a href="{{ url_for('admin.katalog_yeni') }}" class="btn btn-primary">İlk Ürünü Ekle</a>
 </div>
 {% endfor %}
 </div>

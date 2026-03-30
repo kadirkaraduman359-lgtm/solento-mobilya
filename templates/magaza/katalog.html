@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block title %}Katalog{% endblock %}
-{% block page_title %}�rün Kataloğu{% endblock %}
+{% block page_title %}Ürün Kataloğu{% endblock %}
 {% block content %}
 
 <!-- Arama + Filtre -->
@@ -8,7 +8,7 @@
   <div class="input-group input-group-sm" style="max-width:320px">
     <span class="input-group-text"><i class="bi bi-search"></i></span>
     <input type="text" id="katalogArama" class="form-control"
-           placeholder="�rün adı veya kategori ara..." oninput="katalogFiltrele()">
+           placeholder="Ürün adı veya kategori ara..." oninput="katalogFiltrele()">
     <button class="btn btn-outline-secondary" onclick="document.getElementById('katalogArama').value='';katalogFiltrele()">
       <i class="bi bi-x"></i>
     </button>

@@ -1,6 +1,6 @@
 {% extends "base.html" %}
-{% block title %}{{ '�rün Düzenle' if ku else 'Yeni Katalog �rünü' }}{% endblock %}
-{% block page_title %}{{ 'Düzenle: ' + ku.ad if ku else 'Yeni Katalog �rünü' }}{% endblock %}
+{% block title %}{{ 'Ürün Düzenle' if ku else 'Yeni Katalog Ürünü' }}{% endblock %}
+{% block page_title %}{{ 'Düzenle: ' + ku.ad if ku else 'Yeni Katalog Ürünü' }}{% endblock %}
 {% block content %}
 <div class="row justify-content-center">
 <div class="col-xl-8">
@@ -11,11 +11,11 @@
   <h6 class="fw-bold mb-3 text-primary"><i class="bi bi-info-circle me-1"></i>Temel Bilgiler</h6>
   <div class="row g-3 mb-4">
     <div class="col-md-8">
-      <label class="form-label small">�rün Adı *</label>
+      <label class="form-label small">Ürün Adı *</label>
       <input type="text" name="ad" class="form-control" value="{{ ku.ad if ku else '' }}" required>
     </div>
     <div class="col-md-4">
-      <label class="form-label small">�rün Kodu</label>
+      <label class="form-label small">Ürün Kodu</label>
       <input type="text" name="kod" class="form-control" value="{{ ku.kod if ku else '' }}" placeholder="Opsiyonel">
     </div>
     <div class="col-md-6">
@@ -78,7 +78,7 @@
   </div>
 
   <!-- Görünürlük -->
-  <h6 class="fw-bold mb-3 text-warning"><i class="bi bi-eye me-1"></i>�rün Görünürlüğü</h6>
+  <h6 class="fw-bold mb-3 text-warning"><i class="bi bi-eye me-1"></i>Ürün Görünürlüğü</h6>
   <div class="mb-3">
     <select name="gorunurluk" class="form-select" id="gorunurluk_sel" onchange="toggleMagaza(this.value)">
       <option value="herkes" {% if not ku or ku.gorunurluk=='herkes' %}selected{% endif %}>Tüm Mağazalar Görebilir</option>
