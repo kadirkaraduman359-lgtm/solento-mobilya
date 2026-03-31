@@ -3,92 +3,70 @@
 {% block page_title %}Raporlar{% endblock %}
 {% block content %}
 
-<div class="row g-4">
-
-  <!-- Sevk Özeti -->
-  <div class="col-12 col-md-6">
-    <div class="card border-0 shadow-sm h-100">
-      <div class="card-header bg-white fw-semibold">
-        <i class="bi bi-truck me-2 text-primary"></i>Sevk Özeti
-      </div>
-      <div class="card-body">
-        <p class="text-muted small mb-3">Tüm sevkiyat kayıtlarının özetini Excel formatında indirin.</p>
-        <ul class="list-unstyled small mb-3">
-          <li><i class="bi bi-check-circle text-success me-2"></i>Tarih aralığına göre filtreleme</li>
-          <li><i class="bi bi-check-circle text-success me-2"></i>Mağaza bazlı dağılım</li>
-          <li><i class="bi bi-check-circle text-success me-2"></i>Ürün bazlı sevk miktarları</li>
-          <li><i class="bi bi-check-circle text-success me-2"></i>Nakliye ve işçilik toplam</li>
-        </ul>
-        <a href="{{ url_for('admin.rapor_excel', tur='sevk') }}" class="btn btn-success btn-sm">
-          <i class="bi bi-file-earmark-excel me-1"></i>Excel İndir
-        </a>
-      </div>
-    </div>
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-body py-3">
+    <p class="mb-0 text-muted small">
+      <i class="bi bi-info-circle me-1"></i>
+      Aşağıdaki raporları Excel formatında indirip arşivleyebilirsiniz.
+    </p>
   </div>
+</div>
 
-  <!-- Maliyet Raporu -->
-  <div class="col-12 col-md-6">
-    <div class="card border-0 shadow-sm h-100">
-      <div class="card-header bg-white fw-semibold">
-        <i class="bi bi-currency-dollar me-2 text-warning"></i>Maliyet Raporu
-      </div>
-      <div class="card-body">
-        <p class="text-muted small mb-3">Nakliye, işçilik ve KDV maliyet analizini indirin.</p>
-        <ul class="list-unstyled small mb-3">
-          <li><i class="bi bi-check-circle text-success me-2"></i>KDV breakdown (0/10/20)</li>
-          <li><i class="bi bi-check-circle text-success me-2"></i>Nakliye ücret toplamı</li>
-          <li><i class="bi bi-check-circle text-success me-2"></i>İşçilik ücret toplamı</li>
-          <li><i class="bi bi-check-circle text-success me-2"></i>Aylık maliyet karşılaştırması</li>
-        </ul>
-        <a href="{{ url_for('admin.rapor_excel', tur='maliyet') }}" class="btn btn-success btn-sm">
-          <i class="bi bi-file-earmark-excel me-1"></i>Excel İndir
-        </a>
-      </div>
-    </div>
+<div class="card border-0 shadow-sm">
+  <div class="card-body p-0">
+    <table class="table table-hover mb-0">
+      <thead class="table-light">
+        <tr>
+          <th style="width:40px"></th>
+          <th>Rapor Adı</th>
+          <th>Açıklama</th>
+          <th class="text-end">İndir</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="text-center"><i class="bi bi-truck text-primary"></i></td>
+          <td class="fw-semibold">Sevkiyat Raporu</td>
+          <td class="text-muted small">Mağaza bazlı sevk kayıtları, ürün miktarları, nakliye ve işçilik toplamları</td>
+          <td class="text-end">
+            <a href="{{ url_for('admin.rapor_excel', tur='sevk') }}" class="btn btn-sm btn-dark">
+              <i class="bi bi-file-earmark-excel me-1"></i>Excel
+            </a>
+          </td>
+        </tr>
+        <tr>
+          <td class="text-center"><i class="bi bi-receipt text-primary"></i></td>
+          <td class="fw-semibold">Maliyet Raporu</td>
+          <td class="text-muted small">Nakliye, işçilik ve KDV dağılımı (%0 / %10 / %20), aylık maliyet özeti</td>
+          <td class="text-end">
+            <a href="{{ url_for('admin.rapor_excel', tur='maliyet') }}" class="btn btn-sm btn-dark">
+              <i class="bi bi-file-earmark-excel me-1"></i>Excel
+            </a>
+          </td>
+        </tr>
+        <tr>
+          <td class="text-center"><i class="bi bi-archive text-primary"></i></td>
+          <td class="fw-semibold">Stok Raporu</td>
+          <td class="text-muted small">Anlık depo bakiyesi, rezerve ve kullanılabilir miktarlar, tüm stok hareketleri</td>
+          <td class="text-end">
+            <a href="{{ url_for('admin.rapor_excel', tur='stok') }}" class="btn btn-sm btn-dark">
+              <i class="bi bi-file-earmark-excel me-1"></i>Excel
+            </a>
+          </td>
+        </tr>
+        <tr>
+          <td class="text-center"><i class="bi bi-exclamation-triangle text-primary"></i></td>
+          <td class="fw-semibold">SSH Raporu</td>
+          <td class="text-muted small">Mağaza bildirimleri, hasar açıklamaları, durum ve çözüm süreleri</td>
+          <td class="text-end">
+            <a href="{{ url_for('admin.rapor_excel', tur='ssh') }}" class="btn btn-sm btn-dark">
+              <i class="bi bi-file-earmark-excel me-1"></i>Excel
+            </a>
+          </td>
+        </tr>
+      </tbody>
+    </table>
   </div>
-
-  <!-- Stok Raporu -->
-  <div class="col-12 col-md-6">
-    <div class="card border-0 shadow-sm h-100">
-      <div class="card-header bg-white fw-semibold">
-        <i class="bi bi-archive me-2 text-success"></i>Stok Raporu
-      </div>
-      <div class="card-body">
-        <p class="text-muted small mb-3">Anlık depo stok durumunu ve hareket geçmişini indirin.</p>
-        <ul class="list-unstyled small mb-3">
-          <li><i class="bi bi-check-circle text-success me-2"></i>Mevcut stok bakiyesi</li>
-          <li><i class="bi bi-check-circle text-success me-2"></i>Rezerve ve kullanılabilir miktarlar</li>
-          <li><i class="bi bi-check-circle text-success me-2"></i>Tüm stok hareketleri</li>
-          <li><i class="bi bi-check-circle text-success me-2"></i>Ürün bazlı özet</li>
-        </ul>
-        <a href="{{ url_for('admin.rapor_excel', tur='stok') }}" class="btn btn-success btn-sm">
-          <i class="bi bi-file-earmark-excel me-1"></i>Excel İndir
-        </a>
-      </div>
-    </div>
-  </div>
-
-  <!-- SSH Raporu -->
-  <div class="col-12 col-md-6">
-    <div class="card border-0 shadow-sm h-100">
-      <div class="card-header bg-white fw-semibold">
-        <i class="bi bi-exclamation-triangle me-2 text-danger"></i>SSH Raporu
-      </div>
-      <div class="card-body">
-        <p class="text-muted small mb-3">SSH bildirimleri ve çözüm süreci raporunu indirin.</p>
-        <ul class="list-unstyled small mb-3">
-          <li><i class="bi bi-check-circle text-success me-2"></i>Mağaza bazlı SSH kayıtları</li>
-          <li><i class="bi bi-check-circle text-success me-2"></i>Durum ve çözüm süreleri</li>
-          <li><i class="bi bi-check-circle text-success me-2"></i>Hasar açıklamaları</li>
-          <li><i class="bi bi-check-circle text-success me-2"></i>Admin notları</li>
-        </ul>
-        <a href="{{ url_for('admin.rapor_excel', tur='ssh') }}" class="btn btn-success btn-sm">
-          <i class="bi bi-file-earmark-excel me-1"></i>Excel İndir
-        </a>
-      </div>
-    </div>
-  </div>
-
 </div>
 
 {% endblock %}

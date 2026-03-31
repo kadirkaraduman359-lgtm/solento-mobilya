@@ -120,10 +120,21 @@ def stok_gorunum():
 def hizli_siparis():
     notlar = request.form.get("notlar", "")
     kalemler = []
+    # Format 1: miktar_URUNID (çoklu ürün formu)
     for key, val in request.form.items():
-        if key.startswith("miktar_") and val and int(val) > 0:
-            urun_id = int(key.replace("miktar_", ""))
-            kalemler.append((urun_id, int(val)))
+        if key.startswith("miktar_") and val:
+            try:
+                if int(val) > 0:
+                    urun_id = int(key.replace("miktar_", ""))
+                    kalemler.append((urun_id, int(val)))
+            except (ValueError, TypeError):
+                pass
+    # Format 2: urun_id + miktar (tekli modal formu)
+    if not kalemler:
+        urun_id = request.form.get("urun_id", type=int)
+        miktar = request.form.get("miktar", type=int)
+        if urun_id and miktar and miktar > 0:
+            kalemler.append((urun_id, miktar))
     if not kalemler:
         flash("En az 1 ürün seçmelisiniz.", "warning")
         return redirect(url_for("magaza.stok_gorunum"))

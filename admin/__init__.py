@@ -898,8 +898,8 @@ def kullanici_ekle():
 @admin_required
 def kullanici_sil(id):
     u = Kullanici.query.get_or_404(id)
-    if u.rol == "admin" and Kullanici.query.filter_by(rol="admin").count() == 1:
-        flash("Son admin silinemez.", "danger")
+    if u.rol == "admin":
+        flash("Admin hesabı silinemez.", "danger")
         return redirect(url_for("admin.kullanicilar"))
     # İlişkili kayıtları temizle
     SatisHareketi.query.filter_by(kullanici_id=id).delete()
