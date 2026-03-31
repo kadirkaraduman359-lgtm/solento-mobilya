@@ -7,58 +7,70 @@
   <div class="card-body py-3">
     <p class="mb-0 text-muted small">
       <i class="bi bi-info-circle me-1"></i>
-      Aşağıdaki raporları Excel formatında indirip arşivleyebilirsiniz.
+      Aşağıdaki raporları Excel olarak indirebilir veya WhatsApp üzerinden paylaşabilirsiniz.
     </p>
   </div>
 </div>
 
 <div class="card border-0 shadow-sm">
   <div class="card-body p-0">
-    <table class="table table-hover mb-0">
+    <table class="table table-hover mb-0 align-middle">
       <thead class="table-light">
         <tr>
           <th style="width:40px"></th>
           <th>Rapor Adı</th>
           <th>Açıklama</th>
-          <th class="text-end">İndir</th>
+          <th class="text-end" style="min-width:180px">İşlem</th>
         </tr>
       </thead>
       <tbody>
         <tr>
-          <td class="text-center"><i class="bi bi-truck text-primary"></i></td>
+          <td class="text-center"><i class="bi bi-truck text-primary fs-5"></i></td>
           <td class="fw-semibold">Sevkiyat Raporu</td>
-          <td class="text-muted small">Mağaza bazlı sevk kayıtları, ürün miktarları, nakliye ve işçilik toplamları</td>
+          <td class="text-muted small">Son 20 sevk — mağaza, ürün miktarları, nakliye ve işçilik toplamları</td>
           <td class="text-end">
+            <button class="btn btn-sm btn-success me-1" onclick="whatsappPaylasOzet('sevk')">
+              <i class="bi bi-whatsapp me-1"></i>Paylaş
+            </button>
             <a href="{{ url_for('admin.rapor_excel', tur='sevk') }}" class="btn btn-sm btn-dark">
               <i class="bi bi-file-earmark-excel me-1"></i>Excel
             </a>
           </td>
         </tr>
         <tr>
-          <td class="text-center"><i class="bi bi-receipt text-primary"></i></td>
+          <td class="text-center"><i class="bi bi-receipt text-primary fs-5"></i></td>
           <td class="fw-semibold">Maliyet Raporu</td>
-          <td class="text-muted small">Nakliye, işçilik ve KDV dağılımı (%0 / %10 / %20), aylık maliyet özeti</td>
+          <td class="text-muted small">Nakliye, işçilik ve KDV dağılımı (%0 / %10 / %20), mağaza bazlı toplam</td>
           <td class="text-end">
+            <button class="btn btn-sm btn-success me-1" onclick="whatsappPaylasOzet('maliyet')">
+              <i class="bi bi-whatsapp me-1"></i>Paylaş
+            </button>
             <a href="{{ url_for('admin.rapor_excel', tur='maliyet') }}" class="btn btn-sm btn-dark">
               <i class="bi bi-file-earmark-excel me-1"></i>Excel
             </a>
           </td>
         </tr>
         <tr>
-          <td class="text-center"><i class="bi bi-archive text-primary"></i></td>
+          <td class="text-center"><i class="bi bi-archive text-primary fs-5"></i></td>
           <td class="fw-semibold">Stok Raporu</td>
-          <td class="text-muted small">Anlık depo bakiyesi, rezerve ve kullanılabilir miktarlar, tüm stok hareketleri</td>
+          <td class="text-muted small">Anlık depo bakiyesi, ürün bazlı mevcut miktarlar</td>
           <td class="text-end">
+            <button class="btn btn-sm btn-success me-1" onclick="whatsappPaylasOzet('stok')">
+              <i class="bi bi-whatsapp me-1"></i>Paylaş
+            </button>
             <a href="{{ url_for('admin.rapor_excel', tur='stok') }}" class="btn btn-sm btn-dark">
               <i class="bi bi-file-earmark-excel me-1"></i>Excel
             </a>
           </td>
         </tr>
         <tr>
-          <td class="text-center"><i class="bi bi-exclamation-triangle text-primary"></i></td>
+          <td class="text-center"><i class="bi bi-exclamation-triangle text-primary fs-5"></i></td>
           <td class="fw-semibold">SSH Raporu</td>
-          <td class="text-muted small">Mağaza bildirimleri, hasar açıklamaları, durum ve çözüm süreleri</td>
+          <td class="text-muted small">Mağaza bildirimleri, hasar açıklamaları ve durum özeti</td>
           <td class="text-end">
+            <button class="btn btn-sm btn-success me-1" onclick="whatsappPaylasOzet('ssh')">
+              <i class="bi bi-whatsapp me-1"></i>Paylaş
+            </button>
             <a href="{{ url_for('admin.rapor_excel', tur='ssh') }}" class="btn btn-sm btn-dark">
               <i class="bi bi-file-earmark-excel me-1"></i>Excel
             </a>
@@ -68,5 +80,62 @@
     </table>
   </div>
 </div>
+
+<script>
+const raporOzet = {{ rapor_ozet | tojson }};
+
+function whatsappPaylasOzet(tur) {
+  const tarih = new Date().toLocaleDateString('tr-TR');
+  let metin = '';
+
+  if (tur === 'sevk') {
+    metin = '*📦 Sevkiyat Raporu – Solento Mobilya*\n';
+    metin += `_${tarih}_\n\n`;
+    const satirlar = raporOzet.sevk.satirlar;
+    if (!satirlar.length) { metin += 'Kayıt yok.'; }
+    else {
+      satirlar.forEach(s => {
+        metin += `*${s.magaza}* (${s.tarih || ''})\n`;
+        s.urunler.forEach(u => metin += `  • ${u}\n`);
+        metin += `  Toplam: ₺${s.toplam.toLocaleString()}\n\n`;
+      });
+    }
+  } else if (tur === 'maliyet') {
+    metin = '*💰 Maliyet Raporu – Solento Mobilya*\n';
+    metin += `_${tarih}_\n\n`;
+    const satirlar = raporOzet.maliyet.satirlar;
+    if (!satirlar.length) { metin += 'Kayıt yok.'; }
+    else {
+      satirlar.forEach(s => {
+        metin += `• ${s.magaza}: ₺${s.toplam.toLocaleString()}\n`;
+      });
+    }
+  } else if (tur === 'stok') {
+    metin = '*🏭 Stok Durumu – Solento Mobilya*\n';
+    metin += `_${tarih}_\n\n`;
+    const satirlar = raporOzet.stok.satirlar;
+    if (!satirlar.length) { metin += 'Stok kaydı yok.'; }
+    else {
+      satirlar.forEach(s => {
+        metin += `• ${s.urun}: *${s.adet} adet*\n`;
+      });
+    }
+  } else if (tur === 'ssh') {
+    metin = '*🔧 SSH Bildirimleri – Solento Mobilya*\n';
+    metin += `_${tarih}_\n\n`;
+    const satirlar = raporOzet.ssh.satirlar;
+    if (!satirlar.length) { metin += 'Bildirim yok.'; }
+    else {
+      satirlar.forEach(s => {
+        const durum = s.durum === 'beklemede' ? '⏳' : s.durum === 'islemde' ? '🔄' : '✅';
+        metin += `${durum} ${s.magaza} – ${s.urun}\n`;
+      });
+    }
+  }
+
+  const url = 'https://wa.me/?text=' + encodeURIComponent(metin);
+  window.open(url, '_blank');
+}
+</script>
 
 {% endblock %}
