@@ -32,7 +32,7 @@
 {% set ns_stok = namespace(lines=[]) %}
 {% set _ = ns_stok.lines.append('*Solento Mobilya - Stok Raporu*') %}
 {% for r in stok_rows %}
-  {% set _ = ns_stok.lines.append('• ' ~ (r.urun or '-') ~ ': ' ~ (r.bakiye|string if r.bakiye is defined else '-')) %}
+  {% set _ = ns_stok.lines.append('• ' ~ (r.urun or '-') ~ ': ' ~ (r.kullanilabilir|string if r.kullanilabilir is defined else (r.adet|string if r.adet is defined else '-'))) %}
 {% endfor %}
 {% set stok_wa_text = ns_stok.lines|join('\n') %}
 
@@ -40,7 +40,7 @@
 {% set ns_ssh = namespace(lines=[]) %}
 {% set _ = ns_ssh.lines.append('*Solento Mobilya - SSH Bildirimleri*') %}
 {% for r in ssh_rows[:5] %}
-  {% set _ = ns_ssh.lines.append('• ' ~ (r.tarih|string)[:10] ~ ' | ' ~ (r.magaza or '-') ~ ' | ' ~ (r.urun or '-') ~ ' | ' ~ (r.durum or '-')) %}
+  {% set _ = ns_ssh.lines.append('• ' ~ (r.magaza or '-') ~ ' | ' ~ (r.urun or '-') ~ ' | ' ~ (r.durum or '-')) %}
 {% endfor %}
 {% set ssh_wa_text = ns_ssh.lines|join('\n') %}
 
@@ -69,7 +69,7 @@
               {% for r in sevk_rows[:5] %}
               <tr>
                 <td class="ps-3 text-muted small">{{ r.tarih if r.tarih else '-' }}</td>
-                <td class="fw-semibold small">{{ r.alici or r.magaza or '-' }}</td>
+                <td class="fw-semibold small">{{ r.magaza or '-' }}</td>
                 <td class="small text-muted">{{ r.urunler or '-' }}</td>
                 <td class="text-end pe-3 fw-semibold">{{ "%.2f"|format(r.toplam) if r.toplam else '-' }} ₺</td>
               </tr>
@@ -212,7 +212,7 @@
             <tbody>
               {% for r in ssh_rows[:5] %}
               <tr>
-                <td class="ps-3 text-muted small">{{ r.tarih if r.tarih else '-' }}</td>
+                <td class="ps-3 text-muted small">-</td>
                 <td class="fw-semibold small">{{ r.magaza or '-' }}</td>
                 <td class="small text-muted">{{ r.urun or '-' }}</td>
                 <td>

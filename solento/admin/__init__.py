@@ -1300,6 +1300,7 @@ def raporlar():
     # Stok satırları
     stok_satirlar = []
     try:
+        rezerve_ozet = _rezerve_ozet()
         urunler = Urun.query.order_by(Urun.ad).all()
         for u in urunler:
             try:
@@ -1315,7 +1316,15 @@ def raporlar():
                     StokHareketi.urun_id == u.id,
                     StokHareketi.hareket_turu.in_(CIKIS_TURLERI)
                 ).scalar() or 0
-                stok_satirlar.append({"urun": u.ad, "adet": int(g - c)})
+                bakiye = int(g - c)
+                rezerve = rezerve_ozet.get(u.id, 0)
+                stok_satirlar.append({
+                    "urun": u.ad,
+                    "adet": bakiye,
+                    "bakiye": bakiye,
+                    "rezerve": rezerve,
+                    "kullanilabilir": bakiye - rezerve
+                })
             except Exception:
                 continue
     except Exception:
