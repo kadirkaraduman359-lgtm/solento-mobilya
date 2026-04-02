@@ -40,7 +40,7 @@
                 <td class="small">{{ t.tarih or '—' }}</td>
                 <td class="small">
                   {% for k in t.kalemler %}
-                    <div>{{ k.urun.ad }} × {{ k.miktar|int }}</div>
+                    <div>{{ k.urun.ad if k.urun else "Silinmis" }} × {{ k.miktar|int }}</div>
                   {% endfor %}
                 </td>
                 <td>

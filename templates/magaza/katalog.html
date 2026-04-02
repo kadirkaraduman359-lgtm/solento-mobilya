@@ -35,7 +35,7 @@
           {% for r in ku.resimler|sort(attribute='sira') %}
           <div class="carousel-item {% if loop.first %}active{% endif %}">
             <img src="{{ url_for('static', filename='katalog/' + r.dosya_adi) }}"
-                 class="d-block w-100" style="height:220px;object-fit:cover" alt="{{ ku.ad }}">
+                 class="d-block w-100" style="height:220px;object-fit:cover" alt="{{ ku.ad }}" onerror="this.onerror=null;this.src='/static/no-image.svg'">
           </div>
           {% endfor %}
         </div>

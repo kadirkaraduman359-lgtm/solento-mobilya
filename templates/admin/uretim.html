@@ -40,7 +40,7 @@
           {% for s in siparisler %}
           <tr>
             <td class="text-muted small">{{ loop.index }}</td>
-            <td class="fw-semibold">{{ s.urun.ad }}</td>
+            <td class="fw-semibold">{{ s.urun.ad if s.urun else "Silinmis" }}</td>
             <td>{{ s.siparis_adeti|int }}</td>
             <td>
               {% if s.paket_girisleri is defined %}
@@ -95,7 +95,7 @@
                   <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                  <strong>{{ s.urun.ad }}</strong> siparişini silmek istediğinize emin misiniz?
+                  <strong>{{ s.urun.ad if s.urun else "Silinmis" }}</strong> siparişini silmek istediğinize emin misiniz?
                 </div>
                 <div class="modal-footer">
                   <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Vazgeç</button>

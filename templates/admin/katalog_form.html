@@ -107,7 +107,7 @@
                    id="m_{{ m.id }}" {% if izin %}checked{% endif %}
                    onchange="document.getElementById('mf_{{ m.id }}').disabled=!this.checked">
             <label class="form-check-label small" for="m_{{ m.id }}">
-              <strong>{{ m.ad }}</strong> <span class="text-muted">{{ m.sehir.ad }}</span>
+              <strong>{{ m.ad }}</strong> <span class="text-muted">{{ m.sehir.ad if m.sehir else "-" }}</span>
             </label>
           </div>
           <div class="form-check ms-3">
@@ -130,10 +130,10 @@
     {% for r in ku.resimler %}
     <div class="position-relative">
       <img src="{{ url_for('static', filename='katalog/' + r.dosya_adi) }}"
-           style="width:100px;height:80px;object-fit:cover;border-radius:8px">
+           style="width:100px;height:80px;object-fit:cover;border-radius:8px" onerror="this.onerror=null;this.src='/static/no-image.svg'">
       <form method="POST" action="{{ url_for('admin.katalog_resim_sil', id=ku.id, rid=r.id) }}"
             style="position:absolute;top:2px;right:2px">
-        <button style="background:rgba(239,68,68,.9);border:none;border-radius:50%;width:22px;height:22px;color:#fff;font-size:11px;cursor:pointer">Ã—</button>
+        <button style="background:rgba(239,68,68,.9);border:none;border-radius:50%;width:22px;height:22px;color:#fff;font-size:11px;cursor:pointer">×</button>
       </form>
     </div>
     {% endfor %}

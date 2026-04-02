@@ -62,7 +62,7 @@
             <tbody>
               {% for s in aktif_siparisler %}
               <tr>
-                <td class="small">{{ s.urun.ad }}</td>
+                <td class="small">{{ s.urun.ad if s.urun else "Silinmis" }}</td>
                 <td>{{ s.siparis_adeti|int }}</td>
                 <td class="fw-bold {% if s._sevk_edilebilir == s.siparis_adeti %}text-success{% elif s._sevk_edilebilir == 0 %}text-danger{% else %}text-warning{% endif %}">
                   {{ s._sevk_edilebilir|int }}
@@ -101,7 +101,7 @@
           <tbody>
             {% for item in stok_ozet %}
             <tr>
-              <td class="small">{{ item.urun.ad }}</td>
+              <td class="small">{{ item.urun.ad if item.urun else "Silinmis" }}</td>
               <td class="text-end fw-bold">{{ item.bakiye|int }} takım</td>
             </tr>
             {% endfor %}

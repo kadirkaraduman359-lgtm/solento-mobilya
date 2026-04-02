@@ -16,7 +16,7 @@
       {% for t in katalog_siparisler %}
       <div class="d-flex justify-content-between align-items-center border-bottom py-2">
         <div>
-          <strong class="small">{{ t.magaza.ad }}</strong>
+          <strong class="small">{{ t.magaza.ad if t.magaza else "-" }}</strong>
           <div class="text-muted" style="font-size:11px">{{ t.tarih }}</div>
           <div class="text-muted small">{{ t.notlar }}</div>
         </div>
@@ -66,7 +66,7 @@
     <!-- Resim -->
     {% if ku.resimler %}
     <img src="{{ url_for('static', filename='katalog/' + ku.resimler[0].dosya_adi) }}"
-         style="height:180px;object-fit:cover;width:100%">
+         style="height:180px;object-fit:cover;width:100%" onerror="this.onerror=null;this.src='/static/no-image.svg'">
     {% else %}
     <div style="height:120px;background:#1e293b;display:flex;align-items:center;justify-content:center">
       <i class="bi bi-image text-muted" style="font-size:40px"></i>
@@ -86,8 +86,8 @@
       <div class="text-muted small mb-2">
         <i class="bi bi-rulers me-1"></i>
         {% if ku.boy %}{{ ku.boy|int }}cm {% endif %}
-        {% if ku.en %}Ã— {{ ku.en|int }}cm {% endif %}
-        {% if ku.derinlik %}Ã— {{ ku.derinlik|int }}cm{% endif %}
+        {% if ku.en %}× {{ ku.en|int }}cm {% endif %}
+        {% if ku.derinlik %}× {{ ku.derinlik|int }}cm{% endif %}
       </div>
       {% endif %}
 

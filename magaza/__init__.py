@@ -3,10 +3,17 @@ from flask_login import login_required, current_user
 from functools import wraps
 from models import (db, Urun, UrunPaketi, SiparisTalebi, SiparisTalebiKalemi,
                     SshBildirimi, StokHareketi, Sevk, SevkKalemi, SatisHareketi,
-                    KatalogUrun, KatalogMagazaIzin)
+                    KatalogUrun, KatalogMagazaIzin, KullaniciYetki)
 from datetime import datetime
 
 magaza_bp = Blueprint("magaza", __name__)
+
+
+def _yetki(alan):
+    yetki = KullaniciYetki.query.filter_by(kullanici_id=current_user.id).first()
+    if not yetki:
+        return True
+    return getattr(yetki, alan, True)
 
 
 def magaza_required(f):
@@ -69,6 +76,9 @@ def dashboard():
 @magaza_bp.route("/stok")
 @magaza_required
 def stok_gorunum():
+    if not _yetki("stok"):
+        flash("Bu sayfaya erişim yetkiniz yok.", "danger")
+        return redirect(url_for("magaza.dashboard"))
     from models import StokHareketi, SiparisTalebiKalemi
     from sqlalchemy import func
     GIRIS_TURLERI = ["uretim_giris", "duzeltme_giris", "iade"]
@@ -214,6 +224,9 @@ def siparis_iptal(talep_id):
 @magaza_bp.route("/satis", methods=["GET", "POST"])
 @magaza_required
 def satis_gir():
+    if not _yetki("satis"):
+        flash("Bu sayfaya erişim yetkiniz yok.", "danger")
+        return redirect(url_for("magaza.dashboard"))
     stok = magaza_stok_ozet(current_user.magaza_id)
     urunler_eldeki = [s for s in stok if s["eldeki"] > 0]
     if request.method == "POST":
@@ -297,6 +310,9 @@ def taleplerim():
 @magaza_bp.route("/ssh", methods=["GET", "POST"])
 @magaza_required
 def ssh_bildir():
+    if not _yetki("ssh"):
+        flash("Bu sayfaya erişim yetkiniz yok.", "danger")
+        return redirect(url_for("magaza.dashboard"))
     urunler = Urun.query.order_by(Urun.ad).all()
     if request.method == "POST":
         urun_id = request.form.get("urun_id", type=int)
@@ -342,6 +358,9 @@ def urun_paketleri(urun_id):
 @magaza_bp.route("/sevklerim")
 @magaza_required
 def sevklerim():
+    if not _yetki("sevklerim"):
+        flash("Bu sayfaya erişim yetkiniz yok.", "danger")
+        return redirect(url_for("magaza.dashboard"))
     sevkler = Sevk.query.filter_by(magaza_id=current_user.magaza_id).order_by(Sevk.id.desc()).all()
     return render_template("magaza/sevklerim.html", sevkler=sevkler)
 
@@ -368,8 +387,9 @@ def teslim_al(sevk_id):
 @magaza_bp.route("/katalog")
 @magaza_required
 def katalog():
-    if not current_user.yetkisi_var_mi("katalog"):
-        abort(403)
+    if not _yetki("katalog"):
+        flash("Bu sayfaya erişim yetkiniz yok.", "danger")
+        return redirect(url_for("magaza.dashboard"))
     magaza_id = current_user.magaza_id
     fiyat_gorunsun = current_user.yetkisi_var_mi("katalog_fiyat")
     # Görünürlük filtresi

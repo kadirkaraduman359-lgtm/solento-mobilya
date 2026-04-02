@@ -11,7 +11,7 @@
         {% for r in ku.resimler %}
         <div class="carousel-item {% if loop.first %}active{% endif %}">
           <img src="{{ url_for('static', filename='katalog/' + r.dosya_adi) }}"
-               class="d-block w-100" style="max-height:380px;object-fit:contain;background:#0f172a">
+               class="d-block w-100" style="max-height:380px;object-fit:contain;background:#0f172a" onerror="this.onerror=null;this.src='/static/no-image.svg'">
         </div>
         {% endfor %}
       </div>

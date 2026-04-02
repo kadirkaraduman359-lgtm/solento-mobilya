@@ -20,7 +20,7 @@
         <option value="">Tüm Mağazalar</option>
         {% for m in magazalar %}
         <option value="{{ m.id }}" {% if magaza_id==m.id %}selected{% endif %}>
-          {{ m.sehir.ad }} / {{ m.ad }}
+          {{ m.sehir.ad if m.sehir else "-" }} / {{ m.ad }}
         </option>
         {% endfor %}
       </select>
@@ -57,9 +57,9 @@
     {% for s in satirlar %}
     <tr>
       <td>{{ s.tarih }}</td>
-      <td class="text-muted">{{ s.magaza.sehir.ad }}</td>
-      <td><strong>{{ s.magaza.ad }}</strong></td>
-      <td>{{ s.urun.ad }}</td>
+      <td class="text-muted">{{ s.magaza.sehir.ad if s.magaza and s.magaza.sehir else "-" }}</td>
+      <td><strong>{{ s.magaza.ad if s.magaza else "-" }}</strong></td>
+      <td>{{ s.urun.ad if s.urun else "Silinmis" }}</td>
       <td class="text-end fw-bold text-success">{{ s.miktar|int }}</td>
       <td class="text-muted small">{{ s.notlar or '-' }}</td>
     </tr>

@@ -24,7 +24,7 @@
         <tbody>
           {% for item in ozet %}
           <tr>
-            <td class="fw-semibold">{{ item.urun.ad }}</td>
+            <td class="fw-semibold">{{ item.urun.ad if item.urun else "Silinmis" }}</td>
             <td class="text-end">{{ item.bakiye|int }}</td>
             <td class="text-end text-warning">{{ item.rezerve|int }}</td>
             <td class="text-end fw-bold {% if item.kullanilabilir <= 0 %}text-danger{% elif item.kullanilabilir < 5 %}text-warning{% else %}text-success{% endif %}">
@@ -35,7 +35,7 @@
                 data-bs-toggle="modal"
                 data-bs-target="#modalDuzelt{{ item.urun.id }}"
                 data-id="{{ item.urun.id }}"
-                data-ad="{{ item.urun.ad }}">
+                data-ad="{{ item.urun.ad if item.urun else "Silinmis" }}">
                 <i class="bi bi-pencil"></i> Manuel Düzelt
               </button>
             </td>
@@ -47,7 +47,7 @@
                 <form method="post" action="{{ url_for('admin.stok_manuel_giris') }}">
                   <input type="hidden" name="urun_id" value="{{ item.urun.id }}">
                   <div class="modal-header">
-                    <h6 class="modal-title">Manuel Stok Düzelt – {{ item.urun.ad }}</h6>
+                    <h6 class="modal-title">Manuel Stok Düzelt – {{ item.urun.ad if item.urun else "Silinmis" }}</h6>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                   </div>
                   <div class="modal-body">

@@ -23,7 +23,7 @@
         <tbody>
           {% for item in depo_stok %}
           <tr>
-            <td class="fw-semibold">{{ item.urun.ad }}</td>
+            <td class="fw-semibold">{{ item.urun.ad if item.urun else "Silinmis" }}</td>
             <td class="text-end">{{ item.bakiye|int }}</td>
             <td class="text-end fw-bold {% if item.kullanilabilir <= 0 %}text-danger{% elif item.kullanilabilir < 3 %}text-warning{% else %}text-success{% endif %}">
               {{ item.kullanilabilir|int }}
@@ -34,7 +34,7 @@
                 data-bs-toggle="modal"
                 data-bs-target="#modalSiparis{{ item.urun.id }}"
                 data-urun-id="{{ item.urun.id }}"
-                data-urun-ad="{{ item.urun.ad }}"
+                data-urun-ad="{{ item.urun.ad if item.urun else "Silinmis" }}"
                 data-max="{{ item.kullanilabilir|int }}">
                 <i class="bi bi-cart-plus"></i> Sipariş Ver
               </button>
@@ -55,7 +55,7 @@
                 <form method="post" action="{{ url_for('magaza.hizli_siparis') }}">
                   <input type="hidden" name="urun_id" value="{{ item.urun.id }}">
                   <div class="modal-header">
-                    <h6 class="modal-title"><i class="bi bi-cart-plus me-2"></i>Sipariş Ver – {{ item.urun.ad }}</h6>
+                    <h6 class="modal-title"><i class="bi bi-cart-plus me-2"></i>Sipariş Ver – {{ item.urun.ad if item.urun else "Silinmis" }}</h6>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                   </div>
                   <div class="modal-body">
@@ -88,7 +88,7 @@
                 <form method="post" action="{{ url_for('magaza.stok_talep') }}">
                   <input type="hidden" name="urun_id" value="{{ item.urun.id }}">
                   <div class="modal-header">
-                    <h6 class="modal-title"><i class="bi bi-clock me-2"></i>Ön Sipariş – {{ item.urun.ad }}</h6>
+                    <h6 class="modal-title"><i class="bi bi-clock me-2"></i>Ön Sipariş – {{ item.urun.ad if item.urun else "Silinmis" }}</h6>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                   </div>
                   <div class="modal-body">

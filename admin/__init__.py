@@ -822,30 +822,35 @@ def rapor_excel(tur):
     import io
     from flask import send_file
 
-    buf = io.BytesIO()
-    if tur == "sevk":
-        sevkler = Sevk.query.order_by(Sevk.id.desc()).all()
-        export_sevk_ozet(sevkler, buf)
-        fname = "sevk_ozeti.xlsx"
-    elif tur == "maliyet":
-        magazalar = Magaza.query.all()
-        export_magaza_maliyet(magazalar, buf)
-        fname = "magaza_maliyet.xlsx"
-    elif tur == "stok":
-        ozet = _stok_ozet()
-        export_stok(ozet, buf)
-        fname = "stok_durumu.xlsx"
-    elif tur == "ssh":
-        bildirimleri = SshBildirimi.query.all()
-        export_ssh(bildirimleri, buf)
-        fname = "ssh_bildirimleri.xlsx"
-    else:
-        flash("Gecersiz rapor turu.", "danger")
-        return redirect(url_for("admin.raporlar"))
+    try:
+        buf = io.BytesIO()
+        if tur == "sevk":
+            sevkler = Sevk.query.order_by(Sevk.id.desc()).all()
+            export_sevk_ozet(sevkler, buf)
+            fname = "sevk_ozeti.xlsx"
+        elif tur == "maliyet":
+            magazalar = Magaza.query.all()
+            export_magaza_maliyet(magazalar, buf)
+            fname = "magaza_maliyet.xlsx"
+        elif tur == "stok":
+            ozet = _stok_ozet()
+            export_stok(ozet, buf)
+            fname = "stok_durumu.xlsx"
+        elif tur == "ssh":
+            bildirimleri = SshBildirimi.query.all()
+            export_ssh(bildirimleri, buf)
+            fname = "ssh_bildirimleri.xlsx"
+        else:
+            flash("Gecersiz rapor turu.", "danger")
+            return redirect(url_for("admin.raporlar"))
 
-    buf.seek(0)
-    return send_file(buf, as_attachment=True, download_name=fname,
-                     mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+        buf.seek(0)
+        return send_file(buf, as_attachment=True, download_name=fname,
+                         mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Excel raporu oluşturulurken hata: {str(e)}", "danger")
+        return redirect(url_for("admin.raporlar"))
 
 
 # ─── MAĞAZA STOK & SATIŞ (Admin Görünümü) ────────────────────────────────────

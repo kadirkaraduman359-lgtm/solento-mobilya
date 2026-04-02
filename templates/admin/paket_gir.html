@@ -5,7 +5,7 @@
 <div class="row justify-content-center">
   <div class="col-xl-7">
     <div class="card p-4">
-      <h5 class="fw-bold mb-1">{{ siparis.urun.ad }}</h5>
+      <h5 class="fw-bold mb-1">{{ siparis.urun.ad if siparis.urun else "Silinmis" }}</h5>
       <p class="text-muted mb-4">Sipariş: <strong>{{ siparis.siparis_adeti|int }}</strong> takım &nbsp;|&nbsp; Tarih: {{ siparis.tarih }}</p>
 
       <form method="POST">

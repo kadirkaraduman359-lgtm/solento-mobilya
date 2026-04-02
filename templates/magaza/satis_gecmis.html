@@ -17,7 +17,7 @@
     {% for s in satirlar %}
     <tr>
       <td>{{ s.tarih }}</td>
-      <td><strong>{{ s.urun.ad }}</strong></td>
+      <td><strong>{{ s.urun.ad if s.urun else "Silinmis" }}</strong></td>
       <td class="text-end fw-bold text-success">{{ s.miktar|int }}</td>
       <td class="text-muted small">{{ s.notlar or '-' }}</td>
     </tr>

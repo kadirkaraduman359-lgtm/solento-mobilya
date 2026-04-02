@@ -40,7 +40,7 @@
         <tbody>
         {% for s in stok %}
         <tr>
-          <td class="small">{{ s.urun.ad }}</td>
+          <td class="small">{{ s.urun.ad if s.urun else "Silinmis" }}</td>
           <td class="text-end fw-bold {% if s.eldeki <= 0 %}text-danger{% endif %}">
             {{ s.eldeki|int }}
           </td>
@@ -58,7 +58,7 @@
 <script>
 const urunler = [
   {% for s in urunler_eldeki %}
-  {"id": {{ s.urun.id }}, "ad": "{{ s.urun.ad }}", "eldeki": {{ s.eldeki|int }}},
+  {"id": {{ s.urun.id }}, "ad": "{{ s.urun.ad if s.urun else "Silinmis" }}", "eldeki": {{ s.eldeki|int }}},
   {% endfor %}
 ];
 

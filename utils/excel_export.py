@@ -26,9 +26,14 @@ def export_sevk_ozet(sevkler, buf):
     ws.title = "Sevk Ozeti"
     _header(ws, ["ID", "Tarih", "Sehir", "Magaza", "Nakliye (TL)", "Iscilik (TL)", "Gider Toplam (TL)"])
     for s in sevkler:
-        gider = sum(g.tutar for g in s.giderler)
-        ws.append([s.id, s.tarih, s.magaza.sehir.ad, s.magaza.ad,
-                   round(s.nakliye_ucreti, 2), round(s.iscilik, 2), round(gider, 2)])
+        try:
+            sehir = s.magaza.sehir.ad if s.magaza and s.magaza.sehir else "-"
+            magaza = s.magaza.ad if s.magaza else (s.alici_adi or "Serbest")
+            gider = sum(g.tutar for g in s.giderler)
+            ws.append([s.id, s.tarih, sehir, magaza,
+                       round(s.nakliye_ucreti or 0, 2), round(s.iscilik or 0, 2), round(gider, 2)])
+        except Exception:
+            ws.append([s.id, s.tarih, "-", "-", 0, 0, 0])
     _autofit(ws)
     wb.save(buf)
 
@@ -39,11 +44,15 @@ def export_magaza_maliyet(magazalar, buf):
     ws.title = "Magaza Maliyet"
     _header(ws, ["Sehir", "Magaza", "Sevk Sayisi", "Toplam Nakliye (TL)", "Toplam Iscilik (TL)", "Toplam Gider (TL)"])
     for m in magazalar:
-        nakliye = sum(s.nakliye_ucreti for s in m.sevkler)
-        iscilik = sum(s.iscilik for s in m.sevkler)
-        gider = sum(g.tutar for s in m.sevkler for g in s.giderler)
-        ws.append([m.sehir.ad, m.ad, len(m.sevkler),
-                   round(nakliye, 2), round(iscilik, 2), round(gider, 2)])
+        try:
+            sehir = m.sehir.ad if m.sehir else "-"
+            nakliye = sum((s.nakliye_ucreti or 0) for s in m.sevkler)
+            iscilik = sum((s.iscilik or 0) for s in m.sevkler)
+            gider = sum(g.tutar for s in m.sevkler for g in s.giderler)
+            ws.append([sehir, m.ad, len(m.sevkler),
+                       round(nakliye, 2), round(iscilik, 2), round(gider, 2)])
+        except Exception:
+            ws.append(["-", m.ad if m else "-", 0, 0, 0, 0])
     _autofit(ws)
     wb.save(buf)
 
@@ -54,7 +63,14 @@ def export_stok(ozet, buf):
     ws.title = "Stok Durumu"
     _header(ws, ["Kod", "Urun Adi", "Birim", "Bakiye"])
     for item in ozet:
-        ws.append([item["urun"].kod, item["urun"].ad, item["urun"].birim, round(item["bakiye"], 2)])
+        try:
+            u = item.get("urun") or item.get("urun_obj")
+            if u:
+                ws.append([u.kod or "-", u.ad or "-", u.birim or "-", round(item.get("bakiye", 0), 2)])
+            else:
+                ws.append(["-", "-", "-", round(item.get("bakiye", 0), 2)])
+        except Exception:
+            ws.append(["-", "-", "-", 0])
     _autofit(ws)
     wb.save(buf)
 
@@ -65,8 +81,13 @@ def export_ssh(bildirimleri, buf):
     ws.title = "SSH Bildirimleri"
     _header(ws, ["ID", "Tarih", "Magaza", "Urun", "Paket", "Hasar Aciklamasi", "Talep Miktar", "Durum"])
     for b in bildirimleri:
-        ws.append([b.id, b.tarih, b.magaza.ad, b.urun.ad,
-                   b.paket.paket_adi if b.paket else "-",
-                   b.hasar_aciklamasi, b.talep_miktar, b.durum])
+        try:
+            magaza = b.magaza.ad if b.magaza else "-"
+            urun = b.urun.ad if b.urun else "-"
+            paket = b.paket.paket_adi if b.paket else "-"
+            ws.append([b.id, b.tarih, magaza, urun, paket,
+                       b.hasar_aciklamasi or "-", b.talep_miktar or 0, b.durum or "-"])
+        except Exception:
+            ws.append([b.id if b else "-", "-", "-", "-", "-", "-", 0, "-"])
     _autofit(ws)
     wb.save(buf)

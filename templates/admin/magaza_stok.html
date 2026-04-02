@@ -21,7 +21,7 @@
         <option value="">Tüm Mağazalar</option>
         {% for m in magazalar %}
         <option value="{{ m.id }}" {% if secili_magaza_id==m.id %}selected{% endif %}>
-          {{ m.sehir.ad }} / {{ m.ad }}
+          {{ m.sehir.ad if m.sehir else "-" }} / {{ m.ad }}
         </option>
         {% endfor %}
       </select>
@@ -43,8 +43,8 @@
 <div class="card mb-3">
   <div class="card-header d-flex justify-content-between align-items-center py-2">
     <div>
-      <strong>{{ item.magaza.ad }}</strong>
-      <span class="text-muted ms-2 small">{{ item.magaza.sehir.ad }}</span>
+      <strong>{{ item.magaza.ad if item.magaza else "-" }}</strong>
+      <span class="text-muted ms-2 small">{{ item.magaza.sehir.ad if item.magaza and item.magaza.sehir else "-" }}</span>
     </div>
     <div class="small text-muted">
       {{ item.stok|length }} ürün çeşidi
@@ -70,7 +70,7 @@
       <tbody>
       {% for s in item.stok %}
       <tr>
-        <td class="ps-3">{{ s.urun.ad }}</td>
+        <td class="ps-3">{{ s.urun.ad if s.urun else "Silinmis" }}</td>
         <td class="text-end">{{ s.gelen|int }}</td>
         <td class="text-end text-danger">{{ s.satilan|int }}</td>
         <td class="text-end fw-bold {% if s.eldeki <= 0 %}text-danger{% elif s.eldeki < 5 %}text-warning{% else %}text-success{% endif %}">
