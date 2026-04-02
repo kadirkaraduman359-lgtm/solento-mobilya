@@ -56,11 +56,26 @@ def _auto_migrate():
     from sqlalchemy import text
     migrations = [
         ("kullanicilar", "telefon", "ALTER TABLE kullanicilar ADD COLUMN telefon TEXT"),
+        ("kullanicilar", "email", "ALTER TABLE kullanicilar ADD COLUMN email TEXT"),
         ("sevkler", "kdv_oran", "ALTER TABLE sevkler ADD COLUMN kdv_oran INTEGER DEFAULT 0"),
         ("sevkler", "alici_turu", "ALTER TABLE sevkler ADD COLUMN alici_turu TEXT DEFAULT 'magaza'"),
         ("sevkler", "alici_adi", "ALTER TABLE sevkler ADD COLUMN alici_adi TEXT"),
         ("sevkler", "nakliye_goster", "ALTER TABLE sevkler ADD COLUMN nakliye_goster INTEGER DEFAULT 0"),
+        ("sevkler", "talep_id", "ALTER TABLE sevkler ADD COLUMN talep_id INTEGER"),
+        ("sevkler", "teslim_durumu", "ALTER TABLE sevkler ADD COLUMN teslim_durumu TEXT DEFAULT 'sevk_edildi'"),
+        ("sevkler", "teslim_tarihi", "ALTER TABLE sevkler ADD COLUMN teslim_tarihi TEXT"),
         ("siparis_talepleri", "iptal_sebebi", "ALTER TABLE siparis_talepleri ADD COLUMN iptal_sebebi TEXT"),
+        ("siparis_talepleri", "notlar", "ALTER TABLE siparis_talepleri ADD COLUMN notlar TEXT"),
+        ("urunler", "kod", "ALTER TABLE urunler ADD COLUMN kod TEXT DEFAULT ''"),
+        ("urunler", "birim", "ALTER TABLE urunler ADD COLUMN birim TEXT DEFAULT 'takim'"),
+        ("magazalar", "telefon", "ALTER TABLE magazalar ADD COLUMN telefon TEXT"),
+        ("kullanici_yetkileri", "stok", "ALTER TABLE kullanici_yetkileri ADD COLUMN stok INTEGER DEFAULT 1"),
+        ("kullanici_yetkileri", "talepler", "ALTER TABLE kullanici_yetkileri ADD COLUMN talepler INTEGER DEFAULT 1"),
+        ("kullanici_yetkileri", "sevklerim", "ALTER TABLE kullanici_yetkileri ADD COLUMN sevklerim INTEGER DEFAULT 1"),
+        ("kullanici_yetkileri", "ssh", "ALTER TABLE kullanici_yetkileri ADD COLUMN ssh INTEGER DEFAULT 1"),
+        ("kullanici_yetkileri", "katalog", "ALTER TABLE kullanici_yetkileri ADD COLUMN katalog INTEGER DEFAULT 1"),
+        ("kullanici_yetkileri", "satis", "ALTER TABLE kullanici_yetkileri ADD COLUMN satis INTEGER DEFAULT 1"),
+        ("kullanici_yetkileri", "katalog_fiyat", "ALTER TABLE kullanici_yetkileri ADD COLUMN katalog_fiyat INTEGER DEFAULT 0"),
     ]
     for tablo, sutun, sql in migrations:
         try:
