@@ -65,12 +65,12 @@ def dashboard():
     stok = magaza_stok_ozet(current_user.magaza_id)
     acik_talepler = SiparisTalebi.query.filter_by(
         magaza_id=current_user.magaza_id
-    ).filter(SiparisTalebi.durum != "iptal").order_by(SiparisTalebi.id.desc()).limit(5).all()
+    ).filter(SiparisTalebi.durum.in_(["beklemede", "onaylandi"])).all()
     acik_ssh = SshBildirimi.query.filter_by(
         magaza_id=current_user.magaza_id
-    ).filter(SshBildirimi.durum != "teslim_edildi").order_by(SshBildirimi.id.desc()).limit(5).all()
-    return render_template("magaza/dashboard.html", stok=stok,
-                           acik_talepler=acik_talepler, acik_ssh=acik_ssh)
+    ).filter(SshBildirimi.durum != "teslim_edildi").all()
+    return render_template("magaza/dashboard.html", kendi_stok=stok,
+                           acik_talepler=len(acik_talepler), acik_ssh=len(acik_ssh))
 
 
 @magaza_bp.route("/stok")
