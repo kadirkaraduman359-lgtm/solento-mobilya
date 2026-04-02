@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+{% block title %}Ürün Kataloğu{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1><i class="bi bi-grid me-2"></i>Ürün Kataloğu</h1>
+  <div class="d-flex gap-2">
+    <a href="{{ url_for('admin.katalog_yeni') }}" class="btn btn-primary">
+      <i class="bi bi-plus-lg me-1"></i>Yeni Ürün Ekle
+    </a>
+    <a href="{{ url_for('admin.fiyat_teklifleri') }}" class="btn btn-outline-warning position-relative">
+      <i class="bi bi-tags me-1"></i>Fiyat Teklifleri
+      {% if bekleyen_teklifler > 0 %}
+        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+          {{ bekleyen_teklifler }}
+        </span>
+      {% endif %}
+    </a>
+  </div>
+</div>
+
+<!-- Katalog Siparişleri (collapsible) -->
+{% if katalog_siparisler %}
+<div class="accordion mb-4" id="katalogSiparislerAccordion">
+  <div class="accordion-item border-warning">
+    <h2 class="accordion-header">
+      <button class="accordion-button bg-warning text-dark fw-semibold" type="button"
+              data-bs-toggle="collapse" data-bs-target="#katalogSiparislerPane">
+        <i class="bi bi-cart-check me-2"></i>
+        Katalogdan Gelen Siparişler
+        <span class="badge bg-dark ms-2">{{ katalog_siparisler|length }}</span>
+      </button>
+    </h2>
+    <div id="katalogSiparislerPane" class="accordion-collapse collapse show">
+      <div class="accordion-body p-0">
+        <div class="table-responsive">
+          <table class="table table-sm table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th class="ps-3">Tarih</th>
+                <th>Mağaza</th>
+                <th>Ürün</th>
+                <th class="text-center">Miktar</th>
+                <th>Notlar</th>
+                <th>Durum</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for ks in katalog_siparisler %}
+              <tr>
+                <td class="ps-3 text-muted small">{{ ks.tarih if ks.tarih else '-' }}</td>
+                <td class="fw-semibold small">{{ ks.magaza.ad if ks.magaza else '-' }}</td>
+                <td class="small">{{ ks.katalog_urun.ad if ks.katalog_urun else '-' }}</td>
+                <td class="text-center"><span class="badge bg-primary rounded-pill">{{ ks.miktar }}</span></td>
+                <td class="small text-muted">{{ ks.musteri_notu or '—' }}</td>
+                <td><span class="badge bg-warning text-dark">{{ ks.durum or 'Yeni' }}</span></td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<!-- Ürün Grid -->
+{% if urunler %}
+<div class="row g-3">
+  {% for ku in urunler %}
+  <div class="col-sm-6 col-lg-4 col-xl-3">
+    <div class="card h-100 {% if not ku.aktif %}opacity-75{% endif %}">
+      <!-- Resim -->
+      <div class="position-relative" style="height:160px;overflow:hidden;background:#f8f9fa;border-radius:.625rem .625rem 0 0">
+        {% if ku.resimler %}
+          <img src="{{ url_for('static', filename='uploads/katalog/' ~ ku.resimler[0].dosya_adi) }}"
+               class="w-100 h-100 object-fit-cover" alt="{{ ku.ad }}">
+        {% else %}
+          <div class="w-100 h-100 d-flex align-items-center justify-content-center text-muted">
+            <i class="bi bi-image fs-1 opacity-25"></i>
+          </div>
+        {% endif %}
+        <!-- Badges overlay -->
+        <div class="position-absolute top-0 start-0 p-2 d-flex flex-column gap-1">
+          {% if not ku.aktif %}
+            <span class="badge bg-dark">Pasif</span>
+          {% else %}
+            <span class="badge bg-success">Aktif</span>
+          {% endif %}
+          {% if ku.gorunurluk == 'gizli' %}
+            <span class="badge bg-secondary"><i class="bi bi-eye-slash me-1"></i>Gizli</span>
+          {% elif ku.gorunurluk == 'secili' %}
+            <span class="badge bg-info"><i class="bi bi-people me-1"></i>Seçili</span>
+          {% else %}
+            <span class="badge bg-primary"><i class="bi bi-globe me-1"></i>Herkes</span>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Body -->
+      <div class="card-body py-2 px-3">
+        {% if ku.kategori %}
+          <span class="badge bg-light text-dark border mb-1" style="font-size:.68rem">{{ ku.kategori }}</span>
+        {% endif %}
+        <h6 class="card-title mb-1 fw-bold">{{ ku.ad }}</h6>
+        {% if ku.kod %}
+          <div class="text-muted" style="font-size:.72rem"><code>{{ ku.kod }}</code></div>
+        {% endif %}
+        {% if ku.boy or ku.en or ku.derinlik %}
+          <div class="text-muted small mt-1">
+            <i class="bi bi-rulers me-1"></i>
+            {% if ku.boy %}{{ ku.boy }}{% endif %}{% if ku.en %} × {{ ku.en }}{% endif %}{% if ku.derinlik %} × {{ ku.derinlik }}{% endif %} cm
+          </div>
+        {% endif %}
+        <div class="mt-2">
+          {% if ku.fiyat_onaylandi and ku.fiyat %}
+            <span class="fw-bold text-success">{{ "%.2f"|format(ku.fiyat) }} ₺</span>
+          {% else %}
+            <span class="text-muted small fst-italic">Fiyat gizli</span>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="card-footer bg-transparent pt-1 pb-2 px-3">
+        <div class="d-flex gap-1 flex-wrap">
+          <a href="{{ url_for('admin.katalog_duzenle', id=ku.id) }}" class="btn btn-sm btn-outline-secondary flex-fill">
+            <i class="bi bi-pencil me-1"></i>Düzenle
+          </a>
+          <form method="POST" action="{{ url_for('admin.katalog_fiyat_onayla', id=ku.id) }}" class="d-inline">
+            <button type="submit" class="btn btn-sm {% if ku.fiyat_onaylandi %}btn-outline-warning{% else %}btn-outline-success{% endif %}"
+                    title="{% if ku.fiyat_onaylandi %}Fiyatı Gizle{% else %}Fiyatı Onayla{% endif %}">
+              <i class="bi bi-{% if ku.fiyat_onaylandi %}eye-slash{% else %}eye{% endif %}"></i>
+            </button>
+          </form>
+          <form method="POST" action="{{ url_for('admin.katalog_sil', id=ku.id) }}" class="d-inline">
+            <button type="submit" class="btn btn-sm btn-outline-danger"
+                    onclick="return confirm('{{ ku.ad }} ürününü silmek istediğinize emin misiniz?')"
+                    title="Sil">
+              <i class="bi bi-trash"></i>
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="card">
+  <div class="text-center py-5 text-muted">
+    <i class="bi bi-grid fs-1 opacity-25 d-block mb-2"></i>
+    Katalogda ürün bulunamadı.
+    <div class="mt-3">
+      <a href="{{ url_for('admin.katalog_yeni') }}" class="btn btn-primary">
+        <i class="bi bi-plus-lg me-1"></i>İlk Ürünü Ekle
+      </a>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

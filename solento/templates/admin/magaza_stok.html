@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+{% block title %}Mağaza Stok{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1><i class="bi bi-shop me-2"></i>Mağaza Stok Durumu</h1>
+</div>
+
+<!-- Filter -->
+<div class="card mb-4">
+  <div class="card-body py-2">
+    <form method="GET" class="row g-2 align-items-end">
+      <div class="col-sm-4">
+        <label class="form-label form-label-sm fw-semibold">Şehir</label>
+        <select class="form-select form-select-sm" name="sehir_id">
+          <option value="">Tüm Şehirler</option>
+          {% for s in sehirler %}
+          <option value="{{ s.id }}" {% if secili_sehir_id == s.id %}selected{% endif %}>{{ s.ad }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-sm-4">
+        <label class="form-label form-label-sm fw-semibold">Mağaza</label>
+        <select class="form-select form-select-sm" name="magaza_id">
+          <option value="">Tüm Mağazalar</option>
+          {% for m in magazalar %}
+          <option value="{{ m.id }}" {% if secili_magaza_id == m.id %}selected{% endif %}>{{ m.ad }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-sm-4">
+        <button type="submit" class="btn btn-primary btn-sm">
+          <i class="bi bi-funnel me-1"></i>Filtrele
+        </button>
+        <a href="{{ url_for('admin.magaza_stok') }}" class="btn btn-outline-secondary btn-sm ms-1">Temizle</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Mağaza Stok Kartları -->
+{% if magaza_ozetleri %}
+<div class="d-flex flex-column gap-3">
+  {% for ozet in magaza_ozetleri %}
+  <div class="card">
+    <div class="card-header d-flex align-items-center gap-2">
+      <i class="bi bi-shop text-primary"></i>
+      <span class="fw-bold">{{ ozet.magaza.ad }}</span>
+      <span class="badge bg-light text-dark border ms-1">{{ ozet.magaza.sehir_adi or '—' }}</span>
+      {% if ozet.magaza.telefon %}
+        <span class="text-muted small ms-2"><i class="bi bi-telephone me-1"></i>{{ ozet.magaza.telefon }}</span>
+      {% endif %}
+    </div>
+    <div class="card-body p-0">
+      {% if ozet.stok %}
+      <div class="table-responsive">
+        <table class="table table-sm table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Ürün</th>
+              <th class="text-center">Gelen</th>
+              <th class="text-center">Satılan</th>
+              <th class="text-center">Eldeki</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in ozet.stok %}
+            <tr {% if row.eldeki < 0 %}class="table-danger"{% endif %}>
+              <td class="fw-semibold small">{{ row.urun }}</td>
+              <td class="text-center">
+                <span class="badge bg-success rounded-pill">{{ row.gelen }}</span>
+              </td>
+              <td class="text-center">
+                <span class="badge bg-secondary rounded-pill">{{ row.satilan }}</span>
+              </td>
+              <td class="text-center">
+                {% if row.eldeki < 0 %}
+                  <span class="badge bg-danger fw-bold">{{ row.eldeki }}</span>
+                {% elif row.eldeki == 0 %}
+                  <span class="badge bg-warning text-dark">0</span>
+                {% else %}
+                  <span class="badge bg-primary">{{ row.eldeki }}</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="text-center py-4 text-muted">
+        <i class="bi bi-inbox fs-4 opacity-25 d-block mb-1"></i>
+        <span class="small">Henüz stok yok.</span>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="card">
+  <div class="text-center py-5 text-muted">
+    <i class="bi bi-shop fs-1 opacity-25 d-block mb-2"></i>
+    Mağaza stok kaydı bulunamadı.
+  </div>
+</div>
+{% endif %}
+{% endblock %}

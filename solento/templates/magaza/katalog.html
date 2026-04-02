@@ -1,0 +1,181 @@
+{% extends 'base.html' %}
+{% block title %}Ürün Kataloğu – Solento Mobilya{% endblock %}
+
+{% block content %}
+<!-- Topbar -->
+<div class="topbar">
+  <span class="page-title-inline">
+    <i class="bi bi-grid me-2"></i>Ürün Kataloğu
+  </span>
+</div>
+
+<h4 class="page-title">Ürün Kataloğu</h4>
+
+{% if urunler %}
+<div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
+  {% for ku, fiyat_gorunsun in urunler %}
+  <div class="col">
+    <div class="card h-100 katalog-card">
+      <!-- Resim -->
+      {% if ku.resimler %}
+      <img src="{{ url_for('static', filename='katalog/' + ku.resimler[0].dosya_adi) }}"
+           alt="{{ ku.ad }}" class="card-img-top">
+      {% else %}
+      <div class="card-img-placeholder">
+        <i class="bi bi-image"></i>
+      </div>
+      {% endif %}
+
+      <div class="card-body d-flex flex-column">
+        <!-- Başlık + Kategori -->
+        <div class="d-flex align-items-start justify-content-between gap-2 mb-2">
+          <h5 class="card-title mb-0 fw-bold" style="font-size:1rem">
+            <a href="{{ url_for('magaza.katalog_detay', id=ku.id) }}"
+               class="text-decoration-none text-dark stretched-link-override">
+              {{ ku.ad }}
+            </a>
+          </h5>
+          {% if ku.kategori %}
+          <span class="badge bg-primary bg-opacity-15 text-primary border border-primary border-opacity-25 text-nowrap flex-shrink-0">
+            {{ ku.kategori }}
+          </span>
+          {% endif %}
+        </div>
+
+        <!-- Boyutlar -->
+        {% if ku.boy or ku.en or ku.derinlik %}
+        <p class="text-muted small mb-2">
+          <i class="bi bi-rulers me-1"></i>
+          {% if ku.boy %}{{ ku.boy }}cm{% endif %}
+          {% if ku.en %} × {{ ku.en }}cm{% endif %}
+          {% if ku.derinlik %} × {{ ku.derinlik }}cm{% endif %}
+        </p>
+        {% endif %}
+
+        <!-- Fiyat -->
+        <div class="mt-auto pt-2">
+          {% if fiyat_gorunsun and ku.fiyat %}
+          <p class="fw-bold text-success fs-5 mb-2">
+            <i class="bi bi-tag me-1"></i>{{ '%.2f'|format(ku.fiyat) }} TL
+          </p>
+          {% else %}
+          <p class="text-muted small fst-italic mb-2">
+            <i class="bi bi-question-circle me-1"></i>Fiyat bilgisi için teklif isteyin
+          </p>
+          {% endif %}
+        </div>
+
+        <!-- Butonlar -->
+        <div class="d-flex gap-2 mt-2">
+          <button class="btn btn-brand btn-sm flex-fill"
+                  data-bs-toggle="modal"
+                  data-bs-target="#modalSiparis{{ ku.id }}">
+            <i class="bi bi-cart-plus me-1"></i>Sipariş Et
+          </button>
+          <button class="btn btn-outline-secondary btn-sm flex-fill"
+                  data-bs-toggle="modal"
+                  data-bs-target="#modalTeklif{{ ku.id }}">
+            <i class="bi bi-envelope me-1"></i>Teklif İste
+          </button>
+        </div>
+        <div class="mt-2">
+          <a href="{{ url_for('magaza.katalog_detay', id=ku.id) }}"
+             class="btn btn-outline-primary btn-sm w-100">
+            <i class="bi bi-eye me-1"></i>Detayları Gör
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+{% else %}
+<div class="text-center text-muted py-5">
+  <i class="bi bi-grid fs-1 d-block mb-2"></i>
+  Katalogda henüz ürün bulunmuyor.
+</div>
+{% endif %}
+
+<!-- ============ MODALS ============ -->
+{% for ku, fiyat_gorunsun in urunler %}
+
+<!-- Sipariş Modal -->
+<div class="modal fade" id="modalSiparis{{ ku.id }}" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="POST" action="{{ url_for('magaza.katalog_siparis') }}">
+        <input type="hidden" name="csrf_token" value="
+">
+        <input type="hidden" name="katalog_urun_id" value="{{ ku.id }}">
+        <div class="modal-header">
+          <h5 class="modal-title">
+            <i class="bi bi-cart-plus me-2"></i>Sipariş Et – {{ ku.ad }}
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          {% if ku.resimler %}
+          <div class="text-center mb-3">
+            <img src="{{ url_for('static', filename='katalog/' + ku.resimler[0].dosya_adi) }}"
+                 alt="{{ ku.ad }}" class="img-fluid rounded" style="max-height:120px;object-fit:cover">
+          </div>
+          {% endif %}
+          <div class="mb-3">
+            <label class="form-label">Miktar <span class="text-danger">*</span></label>
+            <input type="number" name="miktar" class="form-control" min="1" value="1" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Notlar</label>
+            <textarea name="notlar" class="form-control" rows="2" placeholder="Sipariş notu..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Vazgeç</button>
+          <button type="submit" class="btn btn-brand">
+            <i class="bi bi-send me-1"></i>Siparişi Gönder
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Fiyat Teklifi Modal -->
+<div class="modal fade" id="modalTeklif{{ ku.id }}" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="POST" action="{{ url_for('magaza.fiyat_teklifi_gonder') }}">
+        <input type="hidden" name="csrf_token" value="
+">
+        <input type="hidden" name="katalog_urun_id" value="{{ ku.id }}">
+        <div class="modal-header">
+          <h5 class="modal-title">
+            <i class="bi bi-envelope me-2"></i>Fiyat Teklifi İste – {{ ku.ad }}
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Miktar <span class="text-danger">*</span></label>
+            <input type="number" name="miktar" class="form-control" min="1" value="1" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Notlar</label>
+            <textarea name="not_" class="form-control" rows="2" placeholder="Teklif talebi notu..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Vazgeç</button>
+          <button type="submit" class="btn btn-outline-primary">
+            <i class="bi bi-send me-1"></i>Teklif İste
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% endfor %}
+
+{% endblock %}

@@ -1,0 +1,156 @@
+{% extends 'base.html' %}
+{% block title %}Siparişlerim – Solento Mobilya{% endblock %}
+
+{% block content %}
+<!-- Topbar -->
+<div class="topbar">
+  <span class="page-title-inline">
+    <i class="bi bi-bag-check me-2"></i>Siparişlerim
+  </span>
+  <a href="{{ url_for('magaza.talep_olustur') }}" class="btn btn-brand btn-sm">
+    <i class="bi bi-plus-circle me-1"></i>Yeni Sipariş
+  </a>
+</div>
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+  <h4 class="page-title mb-0">Siparişlerim</h4>
+  <a href="{{ url_for('magaza.talep_olustur') }}" class="btn btn-brand">
+    <i class="bi bi-plus-circle me-1"></i>Yeni Sipariş
+  </a>
+</div>
+
+<div class="card">
+  <div class="card-body p-0">
+    {% if talepler %}
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead>
+          <tr>
+            <th>Tarih</th>
+            <th>Ürünler</th>
+            <th>Notlar</th>
+            <th class="text-center">Durum</th>
+            <th class="text-center">İşlem</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for talep in talepler %}
+          <tr>
+            <td class="text-nowrap small text-muted">
+              {{ talep.tarih if talep.tarih else '—' }}
+            </td>
+            <td>
+              {% if talep.kalemler %}
+                {% for k in talep.kalemler %}
+                  <span class="badge bg-light text-dark border me-1 mb-1">
+                    {{ k.urun.ad if k.urun else '?' }} <strong>×{{ k.miktar }}</strong>
+                  </span>
+                {% endfor %}
+              {% else %}
+                <span class="text-muted small">—</span>
+              {% endif %}
+            </td>
+            <td class="small text-muted" style="max-width:200px">
+              <span title="{{ talep.notlar or '' }}">
+                {{ (talep.notlar or '—')[:60] }}{% if talep.notlar and talep.notlar|length > 60 %}…{% endif %}
+              </span>
+              {% if talep.durum == 'iptal' and talep.iptal_sebebi %}
+              <div class="text-danger mt-1">
+                <i class="bi bi-x-circle me-1"></i>
+                <em>{{ talep.iptal_sebebi }}</em>
+              </div>
+              {% endif %}
+            </td>
+            <td class="text-center">
+              {% if talep.durum == 'beklemede' %}
+                <span class="badge badge-beklemede">Beklemede</span>
+              {% elif talep.durum == 'onaylandi' %}
+                <span class="badge badge-onaylandi">Onaylandı</span>
+              {% elif talep.durum == 'sevk_edildi' %}
+                <span class="badge badge-sevk_edildi">Sevk Edildi</span>
+              {% elif talep.durum == 'teslim_alindi' %}
+                <span class="badge bg-success bg-opacity-25 text-success border border-success">Teslim Alındı</span>
+              {% elif talep.durum == 'iptal' %}
+                <span class="badge badge-iptal">İptal</span>
+              {% else %}
+                <span class="badge bg-secondary">{{ talep.durum }}</span>
+              {% endif %}
+            </td>
+            <td class="text-center">
+              {% if talep.durum in ['beklemede', 'onaylandi'] %}
+              <button class="btn btn-sm btn-outline-danger"
+                      data-bs-toggle="modal"
+                      data-bs-target="#modalIptal{{ talep.id }}">
+                <i class="bi bi-x-circle me-1"></i>İptal
+              </button>
+              {% else %}
+              <span class="text-muted small">—</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="text-center text-muted py-5">
+      <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+      Henüz siparişiniz bulunmuyor.
+      <div class="mt-3">
+        <a href="{{ url_for('magaza.talep_olustur') }}" class="btn btn-brand">
+          <i class="bi bi-plus-circle me-1"></i>İlk Siparişinizi Verin
+        </a>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- ============ İPTAL MODALLERİ ============ -->
+{% for talep in talepler if talep.durum in ['beklemede', 'onaylandi'] %}
+<div class="modal fade" id="modalIptal{{ talep.id }}" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="POST" action="{{ url_for('magaza.talep_iptal', id=talep.id) }}">
+        <input type="hidden" name="csrf_token" value="
+">
+        <div class="modal-header">
+          <h5 class="modal-title">
+            <i class="bi bi-x-circle me-2 text-danger"></i>Siparişi İptal Et
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="alert alert-danger small mb-3">
+            <i class="bi bi-exclamation-triangle me-1"></i>
+            Bu sipariş iptal edilecektir. İşlem geri alınamaz.
+          </div>
+          <div class="mb-3">
+            <p class="small text-muted mb-2">
+              <strong>Sipariş tarihi:</strong>
+              {{ talep.tarih if talep.tarih else '—' }}
+            </p>
+            <p class="small text-muted mb-2">
+              <strong>Ürünler:</strong>
+              {% for k in talep.kalemler %}{{ k.urun.ad if k.urun else '?' }} ×{{ k.miktar }}{% if not loop.last %}, {% endif %}{% endfor %}
+            </p>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">İptal Sebebi <span class="text-danger">*</span></label>
+            <textarea name="iptal_sebebi" class="form-control" rows="3"
+                      required placeholder="Lütfen iptal sebebini açıklayınız..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Vazgeç</button>
+          <button type="submit" class="btn btn-danger">
+            <i class="bi bi-x-circle me-1"></i>İptal Et
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endfor %}
+
+{% endblock %}

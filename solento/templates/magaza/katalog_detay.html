@@ -1,0 +1,262 @@
+{% extends 'base.html' %}
+{% block title %}{{ ku.ad }} – Katalog – Solento Mobilya{% endblock %}
+
+{% block content %}
+<!-- Topbar -->
+<div class="topbar">
+  <span class="page-title-inline">
+    <i class="bi bi-grid me-2"></i>Ürün Detayı
+  </span>
+  <a href="{{ url_for('magaza.katalog') }}" class="btn btn-sm btn-outline-secondary">
+    <i class="bi bi-arrow-left me-1"></i>Kataloğa Dön
+  </a>
+</div>
+
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb" class="mb-3">
+  <ol class="breadcrumb mb-0">
+    <li class="breadcrumb-item">
+      <a href="{{ url_for('magaza.katalog') }}" class="text-decoration-none">
+        <i class="bi bi-grid me-1"></i>Katalog
+      </a>
+    </li>
+    <li class="breadcrumb-item active">{{ ku.ad }}</li>
+  </ol>
+</nav>
+
+<div class="row g-4">
+  <!-- ===== Sol: Resim Galerisi ===== -->
+  <div class="col-12 col-lg-5">
+    <div class="card">
+      <div class="card-body p-3">
+        {% if ku.resimler %}
+        <div id="katalogCarousel" class="carousel slide" data-bs-ride="carousel">
+          <div class="carousel-inner rounded overflow-hidden">
+            {% for resim in ku.resimler %}
+            <div class="carousel-item {% if loop.first %}active{% endif %}">
+              <img src="{{ url_for('static', filename='katalog/' + resim.dosya_adi) }}"
+                   class="d-block w-100"
+                   alt="{{ ku.ad }}"
+                   style="height:340px;object-fit:cover">
+            </div>
+            {% endfor %}
+          </div>
+          {% if ku.resimler|length > 1 %}
+          <button class="carousel-control-prev" type="button"
+                  data-bs-target="#katalogCarousel" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon"></span>
+            <span class="visually-hidden">Önceki</span>
+          </button>
+          <button class="carousel-control-next" type="button"
+                  data-bs-target="#katalogCarousel" data-bs-slide="next">
+            <span class="carousel-control-next-icon"></span>
+            <span class="visually-hidden">Sonraki</span>
+          </button>
+          <div class="carousel-indicators" style="bottom:-30px">
+            {% for resim in ku.resimler %}
+            <button type="button" data-bs-target="#katalogCarousel"
+                    data-bs-slide-to="{{ loop.index0 }}"
+                    class="{% if loop.first %}active{% endif %}"
+                    style="background-color:var(--brand-color)"></button>
+            {% endfor %}
+          </div>
+          {% endif %}
+        </div>
+        <!-- Thumbnail strip -->
+        {% if ku.resimler|length > 1 %}
+        <div class="d-flex gap-2 flex-wrap mt-5 pt-2">
+          {% for resim in ku.resimler %}
+          <img src="{{ url_for('static', filename='katalog/' + resim.dosya_adi) }}"
+               alt="{{ ku.ad }}"
+               class="rounded border"
+               style="width:60px;height:50px;object-fit:cover;cursor:pointer;opacity:{% if loop.first %}1{% else %}0.65{% endif %}"
+               onclick="bootstrap.Carousel.getInstance(document.getElementById('katalogCarousel')).to({{ loop.index0 }})">
+          {% endfor %}
+        </div>
+        {% endif %}
+        {% else %}
+        <div class="text-center py-5 text-muted">
+          <i class="bi bi-image fs-1 d-block mb-2" style="font-size:5rem!important"></i>
+          <span class="small">Resim bulunamadı</span>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Sağ: Ürün Bilgileri ===== -->
+  <div class="col-12 col-lg-7">
+    <div class="card h-100">
+      <div class="card-body">
+        <!-- Başlık -->
+        <h3 class="fw-bold mb-2">{{ ku.ad }}</h3>
+
+        <!-- Badges -->
+        <div class="d-flex flex-wrap gap-2 mb-3">
+          {% if ku.kategori %}
+          <span class="badge bg-primary bg-opacity-15 text-primary border border-primary border-opacity-25">
+            <i class="bi bi-tag me-1"></i>{{ ku.kategori }}
+          </span>
+          {% endif %}
+          {% if ku.kod %}
+          <span class="badge bg-secondary bg-opacity-15 text-secondary border border-secondary border-opacity-25">
+            <i class="bi bi-upc me-1"></i>{{ ku.kod }}
+          </span>
+          {% endif %}
+        </div>
+
+        <!-- Açıklama -->
+        {% if ku.aciklama %}
+        <p class="text-muted mb-3" style="line-height:1.7">{{ ku.aciklama }}</p>
+        <hr>
+        {% endif %}
+
+        <!-- Özellikler Tablosu -->
+        {% set has_specs = (ku.boy or ku.en or ku.derinlik or ku.agirlik) %}
+        {% if has_specs %}
+        <h6 class="fw-semibold mb-2"><i class="bi bi-rulers me-2 text-primary"></i>Teknik Özellikler</h6>
+        <table class="table table-sm table-bordered mb-3" style="width:auto;min-width:250px">
+          <tbody>
+            {% if ku.boy %}
+            <tr>
+              <th class="text-muted small fw-normal bg-light" style="width:120px">Boy</th>
+              <td class="small fw-semibold">{{ ku.boy }} cm</td>
+            </tr>
+            {% endif %}
+            {% if ku.en %}
+            <tr>
+              <th class="text-muted small fw-normal bg-light">En</th>
+              <td class="small fw-semibold">{{ ku.en }} cm</td>
+            </tr>
+            {% endif %}
+            {% if ku.derinlik %}
+            <tr>
+              <th class="text-muted small fw-normal bg-light">Derinlik</th>
+              <td class="small fw-semibold">{{ ku.derinlik }} cm</td>
+            </tr>
+            {% endif %}
+            {% if ku.agirlik %}
+            <tr>
+              <th class="text-muted small fw-normal bg-light">Ağırlık</th>
+              <td class="small fw-semibold">{{ ku.agirlik }} kg</td>
+            </tr>
+            {% endif %}
+          </tbody>
+        </table>
+        {% endif %}
+
+        <!-- Fiyat -->
+        <div class="p-3 rounded mb-4"
+             style="background:rgba(30,58,95,0.05);border:1px solid rgba(30,58,95,0.12)">
+          {% if fiyat_gorunsun and ku.fiyat %}
+          <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-tag-fill text-success fs-5"></i>
+            <span class="fw-bold text-success fs-4">{{ '%.2f'|format(ku.fiyat) }} TL</span>
+          </div>
+          {% else %}
+          <div class="d-flex align-items-center gap-2 text-muted">
+            <i class="bi bi-question-circle fs-5"></i>
+            <span class="fst-italic">Fiyat bilgisi için teklif isteyin</span>
+          </div>
+          {% endif %}
+        </div>
+
+        <!-- Aksiyon Butonları -->
+        <div class="d-flex flex-wrap gap-2">
+          <button class="btn btn-brand flex-fill"
+                  data-bs-toggle="modal"
+                  data-bs-target="#modalSiparis">
+            <i class="bi bi-cart-plus me-2"></i>Sipariş Et
+          </button>
+          <button class="btn btn-outline-secondary flex-fill"
+                  data-bs-toggle="modal"
+                  data-bs-target="#modalTeklif">
+            <i class="bi bi-envelope me-2"></i>Fiyat Teklifi İste
+          </button>
+        </div>
+
+        <div class="mt-3">
+          <a href="{{ url_for('magaza.katalog') }}" class="text-muted small text-decoration-none">
+            <i class="bi bi-arrow-left me-1"></i>Kataloğa Geri Dön
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODALS ============ -->
+
+<!-- Sipariş Modal -->
+<div class="modal fade" id="modalSiparis" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="POST" action="{{ url_for('magaza.katalog_siparis') }}">
+        <input type="hidden" name="csrf_token" value="
+">
+        <input type="hidden" name="katalog_urun_id" value="{{ ku.id }}">
+        <div class="modal-header">
+          <h5 class="modal-title">
+            <i class="bi bi-cart-plus me-2"></i>Sipariş Et – {{ ku.ad }}
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Miktar <span class="text-danger">*</span></label>
+            <input type="number" name="miktar" class="form-control" min="1" value="1" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Notlar</label>
+            <textarea name="notlar" class="form-control" rows="3"
+                      placeholder="Sipariş notunuzu giriniz..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Vazgeç</button>
+          <button type="submit" class="btn btn-brand">
+            <i class="bi bi-send me-1"></i>Siparişi Gönder
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Fiyat Teklifi Modal -->
+<div class="modal fade" id="modalTeklif" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="POST" action="{{ url_for('magaza.fiyat_teklifi_gonder') }}">
+        <input type="hidden" name="csrf_token" value="
+">
+        <input type="hidden" name="katalog_urun_id" value="{{ ku.id }}">
+        <div class="modal-header">
+          <h5 class="modal-title">
+            <i class="bi bi-envelope me-2"></i>Fiyat Teklifi İste – {{ ku.ad }}
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Miktar <span class="text-danger">*</span></label>
+            <input type="number" name="miktar" class="form-control" min="1" value="1" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Notlar</label>
+            <textarea name="not_" class="form-control" rows="3"
+                      placeholder="Teklif talebi notunuz..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Vazgeç</button>
+          <button type="submit" class="btn btn-outline-primary">
+            <i class="bi bi-send me-1"></i>Teklif İste
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

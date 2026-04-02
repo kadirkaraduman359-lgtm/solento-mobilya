@@ -1,0 +1,251 @@
+{% extends 'base.html' %}
+{% block title %}Tanımlar{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1><i class="bi bi-gear me-2"></i>Tanımlar</h1>
+</div>
+
+<div class="row g-4">
+
+  <!-- ─── Şehirler ─── -->
+  <div class="col-lg-4">
+    <div class="card h-100">
+      <div class="card-header d-flex align-items-center gap-2">
+        <i class="bi bi-geo-alt text-primary"></i>
+        <span>Şehirler</span>
+        <span class="badge bg-secondary ms-auto">{{ sehirler|length }}</span>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive" style="max-height:280px;overflow-y:auto">
+          <table class="table table-sm table-hover align-middle mb-0">
+            <tbody>
+              {% for s in sehirler %}
+              <tr>
+                <td class="ps-3 fw-semibold">{{ s.ad }}</td>
+                <td class="text-end pe-3">
+                  <form method="POST" action="{{ url_for('admin.sehir_sil', id=s.id) }}" class="d-inline">
+                    <button type="submit" class="btn btn-sm btn-outline-danger"
+                            onclick="return confirm('{{ s.ad }} şehrini silmek istediğinize emin misiniz?')">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </form>
+                </td>
+              </tr>
+              {% else %}
+              <tr><td class="text-center text-muted py-3 small">Şehir tanımı yok.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <div class="p-3 border-top">
+          <form method="POST" action="{{ url_for('admin.sehir_ekle') }}" class="d-flex gap-2">
+            <input type="text" class="form-control form-control-sm" name="ad" placeholder="Yeni şehir adı" required>
+            <button type="submit" class="btn btn-primary btn-sm flex-shrink-0">
+              <i class="bi bi-plus-lg"></i>
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── Mağazalar ─── -->
+  <div class="col-lg-8">
+    <div class="card h-100">
+      <div class="card-header d-flex align-items-center gap-2">
+        <i class="bi bi-shop text-success"></i>
+        <span>Mağazalar</span>
+        <span class="badge bg-secondary ms-auto">{{ magazalar|length }}</span>
+        <button class="btn btn-sm btn-success ms-1" data-bs-toggle="modal" data-bs-target="#magazaEkleModal">
+          <i class="bi bi-plus-lg me-1"></i>Ekle
+        </button>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-sm table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th class="ps-3">Ad</th>
+                <th>Şehir</th>
+                <th>Telefon</th>
+                <th class="text-end pe-3">İşlem</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for m in magazalar %}
+              <tr>
+                <td class="ps-3 fw-semibold">{{ m.ad }}</td>
+                <td class="text-muted small">{{ m.sehir.ad if m.sehir else '—' }}</td>
+                <td class="text-muted small">{{ m.telefon or '—' }}</td>
+                <td class="text-end pe-3">
+                  <form method="POST" action="{{ url_for('admin.magaza_sil', id=m.id) }}" class="d-inline">
+                    <button type="submit" class="btn btn-sm btn-outline-danger"
+                            onclick="return confirm('{{ m.ad }} mağazasını silmek istediğinize emin misiniz?')">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </form>
+                </td>
+              </tr>
+              {% else %}
+              <tr><td colspan="4" class="text-center text-muted py-3 small">Mağaza tanımı yok.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── Ürünler ─── -->
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header d-flex align-items-center gap-2">
+        <i class="bi bi-box-seam text-warning"></i>
+        <span>Ürünler</span>
+        <span class="badge bg-secondary ms-auto">{{ urunler|length }}</span>
+        <button class="btn btn-sm btn-warning ms-1" data-bs-toggle="modal" data-bs-target="#urunEkleModal">
+          <i class="bi bi-plus-lg me-1"></i>Ekle
+        </button>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-sm table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th class="ps-3">Kod</th>
+                <th>Ad</th>
+                <th>Birim</th>
+                <th class="text-center">Paket Sayısı</th>
+                <th class="text-end pe-3">İşlemler</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for u in urunler %}
+              <tr>
+                <td class="ps-3">
+                  {% if u.kod %}
+                    <code class="bg-light px-2 py-1 rounded">{{ u.kod }}</code>
+                  {% else %}
+                    <span class="text-muted">—</span>
+                  {% endif %}
+                </td>
+                <td class="fw-semibold">{{ u.ad }}</td>
+                <td class="text-muted small">{{ u.birim or '—' }}</td>
+                <td class="text-center">
+                  <span class="badge bg-light text-dark border">{{ u.paket_sayisi or (u.paketler|length) }}</span>
+                </td>
+                <td class="text-end pe-3">
+                  <div class="d-flex gap-1 justify-content-end">
+                    <a href="{{ url_for('admin.paket_duzenle', id=u.id) }}"
+                       class="btn btn-sm btn-outline-primary" title="Paket Düzenle">
+                      <i class="bi bi-box-seam"></i>
+                    </a>
+                    <form method="POST" action="{{ url_for('admin.urun_sil', id=u.id) }}" class="d-inline">
+                      <button type="submit" class="btn btn-sm btn-outline-danger"
+                              onclick="return confirm('{{ u.ad }} ürününü silmek istediğinize emin misiniz?')"
+                              title="Sil">
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+              {% else %}
+              <tr><td colspan="5" class="text-center text-muted py-3 small">Ürün tanımı yok.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Mağaza Ekle Modal -->
+<div class="modal fade" id="magazaEkleModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-success text-white">
+        <h5 class="modal-title"><i class="bi bi-shop me-2"></i>Mağaza Ekle</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="POST" action="{{ url_for('admin.magaza_ekle') }}">
+        <div class="modal-body">
+          <div class="row g-3">
+            <div class="col-12">
+              <label class="form-label fw-semibold">Mağaza Adı <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" name="ad" required>
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label fw-semibold">Şehir <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" name="sehir_ad" list="sehirList" required>
+              <datalist id="sehirList">
+                {% for s in sehirler %}
+                <option value="{{ s.ad }}">
+                {% endfor %}
+              </datalist>
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label fw-semibold">Telefon</label>
+              <input type="text" class="form-control" name="telefon" placeholder="05xx xxx xx xx">
+            </div>
+            <div class="col-12">
+              <label class="form-label fw-semibold">Adres</label>
+              <textarea class="form-control" name="adres" rows="2"></textarea>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+          <button type="submit" class="btn btn-success"><i class="bi bi-plus-lg me-1"></i>Ekle</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Ürün Ekle Modal -->
+<div class="modal fade" id="urunEkleModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-warning text-dark">
+        <h5 class="modal-title"><i class="bi bi-box-seam me-2"></i>Ürün Ekle</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="POST" action="{{ url_for('admin.urun_ekle') }}">
+        <div class="modal-body">
+          <div class="row g-3">
+            <div class="col-sm-5">
+              <label class="form-label fw-semibold">Ürün Kodu</label>
+              <input type="text" class="form-control" name="kod" placeholder="Örn: SOL-001">
+            </div>
+            <div class="col-sm-7">
+              <label class="form-label fw-semibold">Ürün Adı <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" name="ad" required>
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label fw-semibold">Birim</label>
+              <select class="form-select" name="birim">
+                <option value="takim">Takım</option>
+                <option value="adet">Adet</option>
+                <option value="set">Set</option>
+                <option value="paket">Paket</option>
+              </select>
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label fw-semibold">Paket Sayısı <span class="text-danger">*</span></label>
+              <input type="number" class="form-control" name="paket_sayisi" min="1" value="1" required>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+          <button type="submit" class="btn btn-warning"><i class="bi bi-plus-lg me-1"></i>Ekle</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

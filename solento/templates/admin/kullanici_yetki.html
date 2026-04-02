@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% block title %}Yetki Yönetimi - {{ u.ad_soyad }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1><i class="bi bi-shield-check me-2"></i>Yetki Yönetimi
+    <small class="text-muted fs-5 ms-2">{{ u.ad_soyad or u.kullanici_adi }}</small>
+  </h1>
+  <a href="{{ url_for('admin.kullanicilar') }}" class="btn btn-outline-secondary">
+    <i class="bi bi-arrow-left me-1"></i>Geri Dön
+  </a>
+</div>
+
+<!-- Kullanıcı Bilgi Kartı -->
+<div class="card mb-4 border-0 bg-light">
+  <div class="card-body py-3">
+    <div class="row g-3">
+      <div class="col-sm-4">
+        <div class="text-muted small fw-semibold text-uppercase" style="font-size:.7rem;letter-spacing:.5px">Kullanıcı Adı</div>
+        <div class="fw-bold"><code>{{ u.kullanici_adi }}</code></div>
+      </div>
+      <div class="col-sm-4">
+        <div class="text-muted small fw-semibold text-uppercase" style="font-size:.7rem;letter-spacing:.5px">Mağaza</div>
+        <div class="fw-bold">{{ u.magaza.ad if u.magaza else '—' }}</div>
+      </div>
+      <div class="col-sm-4">
+        <div class="text-muted small fw-semibold text-uppercase" style="font-size:.7rem;letter-spacing:.5px">Şehir</div>
+        <div class="fw-bold">{{ u.magaza.sehir_adi if u.magaza else '—' }}</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Yetki Formu -->
+<div class="card" style="max-width:600px">
+  <div class="card-header">
+    <i class="bi bi-toggles me-2"></i>Kullanıcı Yetkileri
+  </div>
+  <div class="card-body">
+    <form method="POST" action="{{ url_for('admin.kullanici_yetki', id=u.id) }}">
+      <div class="d-flex flex-column gap-3">
+
+        {% set permissions = [
+          ('stok', 'bi-boxes', 'Stok Görüntüleme', 'Depo ve mağaza stok bilgilerini görebilir'),
+          ('satis', 'bi-cash-register', 'Satış Girişi', 'Satış kaydı girebilir'),
+          ('sevklerim', 'bi-truck', 'Sevklerimi Gör', 'Kendi mağazasına yapılan sevkleri görebilir'),
+          ('talepler', 'bi-cart-check', 'Sipariş Talebi Ver', 'Depodan sipariş talebi oluşturabilir'),
+          ('ssh', 'bi-exclamation-circle', 'SSH Bildirimi', 'Hasar/SSH bildirimi gönderebilir'),
+          ('katalog', 'bi-grid', 'Katalog', 'Ürün kataloğunu görebilir'),
+          ('katalog_fiyat', 'bi-tag', 'Fiyat Bilgisi', 'Katalogda ürün fiyatlarını görebilir'),
+        ] %}
+
+        {% for perm, icon, label, desc in permissions %}
+        <div class="d-flex align-items-center justify-content-between p-3 bg-light rounded">
+          <div class="d-flex align-items-center gap-3">
+            <div class="text-primary" style="width:1.5rem;text-align:center">
+              <i class="bi {{ icon }} fs-5"></i>
+            </div>
+            <div>
+              <div class="fw-semibold">{{ label }}</div>
+              <div class="text-muted small">{{ desc }}</div>
+            </div>
+          </div>
+          <div class="form-check form-switch mb-0">
+            <input class="form-check-input" type="checkbox" role="switch"
+                   id="perm_{{ perm }}" name="{{ perm }}" value="1"
+                   style="width:2.75rem;height:1.375rem"
+                   {% if u.yetki and u.yetki[perm] %}checked{% endif %}>
+          </div>
+        </div>
+        {% endfor %}
+
+      </div>
+      <hr class="mt-4">
+      <div class="d-flex gap-2 justify-content-end">
+        <a href="{{ url_for('admin.kullanicilar') }}" class="btn btn-secondary">İptal</a>
+        <button type="submit" class="btn btn-primary px-4">
+          <i class="bi bi-floppy me-1"></i>Kaydet
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

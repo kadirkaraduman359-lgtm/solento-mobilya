@@ -1,0 +1,252 @@
+{% extends 'base.html' %}
+{% block title %}Raporlar{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1><i class="bi bi-bar-chart me-2"></i>Raporlar</h1>
+</div>
+
+{# ─── Build WhatsApp summary texts ─── #}
+{% set sevk_rows = rapor_ozet.sevk.satirlar if rapor_ozet and rapor_ozet.sevk else [] %}
+{% set maliyet_rows = rapor_ozet.maliyet.satirlar if rapor_ozet and rapor_ozet.maliyet else [] %}
+{% set stok_rows = rapor_ozet.stok.satirlar if rapor_ozet and rapor_ozet.stok else [] %}
+{% set ssh_rows = rapor_ozet.ssh.satirlar if rapor_ozet and rapor_ozet.ssh else [] %}
+
+{# Sevkiyat WA text #}
+{% set ns_sevk = namespace(lines=[]) %}
+{% set _ = ns_sevk.lines.append('*Solento Mobilya - Sevkiyat Raporu*') %}
+{% for r in sevk_rows[:5] %}
+  {% set _ = ns_sevk.lines.append('• ' ~ (r.tarih|string)[:10] ~ ' | ' ~ (r.alici or r.magaza or '-') ~ ' | ' ~ (r.urunler or '-') ~ ' | ' ~ (r.toplam|string if r.toplam else '-') ~ ' ₺') %}
+{% endfor %}
+{% set sevk_wa_text = ns_sevk.lines|join('\n') %}
+
+{# Maliyet WA text #}
+{% set ns_mal = namespace(lines=[]) %}
+{% set _ = ns_mal.lines.append('*Solento Mobilya - Maliyet Raporu*') %}
+{% for r in maliyet_rows[:5] %}
+  {% set _ = ns_mal.lines.append('• ' ~ (r.magaza or '-') ~ ': ' ~ (r.toplam|string if r.toplam else '-') ~ ' ₺') %}
+{% endfor %}
+{% set maliyet_wa_text = ns_mal.lines|join('\n') %}
+
+{# Stok WA text #}
+{% set ns_stok = namespace(lines=[]) %}
+{% set _ = ns_stok.lines.append('*Solento Mobilya - Stok Raporu*') %}
+{% for r in stok_rows %}
+  {% set _ = ns_stok.lines.append('• ' ~ (r.urun or '-') ~ ': ' ~ (r.bakiye|string if r.bakiye is defined else '-')) %}
+{% endfor %}
+{% set stok_wa_text = ns_stok.lines|join('\n') %}
+
+{# SSH WA text #}
+{% set ns_ssh = namespace(lines=[]) %}
+{% set _ = ns_ssh.lines.append('*Solento Mobilya - SSH Bildirimleri*') %}
+{% for r in ssh_rows[:5] %}
+  {% set _ = ns_ssh.lines.append('• ' ~ (r.tarih|string)[:10] ~ ' | ' ~ (r.magaza or '-') ~ ' | ' ~ (r.urun or '-') ~ ' | ' ~ (r.durum or '-')) %}
+{% endfor %}
+{% set ssh_wa_text = ns_ssh.lines|join('\n') %}
+
+<div class="row g-4">
+
+  <!-- ─── Sevkiyat Raporu ─── -->
+  <div class="col-lg-6">
+    <div class="card h-100">
+      <div class="card-header d-flex align-items-center gap-2">
+        <i class="bi bi-truck text-primary fs-5"></i>
+        <span class="fw-bold">Sevkiyat Raporu</span>
+      </div>
+      <div class="card-body p-0">
+        {% if sevk_rows %}
+        <div class="table-responsive">
+          <table class="table table-sm table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th class="ps-3">Tarih</th>
+                <th>Mağaza/Alıcı</th>
+                <th>Ürünler</th>
+                <th class="text-end pe-3">Toplam</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for r in sevk_rows[:5] %}
+              <tr>
+                <td class="ps-3 text-muted small">{{ r.tarih if r.tarih else '-' }}</td>
+                <td class="fw-semibold small">{{ r.alici or r.magaza or '-' }}</td>
+                <td class="small text-muted">{{ r.urunler or '-' }}</td>
+                <td class="text-end pe-3 fw-semibold">{{ "%.2f"|format(r.toplam) if r.toplam else '-' }} ₺</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="text-center py-4 text-muted">
+          <i class="bi bi-truck fs-2 opacity-25 d-block mb-1"></i>Veri yok.
+        </div>
+        {% endif %}
+      </div>
+      <div class="card-footer bg-transparent d-flex gap-2">
+        <a href="{{ url_for('admin.rapor_excel', tur='sevk') }}" class="btn btn-sm btn-outline-success">
+          <i class="bi bi-file-earmark-excel me-1"></i>Excel İndir
+        </a>
+        <a href="https://wa.me/?text={{ sevk_wa_text|urlencode }}" target="_blank" class="btn btn-sm btn-success">
+          <i class="bi bi-whatsapp me-1"></i>WhatsApp Paylaş
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── Maliyet Raporu ─── -->
+  <div class="col-lg-6">
+    <div class="card h-100">
+      <div class="card-header d-flex align-items-center gap-2">
+        <i class="bi bi-currency-dollar text-warning fs-5"></i>
+        <span class="fw-bold">Maliyet Raporu</span>
+      </div>
+      <div class="card-body p-0">
+        {% if maliyet_rows %}
+        <div class="table-responsive">
+          <table class="table table-sm table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th class="ps-3">Mağaza</th>
+                <th class="text-end pe-3">Toplam Maliyet</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for r in maliyet_rows[:5] %}
+              <tr>
+                <td class="ps-3 fw-semibold small">{{ r.magaza or '-' }}</td>
+                <td class="text-end pe-3 fw-bold text-warning">{{ "%.2f"|format(r.toplam) if r.toplam else '-' }} ₺</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="text-center py-4 text-muted">
+          <i class="bi bi-currency-dollar fs-2 opacity-25 d-block mb-1"></i>Veri yok.
+        </div>
+        {% endif %}
+      </div>
+      <div class="card-footer bg-transparent d-flex gap-2">
+        <a href="{{ url_for('admin.rapor_excel', tur='maliyet') }}" class="btn btn-sm btn-outline-success">
+          <i class="bi bi-file-earmark-excel me-1"></i>Excel İndir
+        </a>
+        <a href="https://wa.me/?text={{ maliyet_wa_text|urlencode }}" target="_blank" class="btn btn-sm btn-success">
+          <i class="bi bi-whatsapp me-1"></i>WhatsApp Paylaş
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── Stok Raporu ─── -->
+  <div class="col-lg-6">
+    <div class="card h-100">
+      <div class="card-header d-flex align-items-center gap-2">
+        <i class="bi bi-boxes text-success fs-5"></i>
+        <span class="fw-bold">Stok Raporu</span>
+      </div>
+      <div class="card-body p-0">
+        {% if stok_rows %}
+        <div class="table-responsive">
+          <table class="table table-sm table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th class="ps-3">Ürün</th>
+                <th class="text-center">Bakiye</th>
+                <th class="text-center">Rezerve</th>
+                <th class="text-center">Kullanılabilir</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for r in stok_rows %}
+              <tr {% if (r.kullanilabilir or 0) <= 0 %}class="table-danger"{% endif %}>
+                <td class="ps-3 fw-semibold small">{{ r.urun }}</td>
+                <td class="text-center"><span class="badge bg-secondary rounded-pill">{{ r.bakiye }}</span></td>
+                <td class="text-center"><span class="badge bg-warning text-dark rounded-pill">{{ r.rezerve or 0 }}</span></td>
+                <td class="text-center">
+                  <span class="badge {% if (r.kullanilabilir or 0) > 0 %}bg-success{% else %}bg-danger{% endif %} rounded-pill">
+                    {{ r.kullanilabilir or 0 }}
+                  </span>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="text-center py-4 text-muted">
+          <i class="bi bi-boxes fs-2 opacity-25 d-block mb-1"></i>Veri yok.
+        </div>
+        {% endif %}
+      </div>
+      <div class="card-footer bg-transparent d-flex gap-2">
+        <a href="{{ url_for('admin.rapor_excel', tur='stok') }}" class="btn btn-sm btn-outline-success">
+          <i class="bi bi-file-earmark-excel me-1"></i>Excel İndir
+        </a>
+        <a href="https://wa.me/?text={{ stok_wa_text|urlencode }}" target="_blank" class="btn btn-sm btn-success">
+          <i class="bi bi-whatsapp me-1"></i>WhatsApp Paylaş
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── SSH Raporu ─── -->
+  <div class="col-lg-6">
+    <div class="card h-100">
+      <div class="card-header d-flex align-items-center gap-2">
+        <i class="bi bi-exclamation-triangle text-danger fs-5"></i>
+        <span class="fw-bold">SSH Raporu</span>
+      </div>
+      <div class="card-body p-0">
+        {% if ssh_rows %}
+        <div class="table-responsive">
+          <table class="table table-sm table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th class="ps-3">Tarih</th>
+                <th>Mağaza</th>
+                <th>Ürün</th>
+                <th>Durum</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for r in ssh_rows[:5] %}
+              <tr>
+                <td class="ps-3 text-muted small">{{ r.tarih if r.tarih else '-' }}</td>
+                <td class="fw-semibold small">{{ r.magaza or '-' }}</td>
+                <td class="small text-muted">{{ r.urun or '-' }}</td>
+                <td>
+                  {% if r.durum == 'beklemede' %}
+                    <span class="badge bg-warning text-dark">Beklemede</span>
+                  {% elif r.durum == 'islemde' %}
+                    <span class="badge bg-info">İşlemde</span>
+                  {% elif r.durum == 'teslim_edildi' %}
+                    <span class="badge bg-success">Teslim</span>
+                  {% else %}
+                    <span class="badge bg-secondary">{{ r.durum or '-' }}</span>
+                  {% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="text-center py-4 text-muted">
+          <i class="bi bi-exclamation-triangle fs-2 opacity-25 d-block mb-1"></i>Veri yok.
+        </div>
+        {% endif %}
+      </div>
+      <div class="card-footer bg-transparent d-flex gap-2">
+        <a href="{{ url_for('admin.rapor_excel', tur='ssh') }}" class="btn btn-sm btn-outline-success">
+          <i class="bi bi-file-earmark-excel me-1"></i>Excel İndir
+        </a>
+        <a href="https://wa.me/?text={{ ssh_wa_text|urlencode }}" target="_blank" class="btn btn-sm btn-success">
+          <i class="bi bi-whatsapp me-1"></i>WhatsApp Paylaş
+        </a>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,210 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard – Solento Mobilya{% endblock %}
+
+{% block content %}
+<!-- Topbar -->
+<div class="topbar">
+  <span class="page-title-inline">
+    <i class="bi bi-house-door me-2"></i>Ana Sayfa
+  </span>
+  <span class="text-muted small">
+    <i class="bi bi-shop me-1"></i>{{ current_user.magaza.ad if current_user.magaza else '' }}
+  </span>
+</div>
+
+<!-- Welcome -->
+<div class="mb-4">
+  <h4 class="page-title mb-1">Hoş geldiniz, {{ current_user.ad_soyad }}!</h4>
+  {% if current_user.magaza %}
+  <p class="text-muted mb-0">
+    <i class="bi bi-geo-alt me-1"></i>{{ current_user.magaza.ad }}
+    {% if current_user.magaza.sehir %} &mdash; {{ current_user.magaza.sehir }}{% endif %}
+  </p>
+  {% endif %}
+</div>
+
+<!-- Stat Cards -->
+<div class="row g-3 mb-4">
+  <!-- Bekleyen Sevk -->
+  <div class="col-12 col-sm-6 col-xl-3">
+    <a href="{{ url_for('magaza.sevklerim') }}" class="text-decoration-none">
+      <div class="card stat-card text-white bg-info">
+        <div class="card-body d-flex align-items-center gap-3 py-3">
+          <div class="stat-icon"><i class="bi bi-truck"></i></div>
+          <div>
+            <div class="stat-value">{{ bekleyen_sevk }}</div>
+            <div class="stat-label">Bekleyen Sevk</div>
+          </div>
+        </div>
+      </div>
+    </a>
+  </div>
+
+  <!-- Aktif Talepler -->
+  <div class="col-12 col-sm-6 col-xl-3">
+    <a href="{{ url_for('magaza.taleplerim') }}" class="text-decoration-none">
+      <div class="card stat-card text-dark bg-warning">
+        <div class="card-body d-flex align-items-center gap-3 py-3">
+          <div class="stat-icon"><i class="bi bi-cart"></i></div>
+          <div>
+            <div class="stat-value">{{ acik_talepler|length }}</div>
+            <div class="stat-label">Aktif Talepler</div>
+          </div>
+        </div>
+      </div>
+    </a>
+  </div>
+
+  <!-- Açık SSH -->
+  <div class="col-12 col-sm-6 col-xl-3">
+    <a href="{{ url_for('magaza.ssh_bildir') }}" class="text-decoration-none">
+      <div class="card stat-card text-white bg-danger">
+        <div class="card-body d-flex align-items-center gap-3 py-3">
+          <div class="stat-icon"><i class="bi bi-exclamation-triangle"></i></div>
+          <div>
+            <div class="stat-value">{{ acik_ssh|length }}</div>
+            <div class="stat-label">Açık SSH</div>
+          </div>
+        </div>
+      </div>
+    </a>
+  </div>
+
+  <!-- Ürün Çeşidi -->
+  <div class="col-12 col-sm-6 col-xl-3">
+    <a href="{{ url_for('magaza.stok_gorunum') }}" class="text-decoration-none">
+      <div class="card stat-card text-white bg-success">
+        <div class="card-body d-flex align-items-center gap-3 py-3">
+          <div class="stat-icon"><i class="bi bi-boxes"></i></div>
+          <div>
+            <div class="stat-value">{{ stok|length }}</div>
+            <div class="stat-label">Ürün Çeşidi</div>
+          </div>
+        </div>
+      </div>
+    </a>
+  </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="d-flex gap-2 mb-4">
+  <a href="{{ url_for('magaza.stok_gorunum') }}" class="btn btn-brand">
+    <i class="bi bi-cart-plus me-2"></i>Sipariş Ver
+  </a>
+  <a href="{{ url_for('magaza.ssh_bildir') }}" class="btn btn-outline-danger">
+    <i class="bi bi-exclamation-triangle me-2"></i>SSH Bildir
+  </a>
+</div>
+
+<div class="row g-4">
+  <!-- Son Siparişlerim -->
+  <div class="col-12 col-lg-7">
+    <div class="card h-100">
+      <div class="card-header d-flex align-items-center justify-content-between bg-white border-bottom">
+        <span class="fw-semibold text-brand">
+          <i class="bi bi-bag-check me-2 text-warning"></i>Son Siparişlerim
+        </span>
+        <a href="{{ url_for('magaza.taleplerim') }}" class="btn btn-sm btn-outline-secondary">
+          Tümünü Gör
+        </a>
+      </div>
+      <div class="card-body p-0">
+        {% if acik_talepler %}
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead>
+              <tr>
+                <th>Tarih</th>
+                <th>Ürünler</th>
+                <th>Durum</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for talep in acik_talepler %}
+              <tr>
+                <td class="text-nowrap small text-muted">
+                  {{ talep.tarih if talep.tarih else '—' }}
+                </td>
+                <td class="small">
+                  {% if talep.kalemler %}
+                    {% for k in talep.kalemler %}
+                      <span class="badge bg-light text-dark border me-1 mb-1">
+                        {{ k.urun.ad if k.urun else '?' }} ×{{ k.miktar }}
+                      </span>
+                    {% endfor %}
+                  {% else %}
+                    <span class="text-muted">—</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <span class="badge badge-{{ talep.durum }}">
+                    {{ talep.durum|replace('_',' ')|title }}
+                  </span>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="text-center text-muted py-5">
+          <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+          Henüz aktif siparişiniz yok.
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Son SSH Bildirimlerim -->
+  <div class="col-12 col-lg-5">
+    <div class="card h-100">
+      <div class="card-header d-flex align-items-center justify-content-between bg-white border-bottom">
+        <span class="fw-semibold">
+          <i class="bi bi-exclamation-octagon me-2 text-danger"></i>Son SSH Bildirimlerim
+        </span>
+        <a href="{{ url_for('magaza.ssh_bildir') }}" class="btn btn-sm btn-outline-secondary">
+          Tümünü Gör
+        </a>
+      </div>
+      <div class="card-body p-0">
+        {% if acik_ssh %}
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead>
+              <tr>
+                <th>Tarih</th>
+                <th>Ürün</th>
+                <th>Durum</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for bildirim in acik_ssh %}
+              <tr>
+                <td class="text-nowrap small text-muted">
+                  {{ bildirim.tarih if bildirim.tarih else '—' }}
+                </td>
+                <td class="small">
+                  {{ bildirim.urun.ad if bildirim.urun else '—' }}
+                </td>
+                <td>
+                  <span class="badge badge-{{ bildirim.durum }}">
+                    {{ bildirim.durum|replace('_',' ')|title }}
+                  </span>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="text-center text-muted py-5">
+          <i class="bi bi-check-circle fs-1 d-block mb-2"></i>
+          Açık SSH bildirimi yok.
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+{% block title %}Yeni Sipariş Talebi – Solento Mobilya{% endblock %}
+
+{% block content %}
+<!-- Topbar -->
+<div class="topbar">
+  <span class="page-title-inline">
+    <i class="bi bi-cart-plus me-2"></i>Yeni Sipariş Talebi
+  </span>
+  <a href="{{ url_for('magaza.taleplerim') }}" class="btn btn-sm btn-outline-secondary">
+    <i class="bi bi-arrow-left me-1"></i>Siparişlerime Dön
+  </a>
+</div>
+
+<h4 class="page-title">Yeni Sipariş Talebi</h4>
+
+<div class="row justify-content-center">
+  <div class="col-12 col-lg-9 col-xl-8">
+    <div class="card">
+      <div class="card-body">
+        <form method="POST" action="{{ url_for('magaza.talep_olustur') }}" id="talepForm">
+          <input type="hidden" name="csrf_token" value="
+">
+
+          <!-- Genel Notlar -->
+          <div class="mb-4">
+            <label for="notlar" class="form-label">Genel Not</label>
+            <textarea id="notlar" name="notlar" class="form-control" rows="3"
+                      placeholder="Bu siparişe ilişkin genel açıklama veya not..."></textarea>
+          </div>
+
+          <hr>
+          <div class="d-flex align-items-center justify-content-between mb-3">
+            <span class="fw-semibold">Sipariş Kalemleri</span>
+            <button type="button" class="btn btn-sm btn-outline-primary" id="btnUrunEkle">
+              <i class="bi bi-plus-circle me-1"></i>Ürün Ekle
+            </button>
+          </div>
+
+          <!-- Satır alanı -->
+          <div id="kalemlerContainer">
+            <!-- Template satır (ilk satır) -->
+            <div class="dynamic-row d-flex align-items-end gap-2 mb-2" id="row_0">
+              <div class="flex-fill">
+                <label class="form-label mb-1 small">Ürün <span class="text-danger">*</span></label>
+                <select name="urun_id[]" class="form-select form-select-sm" required>
+                  <option value="">— Ürün Seçin —</option>
+                  {% for urun in urunler %}
+                  <option value="{{ urun.id }}">{{ urun.ad }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div style="width:110px">
+                <label class="form-label mb-1 small">Miktar <span class="text-danger">*</span></label>
+                <input type="number" name="miktar[]" class="form-control form-control-sm"
+                       min="1" value="1" required>
+              </div>
+              <div>
+                <label class="form-label mb-1 small">&nbsp;</label>
+                <button type="button" class="btn btn-sm btn-outline-danger d-block btnKaldir" disabled>
+                  <i class="bi bi-trash"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-end gap-2 mt-4">
+            <a href="{{ url_for('magaza.taleplerim') }}" class="btn btn-secondary">
+              <i class="bi bi-x me-1"></i>Vazgeç
+            </a>
+            <button type="submit" class="btn btn-brand">
+              <i class="bi bi-send me-1"></i>Talebi Gönder
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var urunlerHtml = `{% for urun in urunler %}<option value="{{ urun.id }}">{{ urun.ad }}</option>{% endfor %}`;
+  var rowCount = 1;
+
+  function updateRemoveButtons() {
+    var btns = document.querySelectorAll('.btnKaldir');
+    btns.forEach(function(b) {
+      b.disabled = btns.length === 1;
+    });
+  }
+
+  document.getElementById('btnUrunEkle').addEventListener('click', function () {
+    var idx = rowCount++;
+    var div = document.createElement('div');
+    div.className = 'dynamic-row d-flex align-items-end gap-2 mb-2';
+    div.id = 'row_' + idx;
+    div.innerHTML =
+      '<div class="flex-fill">' +
+        '<label class="form-label mb-1 small">Ürün <span class="text-danger">*</span></label>' +
+        '<select name="urun_id[]" class="form-select form-select-sm" required>' +
+          '<option value="">— Ürün Seçin —</option>' +
+          urunlerHtml +
+        '</select>' +
+      '</div>' +
+      '<div style="width:110px">' +
+        '<label class="form-label mb-1 small">Miktar <span class="text-danger">*</span></label>' +
+        '<input type="number" name="miktar[]" class="form-control form-control-sm" min="1" value="1" required>' +
+      '</div>' +
+      '<div>' +
+        '<label class="form-label mb-1 small">&nbsp;</label>' +
+        '<button type="button" class="btn btn-sm btn-outline-danger d-block btnKaldir">' +
+          '<i class="bi bi-trash"></i>' +
+        '</button>' +
+      '</div>';
+    document.getElementById('kalemlerContainer').appendChild(div);
+    div.querySelector('.btnKaldir').addEventListener('click', function () {
+      div.remove();
+      updateRemoveButtons();
+    });
+    updateRemoveButtons();
+  });
+
+  document.querySelectorAll('.btnKaldir').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      btn.closest('.dynamic-row').remove();
+      updateRemoveButtons();
+    });
+  });
+})();
+</script>
+{% endblock %}

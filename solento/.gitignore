@@ -1,0 +1,26 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.db
+*.sqlite
+*.sqlite3
+instance/
+.env
+.venv
+venv/
+*.log
+uploads/
+static/uploads/
+# test/debug scripts
+full_test.py
+audit.py
+scan_endpoints.py
+fix_endpoints.py
+fix_templates.py
+fix2.py
+debug_stok.py
+test_all.py
+test_magaza.py
+test_tanimlar.py
+baslat.bat

@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block title %}Paket Adları - {{ urun.ad }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1><i class="bi bi-box-seam me-2"></i>Paket Adlarını Düzenle
+    <small class="text-muted fs-5 ms-2">{{ urun.ad }}</small>
+  </h1>
+  <a href="{{ url_for('admin.tanimlar') }}" class="btn btn-outline-secondary">
+    <i class="bi bi-arrow-left me-1"></i>Tanımlara Dön
+  </a>
+</div>
+
+<div class="card" style="max-width:600px">
+  <div class="card-header">
+    <i class="bi bi-pencil me-2"></i>Paket Listesi
+    <span class="badge bg-secondary ms-2">{{ urun.paketler|length }} paket</span>
+  </div>
+  <div class="card-body">
+    {% if urun.paketler %}
+    <form method="POST" action="{{ url_for('admin.paket_duzenle', id=urun.id) }}">
+      <div class="d-flex flex-column gap-3">
+        {% for p in urun.paketler | sort(attribute='paket_no') %}
+        <div class="d-flex align-items-center gap-3">
+          <span class="badge bg-primary rounded-pill px-3 py-2 fs-6 flex-shrink-0">{{ p.paket_no }}</span>
+          <div class="flex-grow-1">
+            <label class="form-label small fw-semibold mb-1 text-muted">Paket {{ p.paket_no }} Adı</label>
+            <input type="text" class="form-control" name="paket_{{ p.id }}"
+                   value="{{ p.paket_adi or '' }}" placeholder="Paket {{ p.paket_no }}" required>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      <hr class="mt-4">
+      <div class="d-flex gap-2 justify-content-end">
+        <a href="{{ url_for('admin.tanimlar') }}" class="btn btn-secondary">İptal</a>
+        <button type="submit" class="btn btn-primary px-4">
+          <i class="bi bi-floppy me-1"></i>Güncelle
+        </button>
+      </div>
+    </form>
+    {% else %}
+    <div class="text-center py-4 text-muted">
+      <i class="bi bi-box fs-1 opacity-25 d-block mb-2"></i>
+      Bu ürün için paket tanımı yok.
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

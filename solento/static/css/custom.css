@@ -1,0 +1,320 @@
+/* ============================================================
+   Solento Mobilya – Custom Stylesheet
+   Bootstrap 5.3 companion
+   ============================================================ */
+
+/* ---------- CSS Variables ---------- */
+:root {
+  --brand-color:  #1e3a5f;
+  --brand-light:  #2d5282;
+  --sidebar-w:    250px;
+}
+
+/* ============================================================
+   SIDEBAR
+   ============================================================ */
+#sidebar {
+  width: var(--sidebar-w);
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  background: var(--brand-color);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  z-index: 1040;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.2) transparent;
+}
+
+/* Custom scrollbar – Webkit */
+#sidebar::-webkit-scrollbar {
+  width: 5px;
+}
+#sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+#sidebar::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.2);
+  border-radius: 4px;
+}
+#sidebar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255,255,255,0.35);
+}
+
+/* Brand / Logo */
+.sidebar-brand {
+  font-size: 1.4rem;
+  font-weight: 700;
+  padding: 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  text-decoration: none;
+  color: #fff;
+  display: block;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+.sidebar-brand:hover {
+  color: #fff;
+}
+
+/* Nav */
+.sidebar-nav {
+  flex: 1;
+  padding: 10px 0;
+  list-style: none;
+  margin: 0;
+}
+
+.sidebar-nav a {
+  color: rgba(255,255,255,0.8);
+  display: block;
+  padding: 10px 15px;
+  text-decoration: none;
+  border-radius: 6px;
+  margin: 2px 8px;
+  transition: background 0.2s, color 0.2s;
+  font-size: 0.9rem;
+}
+.sidebar-nav a:hover {
+  background: rgba(255,255,255,0.1);
+  color: #fff;
+}
+.sidebar-nav a.active {
+  background: rgba(255,255,255,0.2);
+  color: #fff;
+  font-weight: 600;
+}
+
+/* Nav icons */
+.sidebar-nav a i,
+.sidebar-nav a .bi {
+  margin-right: 8px;
+  font-size: 1.1rem;
+  vertical-align: -0.15em;
+}
+
+/* Section titles */
+.nav-section-title {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(255,255,255,0.5);
+  margin: 15px 15px 5px;
+  display: block;
+}
+
+/* Sidebar footer / logout */
+.sidebar-footer {
+  padding: 12px 8px;
+  border-top: 1px solid rgba(255,255,255,0.1);
+}
+.sidebar-footer a {
+  color: rgba(255,255,255,0.7);
+  display: block;
+  padding: 10px 15px;
+  text-decoration: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  transition: background 0.2s, color 0.2s;
+}
+.sidebar-footer a:hover {
+  background: rgba(255,255,255,0.1);
+  color: #fff;
+}
+.sidebar-footer a i,
+.sidebar-footer a .bi {
+  margin-right: 8px;
+  font-size: 1.1rem;
+  vertical-align: -0.15em;
+}
+
+/* ============================================================
+   MAIN CONTENT
+   ============================================================ */
+#main-content {
+  margin-left: var(--sidebar-w);
+  padding: 24px 28px;
+  min-height: 100vh;
+  background: #f5f7fa;
+}
+
+/* ============================================================
+   PAGE HEADER
+   ============================================================ */
+.page-header h4,
+h4.page-title {
+  border-bottom: 2px solid var(--brand-color);
+  padding-bottom: 8px;
+  margin-bottom: 20px;
+  color: var(--brand-color);
+  font-weight: 700;
+}
+
+/* ============================================================
+   CARDS
+   ============================================================ */
+.card {
+  border: none;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  border-radius: 10px;
+}
+
+/* Stat cards */
+.stat-card {
+  transition: transform 0.2s, box-shadow 0.2s;
+  cursor: pointer;
+}
+.stat-card:hover {
+  transform: scale(1.02);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.13);
+}
+.stat-card .stat-icon {
+  font-size: 2.4rem;
+  opacity: 0.85;
+}
+.stat-card .stat-value {
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+.stat-card .stat-label {
+  font-size: 0.85rem;
+  opacity: 0.85;
+}
+
+/* ============================================================
+   TABLES
+   ============================================================ */
+.table > tbody > tr:hover {
+  background-color: #f8f9fa;
+}
+.table thead {
+  background: var(--brand-color);
+  color: #fff;
+}
+.table thead th {
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border: none;
+}
+
+/* ============================================================
+   STATUS BADGES
+   ============================================================ */
+.badge-beklemede   { background-color: #ffc107 !important; color: #212529 !important; }
+.badge-onaylandi   { background-color: #198754 !important; color: #fff    !important; }
+.badge-sevk_edildi { background-color: #0dcaf0 !important; color: #212529 !important; }
+.badge-teslim_alindi { background-color: #198754 !important; color: #fff  !important; }
+.badge-iptal       { background-color: #6c757d !important; color: #fff    !important; }
+.badge-islemde     { background-color: #0dcaf0 !important; color: #212529 !important; }
+.badge-teslim_edildi { background-color: #198754 !important; color: #fff  !important; }
+
+/* ============================================================
+   FORM CONTROLS
+   ============================================================ */
+.form-label {
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--brand-light);
+  box-shadow: 0 0 0 0.2rem rgba(45,82,130,0.2);
+}
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+.btn-brand {
+  background: var(--brand-color);
+  color: #fff;
+  border: none;
+}
+.btn-brand:hover {
+  background: var(--brand-light);
+  color: #fff;
+}
+
+/* ============================================================
+   KATALOG / PRODUCT GRID
+   ============================================================ */
+.katalog-card img {
+  height: 200px;
+  object-fit: cover;
+  border-radius: 10px 10px 0 0;
+}
+.katalog-card .card-img-placeholder {
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #e9ecef;
+  font-size: 4rem;
+  color: #adb5bd;
+  border-radius: 10px 10px 0 0;
+}
+
+/* ============================================================
+   ALERTS
+   ============================================================ */
+.alert {
+  border-radius: 8px;
+}
+
+/* ============================================================
+   MISC
+   ============================================================ */
+.topbar {
+  background: #fff;
+  border-bottom: 1px solid #e9ecef;
+  padding: 12px 24px;
+  margin: -24px -28px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+}
+.topbar .page-title-inline {
+  font-weight: 600;
+  color: var(--brand-color);
+  font-size: 1.1rem;
+}
+
+.table-warning-row td {
+  background-color: #fff3cd !important;
+}
+
+.dynamic-row {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 10px;
+}
+
+/* ============================================================
+   RESPONSIVE – MOBILE
+   ============================================================ */
+@media (max-width: 768px) {
+  #sidebar {
+    position: static;
+    width: 100%;
+    height: auto;
+    overflow-y: visible;
+  }
+  #main-content {
+    margin-left: 0;
+    padding: 16px;
+  }
+  .topbar {
+    margin: -16px -16px 16px;
+  }
+  .stat-card:hover {
+    transform: none;
+  }
+}

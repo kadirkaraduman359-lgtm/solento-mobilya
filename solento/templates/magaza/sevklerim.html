@@ -1,0 +1,159 @@
+{% extends 'base.html' %}
+{% block title %}Sevklerim – Solento Mobilya{% endblock %}
+
+{% block content %}
+<!-- Topbar -->
+<div class="topbar">
+  <span class="page-title-inline">
+    <i class="bi bi-truck me-2"></i>Sevklerim
+  </span>
+</div>
+
+<h4 class="page-title">Sevklerim</h4>
+
+<div class="card">
+  <div class="card-body p-0">
+    {% if sevkler %}
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Tarih</th>
+            <th>Ürünler</th>
+            {% if nakliye_goster is defined and nakliye_goster %}
+            <th>Nakliye</th>
+            {% endif %}
+            <th class="text-center">Durum</th>
+            <th>Teslim Tarihi</th>
+            <th class="text-center">İşlem</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for sevk in sevkler %}
+          <tr>
+            <td class="fw-semibold text-muted small">#{{ sevk.id }}</td>
+            <td class="text-nowrap small text-muted">
+              {{ sevk.tarih if sevk.tarih else '—' }}
+            </td>
+            <td>
+              {% if sevk.kalemler %}
+                {% for k in sevk.kalemler %}
+                  <span class="badge bg-light text-dark border me-1 mb-1">
+                    {{ k.urun.ad if k.urun else '?' }} <strong>×{{ k.miktar }}</strong>
+                  </span>
+                {% endfor %}
+              {% else %}
+                <span class="text-muted small">—</span>
+              {% endif %}
+            </td>
+            {% if nakliye_goster is defined and nakliye_goster %}
+            <td class="small">
+              {% if sevk.nakliye %}
+                <span class="fw-semibold">{{ sevk.nakliye.firma or '—' }}</span>
+                {% if sevk.nakliye.takip_no %}
+                  <br><small class="text-muted">Takip: {{ sevk.nakliye.takip_no }}</small>
+                {% endif %}
+              {% else %}
+                <span class="text-muted">—</span>
+              {% endif %}
+            </td>
+            {% endif %}
+            <td class="text-center">
+              {% if sevk.durum == 'sevk_edildi' %}
+                <span class="badge badge-sevk_edildi">
+                  <i class="bi bi-truck me-1"></i>Sevk Edildi
+                </span>
+              {% elif sevk.durum == 'teslim_alindi' %}
+                <span class="badge badge-teslim_alindi">
+                  <i class="bi bi-check-circle me-1"></i>Teslim Alındı
+                </span>
+              {% else %}
+                <span class="badge bg-secondary">{{ sevk.durum }}</span>
+              {% endif %}
+            </td>
+            <td class="small text-muted text-nowrap">
+              {% if sevk.durum == 'teslim_alindi' and sevk.teslim_tarihi %}
+                <i class="bi bi-calendar-check me-1 text-success"></i>
+                {{ sevk.teslim_tarihi }}
+              {% elif sevk.tahmini_teslim %}
+                <i class="bi bi-calendar2 me-1 text-muted"></i>
+                '—'
+                <span class="text-muted">(tahmini)</span>
+              {% else %}
+                <span class="text-muted">—</span>
+              {% endif %}
+            </td>
+            <td class="text-center">
+              {% if sevk.durum == 'sevk_edildi' %}
+              <button class="btn btn-sm btn-success"
+                      data-bs-toggle="modal"
+                      data-bs-target="#modalTeslim{{ sevk.id }}">
+                <i class="bi bi-box-seam me-1"></i>Teslim Aldım
+              </button>
+              {% elif sevk.durum == 'teslim_alindi' %}
+              <span class="badge bg-success bg-opacity-25 text-success border border-success">
+                <i class="bi bi-check-circle me-1"></i>Teslim Alındı
+              </span>
+              {% else %}
+              <span class="text-muted small">—</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="text-center text-muted py-5">
+      <i class="bi bi-truck fs-1 d-block mb-2"></i>
+      Henüz sevk kaydınız bulunmuyor.
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- ============ TESLİM ONAY MODALLERİ ============ -->
+{% for sevk in sevkler if sevk.durum == 'sevk_edildi' %}
+<div class="modal fade" id="modalTeslim{{ sevk.id }}" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="POST" action="{{ url_for('magaza.teslim_al', sevk_id=sevk.id) }}">
+        <input type="hidden" name="csrf_token" value="
+">
+        <div class="modal-header">
+          <h5 class="modal-title">
+            <i class="bi bi-box-seam me-2 text-success"></i>Teslim Alma Onayı
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="alert alert-info small mb-3">
+            <i class="bi bi-info-circle me-1"></i>
+            Sevkiyatı teslim aldığınızı onaylıyorsunuz. Bu işlem stok hareketlerinize yansıyacaktır.
+          </div>
+          <p class="mb-1 small">
+            <strong>Sevk #{{ sevk.id }}</strong> —
+            {{ sevk.tarih if sevk.tarih else '' }}
+          </p>
+          <div class="mt-2">
+            {% for k in sevk.kalemler %}
+            <span class="badge bg-light text-dark border me-1 mb-1">
+              {{ k.urun.ad if k.urun else '?' }} ×{{ k.miktar }}
+            </span>
+            {% endfor %}
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Vazgeç</button>
+          <button type="submit" class="btn btn-success">
+            <i class="bi bi-check-circle me-1"></i>Evet, Teslim Aldım
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endfor %}
+
+{% endblock %}

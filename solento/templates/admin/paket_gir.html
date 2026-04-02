@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% block title %}Paket Gir - {{ siparis.urun.ad if siparis.urun else siparis.urun_ad }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1><i class="bi bi-grid-3x3 me-2"></i>Paket Miktarı Gir
+    <small class="text-muted fs-5 ms-2">{{ siparis.urun.ad if siparis.urun else siparis.urun_ad }}</small>
+  </h1>
+  <a href="{{ url_for('admin.uretim') }}" class="btn btn-outline-secondary">
+    <i class="bi bi-arrow-left me-1"></i>Geri Dön
+  </a>
+</div>
+
+<!-- Sipariş Bilgisi -->
+<div class="card mb-4 border-info border-opacity-50">
+  <div class="card-body">
+    <div class="row g-3">
+      <div class="col-sm-4">
+        <div class="text-muted small text-uppercase fw-semibold" style="font-size:.7rem;letter-spacing:.5px">Ürün</div>
+        <div class="fw-bold text-primary">{{ siparis.urun.ad if siparis.urun else siparis.urun_ad }}</div>
+      </div>
+      <div class="col-sm-4">
+        <div class="text-muted small text-uppercase fw-semibold" style="font-size:.7rem;letter-spacing:.5px">Sipariş Adeti</div>
+        <div class="fw-bold">{{ siparis.siparis_adeti }} takım</div>
+      </div>
+      <div class="col-sm-4">
+        <div class="text-muted small text-uppercase fw-semibold" style="font-size:.7rem;letter-spacing:.5px">Tarih</div>
+        <div class="fw-bold">{{ siparis.tarih if siparis.tarih else '-' }}</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Paket Giriş Formu -->
+<div class="card">
+  <div class="card-header">
+    <i class="bi bi-box-seam me-2"></i>Paket Miktarları
+  </div>
+  <div class="card-body">
+    {% if siparis.urun and siparis.urun.paketler %}
+    <form method="POST" action="{{ url_for('admin.paket_gir', id=siparis.id) }}">
+      <div class="row g-3">
+        {% for p in siparis.urun.paketler | sort(attribute='paket_no') %}
+        <div class="col-sm-6 col-md-4 col-lg-3">
+          <div class="card bg-light border-0">
+            <div class="card-body py-3 px-3">
+              <label class="form-label fw-semibold mb-2" for="paket_{{ p.id }}">
+                <span class="badge bg-primary me-1">{{ p.paket_no }}</span>
+                {{ p.paket_adi or 'Paket ' ~ p.paket_no }}
+              </label>
+              <input type="number" class="form-control form-control-lg text-center"
+                     id="paket_{{ p.id }}" name="paket_{{ p.id }}"
+                     value="{{ mevcut.get(p.id, 0) }}" min="0" step="1" required>
+              <div class="text-muted text-center mt-1" style="font-size:.72rem">adet</div>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      <hr>
+      <div class="d-flex gap-2 justify-content-end mt-3">
+        <a href="{{ url_for('admin.uretim') }}" class="btn btn-secondary">İptal</a>
+        <button type="submit" class="btn btn-primary px-4">
+          <i class="bi bi-floppy me-1"></i>Kaydet
+        </button>
+      </div>
+    </form>
+    {% else %}
+    <div class="text-center py-4 text-muted">
+      <i class="bi bi-box-seam fs-1 opacity-25 d-block mb-2"></i>
+      Bu ürün için paket tanımı bulunmuyor.
+      <br>
+      <a href="{{ url_for('admin.tanimlar') }}" class="btn btn-sm btn-outline-primary mt-3">
+        <i class="bi bi-gear me-1"></i>Tanımlara Git
+      </a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

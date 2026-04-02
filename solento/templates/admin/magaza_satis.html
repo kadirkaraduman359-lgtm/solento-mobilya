@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% block title %}Mağaza Satışları{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1><i class="bi bi-receipt me-2"></i>Mağaza Satışları</h1>
+</div>
+
+<!-- Filter -->
+<div class="card mb-4">
+  <div class="card-body">
+    <form method="GET" class="row g-2 align-items-end">
+      <div class="col-sm-3">
+        <label class="form-label form-label-sm fw-semibold">Şehir</label>
+        <select class="form-select form-select-sm" name="sehir_id">
+          <option value="">Tüm Şehirler</option>
+          {% for s in sehirler %}
+          <option value="{{ s.id }}" {% if sehir_id == s.id %}selected{% endif %}>{{ s.ad }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-sm-3">
+        <label class="form-label form-label-sm fw-semibold">Mağaza</label>
+        <select class="form-select form-select-sm" name="magaza_id">
+          <option value="">Tüm Mağazalar</option>
+          {% for m in magazalar %}
+          <option value="{{ m.id }}" {% if magaza_id == m.id %}selected{% endif %}>{{ m.ad }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-sm-2">
+        <label class="form-label form-label-sm fw-semibold">Başlangıç</label>
+        <input type="date" class="form-control form-control-sm" name="tarih_bas" value="{{ tarih_bas or '' }}">
+      </div>
+      <div class="col-sm-2">
+        <label class="form-label form-label-sm fw-semibold">Bitiş</label>
+        <input type="date" class="form-control form-control-sm" name="tarih_bit" value="{{ tarih_bit or '' }}">
+      </div>
+      <div class="col-sm-2">
+        <button type="submit" class="btn btn-primary btn-sm w-100">
+          <i class="bi bi-funnel me-1"></i>Filtrele
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Tablo -->
+<div class="card">
+  <div class="card-header d-flex align-items-center justify-content-between">
+    <span><i class="bi bi-table me-2"></i>Satış Kayıtları</span>
+    <span class="badge bg-secondary">{{ satirlar|length }} kayıt</span>
+  </div>
+  <div class="card-body p-0">
+    {% if satirlar %}
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>Tarih</th>
+            <th>Mağaza</th>
+            <th>Kullanıcı</th>
+            <th>Ürün</th>
+            <th class="text-center">Miktar</th>
+            <th>Notlar</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for s in satirlar %}
+          <tr>
+            <td class="text-muted small">{{ s.tarih if s.tarih else '-' }}</td>
+            <td class="fw-semibold small">
+              {{ s.magaza.ad if s.magaza else '-' }}
+              {% if s.magaza and s.magaza.sehir_adi %}
+                <br><span class="text-muted" style="font-size:.7rem">{{ s.magaza.sehir_adi }}</span>
+              {% endif %}
+            </td>
+            <td class="small text-muted">{{ s.kullanici.ad_soyad if s.kullanici else '-' }}</td>
+            <td class="fw-semibold small">{{ s.urun.ad if s.urun else '-' }}</td>
+            <td class="text-center">
+              <span class="badge bg-primary rounded-pill">{{ s.miktar }}</span>
+            </td>
+            <td class="small text-muted">{{ s.notlar or '—' }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="text-center py-5 text-muted">
+      <i class="bi bi-receipt fs-1 opacity-25 d-block mb-2"></i>
+      Satış kaydı bulunamadı.
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

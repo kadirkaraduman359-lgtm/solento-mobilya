@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+{% block title %}SSH Bildirimleri{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1><i class="bi bi-exclamation-triangle me-2"></i>SSH Bildirimleri</h1>
+</div>
+
+<!-- Filter Buttons -->
+<div class="mb-4 d-flex gap-2 flex-wrap">
+  <a href="{{ url_for('admin.ssh_listesi') }}"
+     class="btn btn-sm {% if not durum_filter %}btn-dark{% else %}btn-outline-dark{% endif %}">
+    Tümü
+  </a>
+  <a href="{{ url_for('admin.ssh_listesi', durum='beklemede') }}"
+     class="btn btn-sm {% if durum_filter == 'beklemede' %}btn-warning{% else %}btn-outline-warning{% endif %}">
+    Beklemede
+  </a>
+  <a href="{{ url_for('admin.ssh_listesi', durum='islemde') }}"
+     class="btn btn-sm {% if durum_filter == 'islemde' %}btn-info{% else %}btn-outline-info{% endif %}">
+    İşlemde
+  </a>
+  <a href="{{ url_for('admin.ssh_listesi', durum='teslim_edildi') }}"
+     class="btn btn-sm {% if durum_filter == 'teslim_edildi' %}btn-success{% else %}btn-outline-success{% endif %}">
+    Teslim Edildi
+  </a>
+</div>
+
+<div class="card">
+  <div class="card-body p-0">
+    {% if bildirimleri %}
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>Tarih</th>
+            <th>Mağaza</th>
+            <th>Ürün</th>
+            <th>Paket</th>
+            <th>Hasar Açıklaması</th>
+            <th class="text-center">Talep Adet</th>
+            <th>Durum</th>
+            <th>Admin Notu</th>
+            <th class="text-center">İşlem</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for b in bildirimleri %}
+          <tr>
+            <td class="text-muted small">{{ b.tarih if b.tarih else '-' }}</td>
+            <td class="fw-semibold small">
+              {{ b.magaza.ad if b.magaza else (b.kullanici.magaza.ad if b.kullanici and b.kullanici.magaza else '-') }}
+            </td>
+            <td class="small">{{ b.urun.ad if b.urun else '-' }}</td>
+            <td class="small text-muted">{{ b.paket.paket_adi if b.paket else '-' }}</td>
+            <td class="small" style="max-width:200px">
+              <span class="d-inline-block text-truncate" style="max-width:180px" title="{{ b.hasar_aciklamasi }}">
+                {{ b.hasar_aciklamasi or '-' }}
+              </span>
+            </td>
+            <td class="text-center">
+              <span class="badge bg-secondary">{{ b.talep_miktar }}</span>
+            </td>
+            <td>
+              {% if b.durum == 'beklemede' %}
+                <span class="badge bg-warning text-dark">Beklemede</span>
+              {% elif b.durum == 'islemde' %}
+                <span class="badge bg-info">İşlemde</span>
+              {% elif b.durum == 'teslim_edildi' %}
+                <span class="badge bg-success">Teslim Edildi</span>
+              {% else %}
+                <span class="badge bg-light text-dark border">{{ b.durum }}</span>
+              {% endif %}
+            </td>
+            <td class="small text-muted" style="max-width:180px">
+              <span class="d-inline-block text-truncate" style="max-width:160px" title="{{ b.admin_notu }}">
+                {{ b.admin_notu or '—' }}
+              </span>
+            </td>
+            <td class="text-center">
+              <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal"
+                      data-bs-target="#sshDurumModal{{ b.id }}">
+                <i class="bi bi-pencil-square"></i>
+              </button>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="text-center py-5 text-muted">
+      <i class="bi bi-exclamation-triangle fs-1 opacity-25 d-block mb-2"></i>
+      SSH bildirimi bulunamadı.
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Durum Modals -->
+{% for b in bildirimleri %}
+<div class="modal fade" id="sshDurumModal{{ b.id }}" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title"><i class="bi bi-pencil-square me-2"></i>Durum Güncelle</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="POST" action="{{ url_for('admin.ssh_durum', id=b.id) }}">
+        <div class="modal-body">
+          <div class="alert alert-light border mb-3 small">
+            <strong>Mağaza:</strong> {{ b.magaza.ad if b.magaza else '-' }}<br>
+            <strong>Ürün:</strong> {{ b.urun.ad if b.urun else '-' }}<br>
+            <strong>Açıklama:</strong> {{ b.hasar_aciklamasi or '-' }}
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Durum <span class="text-danger">*</span></label>
+            <select class="form-select" name="durum" required>
+              <option value="beklemede" {% if b.durum == 'beklemede' %}selected{% endif %}>Beklemede</option>
+              <option value="islemde" {% if b.durum == 'islemde' %}selected{% endif %}>İşlemde</option>
+              <option value="teslim_edildi" {% if b.durum == 'teslim_edildi' %}selected{% endif %}>Teslim Edildi</option>
+            </select>
+          </div>
+          <div class="mb-1">
+            <label class="form-label fw-semibold">Admin Notu</label>
+            <textarea class="form-control" name="admin_notu" rows="3"
+                      placeholder="Açıklama veya bilgi notu...">{{ b.admin_notu or '' }}</textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+          <button type="submit" class="btn btn-primary"><i class="bi bi-floppy me-1"></i>Güncelle</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endfor %}
+{% endblock %}

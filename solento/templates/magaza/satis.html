@@ -1,0 +1,194 @@
+{% extends 'base.html' %}
+{% block title %}Satış Girişi – Solento Mobilya{% endblock %}
+
+{% block content %}
+<!-- Topbar -->
+<div class="topbar">
+  <span class="page-title-inline">
+    <i class="bi bi-receipt me-2"></i>Satış Girişi
+  </span>
+  <a href="{{ url_for('magaza.satis_gecmis') }}" class="btn btn-sm btn-outline-secondary">
+    <i class="bi bi-clock-history me-1"></i>Satış Geçmişi
+  </a>
+</div>
+
+<h4 class="page-title">Satış Girişi</h4>
+
+{% if not urunler_eldeki %}
+<div class="alert alert-warning d-flex align-items-center gap-2">
+  <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+  <div>Mağazanızda mevcut stok bulunmamaktadır. Satış girişi yapabilmek için önce sevkiyat alınması gerekmektedir.</div>
+</div>
+{% else %}
+
+<div class="row justify-content-center">
+  <div class="col-12 col-lg-9 col-xl-8">
+    <div class="card">
+      <div class="card-body">
+        <div class="alert alert-info small mb-4">
+          <i class="bi bi-info-circle me-1"></i>
+          Miktar, mağazanızda bulunan stoku aşamaz.
+        </div>
+
+        <form method="POST" action="{{ url_for('magaza.satis_gir') }}" id="satisForm">
+          <input type="hidden" name="csrf_token" value="
+">
+
+          <!-- Tarih -->
+          <div class="mb-4">
+            <label for="tarih" class="form-label">Satış Tarihi <span class="text-danger">*</span></label>
+            <input type="date" id="tarih" name="tarih" class="form-control"
+                   value="{{ today }}" required
+                   max="{{ today }}">
+          </div>
+
+          <hr>
+          <div class="d-flex align-items-center justify-content-between mb-3">
+            <span class="fw-semibold">Satılan Ürünler</span>
+            <button type="button" class="btn btn-sm btn-outline-primary" id="btnUrunEkle">
+              <i class="bi bi-plus-circle me-1"></i>Ürün Ekle
+            </button>
+          </div>
+
+          <!-- Satır alanı -->
+          <div id="satirlarContainer">
+            <div class="dynamic-row mb-3" id="satir_0">
+              <div class="row g-2 align-items-end">
+                <div class="col-12 col-md-5">
+                  <label class="form-label mb-1 small">Ürün <span class="text-danger">*</span></label>
+                  <select name="urun_id[]" class="form-select form-select-sm urunSelect" required
+                          data-idx="0">
+                    <option value="">— Ürün Seçin —</option>
+                    {% for s in urunler_eldeki %}
+                    <option value="{{ s.urun.id }}" data-eldeki="{{ s.eldeki }}">
+                      {{ s.urun.ad }} (Eldeki: {{ s.eldeki }})
+                    </option>
+                    {% endfor %}
+                  </select>
+                  <div class="form-text eldeki-info-0"></div>
+                </div>
+                <div class="col-6 col-md-2">
+                  <label class="form-label mb-1 small">Miktar <span class="text-danger">*</span></label>
+                  <input type="number" name="miktar[]" class="form-control form-control-sm"
+                         min="1" value="1" required id="miktar_0">
+                </div>
+                <div class="col-6 col-md-4">
+                  <label class="form-label mb-1 small">Not</label>
+                  <input type="text" name="notlar[]" class="form-control form-control-sm"
+                         placeholder="Satış notu...">
+                </div>
+                <div class="col-12 col-md-1 text-end">
+                  <label class="form-label mb-1 small">&nbsp;</label>
+                  <button type="button" class="btn btn-sm btn-outline-danger d-block w-100 btnKaldir" disabled>
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-end gap-2 mt-4">
+            <a href="{{ url_for('magaza.satis_gecmis') }}" class="btn btn-secondary">
+              <i class="bi bi-x me-1"></i>Vazgeç
+            </a>
+            <button type="submit" class="btn btn-brand">
+              <i class="bi bi-check-circle me-1"></i>Satışı Kaydet
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var urunlerData = {
+    {% for s in urunler_eldeki %}
+    "{{ s.urun.id }}": { "ad": "{{ s.urun.ad }}", "eldeki": {{ s.eldeki }} }{% if not loop.last %},{% endif %}
+    {% endfor %}
+  };
+
+  var urunOptsHtml = '<option value="">— Ürün Seçin —</option>';
+  {% for s in urunler_eldeki %}
+  urunOptsHtml += '<option value="{{ s.urun.id }}" data-eldeki="{{ s.eldeki }}">{{ s.urun.ad }} (Eldeki: {{ s.eldeki }})</option>';
+  {% endfor %}
+
+  var rowCount = 1;
+
+  function updateRemoveButtons() {
+    var btns = document.querySelectorAll('.btnKaldir');
+    btns.forEach(function(b) { b.disabled = btns.length === 1; });
+  }
+
+  function bindSelect(sel, idx) {
+    sel.addEventListener('change', function () {
+      var opt = sel.options[sel.selectedIndex];
+      var eldeki = opt ? parseInt(opt.getAttribute('data-eldeki') || 0) : 0;
+      var infoEl = document.querySelector('.eldeki-info-' + idx);
+      var miktarEl = document.getElementById('miktar_' + idx);
+      if (infoEl) {
+        if (eldeki > 0) {
+          infoEl.innerHTML = '<span class="text-success"><i class="bi bi-box-seam me-1"></i>Eldeki stok: <strong>' + eldeki + '</strong></span>';
+        } else {
+          infoEl.innerHTML = '';
+        }
+      }
+      if (miktarEl) {
+        miktarEl.max = eldeki > 0 ? eldeki : '';
+      }
+    });
+  }
+
+  // Bind first row
+  bindSelect(document.querySelector('#satir_0 .urunSelect'), 0);
+
+  document.getElementById('btnUrunEkle').addEventListener('click', function () {
+    var idx = rowCount++;
+    var div = document.createElement('div');
+    div.className = 'dynamic-row mb-3';
+    div.id = 'satir_' + idx;
+    div.innerHTML =
+      '<div class="row g-2 align-items-end">' +
+        '<div class="col-12 col-md-5">' +
+          '<label class="form-label mb-1 small">Ürün <span class="text-danger">*</span></label>' +
+          '<select name="urun_id[]" class="form-select form-select-sm urunSelect" required data-idx="' + idx + '">' +
+            urunOptsHtml +
+          '</select>' +
+          '<div class="form-text eldeki-info-' + idx + '"></div>' +
+        '</div>' +
+        '<div class="col-6 col-md-2">' +
+          '<label class="form-label mb-1 small">Miktar <span class="text-danger">*</span></label>' +
+          '<input type="number" name="miktar[]" class="form-control form-control-sm" min="1" value="1" required id="miktar_' + idx + '">' +
+        '</div>' +
+        '<div class="col-6 col-md-4">' +
+          '<label class="form-label mb-1 small">Not</label>' +
+          '<input type="text" name="notlar[]" class="form-control form-control-sm" placeholder="Satış notu...">' +
+        '</div>' +
+        '<div class="col-12 col-md-1 text-end">' +
+          '<label class="form-label mb-1 small">&nbsp;</label>' +
+          '<button type="button" class="btn btn-sm btn-outline-danger d-block w-100 btnKaldir">' +
+            '<i class="bi bi-trash"></i>' +
+          '</button>' +
+        '</div>' +
+      '</div>';
+    document.getElementById('satirlarContainer').appendChild(div);
+    var newSel = div.querySelector('.urunSelect');
+    bindSelect(newSel, idx);
+    div.querySelector('.btnKaldir').addEventListener('click', function () {
+      div.remove();
+      updateRemoveButtons();
+    });
+    updateRemoveButtons();
+  });
+
+  document.querySelectorAll('.btnKaldir').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      btn.closest('.dynamic-row').remove();
+      updateRemoveButtons();
+    });
+  });
+})();
+</script>
+{% endif %}
+{% endblock %}

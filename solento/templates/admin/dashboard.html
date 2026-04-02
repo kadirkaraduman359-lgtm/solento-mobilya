@@ -1,0 +1,191 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1><i class="bi bi-speedometer2 me-2"></i>Dashboard</h1>
+  <span class="text-muted small">Solento Mobilya Yönetim Paneli</span>
+</div>
+
+<!-- Stat Cards -->
+<div class="row g-3 mb-4">
+  <div class="col-sm-6 col-xl-3">
+    <a href="{{ url_for('admin.talepler') }}" class="text-decoration-none">
+      <div class="card stat-card border-warning h-100">
+        <div class="card-body d-flex align-items-center gap-3 py-3">
+          <div class="rounded-circle bg-warning bg-opacity-15 p-3 d-flex align-items-center justify-content-center" style="width:52px;height:52px;flex-shrink:0">
+            <i class="bi bi-cart-plus text-warning fs-4"></i>
+          </div>
+          <div>
+            <div class="text-muted small fw-semibold text-uppercase" style="font-size:.7rem;letter-spacing:.5px">Bekleyen Talep</div>
+            <div class="fs-2 fw-bold text-warning lh-1">{{ bekleyen_talepler or 0 }}</div>
+          </div>
+        </div>
+      </div>
+    </a>
+  </div>
+  <div class="col-sm-6 col-xl-3">
+    <a href="{{ url_for('admin.ssh_listesi') }}" class="text-decoration-none">
+      <div class="card stat-card border-danger h-100">
+        <div class="card-body d-flex align-items-center gap-3 py-3">
+          <div class="rounded-circle bg-danger bg-opacity-15 p-3 d-flex align-items-center justify-content-center" style="width:52px;height:52px;flex-shrink:0">
+            <i class="bi bi-exclamation-triangle text-danger fs-4"></i>
+          </div>
+          <div>
+            <div class="text-muted small fw-semibold text-uppercase" style="font-size:.7rem;letter-spacing:.5px">Açık SSH</div>
+            <div class="fs-2 fw-bold text-danger lh-1">{{ acik_ssh or 0 }}</div>
+          </div>
+        </div>
+      </div>
+    </a>
+  </div>
+  <div class="col-sm-6 col-xl-3">
+    <a href="{{ url_for('admin.uretim') }}" class="text-decoration-none">
+      <div class="card stat-card border-info h-100">
+        <div class="card-body d-flex align-items-center gap-3 py-3">
+          <div class="rounded-circle bg-info bg-opacity-15 p-3 d-flex align-items-center justify-content-center" style="width:52px;height:52px;flex-shrink:0">
+            <i class="bi bi-tools text-info fs-4"></i>
+          </div>
+          <div>
+            <div class="text-muted small fw-semibold text-uppercase" style="font-size:.7rem;letter-spacing:.5px">Aktif Üretim</div>
+            <div class="fs-2 fw-bold text-info lh-1">{{ aktif_siparisler|length }}</div>
+          </div>
+        </div>
+      </div>
+    </a>
+  </div>
+  <div class="col-sm-6 col-xl-3">
+    <a href="{{ url_for('admin.stok') }}" class="text-decoration-none">
+      <div class="card stat-card border-success h-100">
+        <div class="card-body d-flex align-items-center gap-3 py-3">
+          <div class="rounded-circle bg-success bg-opacity-15 p-3 d-flex align-items-center justify-content-center" style="width:52px;height:52px;flex-shrink:0">
+            <i class="bi bi-boxes text-success fs-4"></i>
+          </div>
+          <div>
+            <div class="text-muted small fw-semibold text-uppercase" style="font-size:.7rem;letter-spacing:.5px">Depo Stok Kalemi</div>
+            <div class="fs-2 fw-bold text-success lh-1">{{ stok_ozet|length }}</div>
+          </div>
+        </div>
+      </div>
+    </a>
+  </div>
+</div>
+
+<div class="row g-3">
+  <!-- Üretimdeki Siparişler -->
+  <div class="col-lg-7">
+    <div class="card h-100">
+      <div class="card-header d-flex align-items-center justify-content-between">
+        <span><i class="bi bi-tools me-2 text-info"></i>Üretimdeki Siparişler</span>
+        <a href="{{ url_for('admin.uretim') }}" class="btn btn-outline-info btn-sm">
+          Tümü <i class="bi bi-arrow-right ms-1"></i>
+        </a>
+      </div>
+      <div class="card-body p-0">
+        {% if aktif_siparisler %}
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>Ürün</th>
+                <th class="text-center">Sipariş Adeti</th>
+                <th class="text-center">Sevk Edilebilir</th>
+                <th>Eksik Paket</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for s in aktif_siparisler %}
+              <tr>
+                <td class="fw-semibold">{{ s.urun.ad if s.urun else s.urun_ad }}</td>
+                <td class="text-center">
+                  <span class="badge bg-secondary rounded-pill">{{ s.siparis_adeti }}</span>
+                </td>
+                <td class="text-center">
+                  <span class="badge {% if s._sevk_edilebilir > 0 %}bg-success{% else %}bg-secondary{% endif %} rounded-pill">
+                    {{ s._sevk_edilebilir }}
+                  </span>
+                </td>
+                <td>
+                  {% if s._eksikler %}
+                    <span class="badge bg-warning text-dark">
+                      <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                      {% for ex in s._eksikler %}{{ ex }}{% if not loop.last %}, {% endif %}{% endfor %}
+                    </span>
+                  {% else %}
+                    <span class="text-success"><i class="bi bi-check-circle-fill"></i> Tamam</span>
+                  {% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5 text-muted">
+          <i class="bi bi-tools fs-1 opacity-25 d-block mb-2"></i>
+          Aktif üretim siparişi bulunmuyor.
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Son Sevkler -->
+  <div class="col-lg-5">
+    <div class="card h-100">
+      <div class="card-header d-flex align-items-center justify-content-between">
+        <span><i class="bi bi-truck me-2 text-primary"></i>Son Sevkler</span>
+        <a href="{{ url_for('admin.sevk_listesi') }}" class="btn btn-outline-primary btn-sm">
+          Tümü <i class="bi bi-arrow-right ms-1"></i>
+        </a>
+      </div>
+      <div class="card-body p-0">
+        {% if son_sevkler %}
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>#</th>
+                <th>Tarih</th>
+                <th>Alıcı</th>
+                <th class="text-center">Ürün</th>
+                <th>Durum</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for s in son_sevkler %}
+              <tr>
+                <td class="text-muted small">#{{ s.id }}</td>
+                <td class="small">{{ s.tarih if s.tarih else '-' }}</td>
+                <td class="fw-semibold small">
+                  {{ s.magaza.ad if s.magaza else s.alici_adi or '-' }}
+                  {% if s.magaza and s.magaza.sehir_adi %}
+                    <br><span class="text-muted" style="font-size:.7rem">{{ s.magaza.sehir_adi }}</span>
+                  {% endif %}
+                </td>
+                <td class="text-center">
+                  <span class="badge bg-light text-dark border">{{ s.kalemler|length if s.kalemler else 0 }}</span>
+                </td>
+                <td>
+                  {% if s.durum == 'teslim_alindi' %}
+                    <span class="badge bg-success">Teslim</span>
+                  {% else %}
+                    <span class="badge bg-info">Sevk Edildi</span>
+                  {% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5 text-muted">
+          <i class="bi bi-truck fs-1 opacity-25 d-block mb-2"></i>
+          Henüz sevk kaydı yok.
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

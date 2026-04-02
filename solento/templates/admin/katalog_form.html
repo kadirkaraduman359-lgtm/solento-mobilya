@@ -1,0 +1,228 @@
+{% extends 'base.html' %}
+{% block title %}{% if ku %}Ürün Düzenle - {{ ku.ad }}{% else %}Yeni Katalog Ürünü{% endif %}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>
+    <i class="bi bi-{% if ku %}pencil{% else %}plus-circle{% endif %} me-2"></i>
+    {% if ku %}Ürün Düzenle <small class="text-muted fs-5">{{ ku.ad }}</small>{% else %}Yeni Katalog Ürünü{% endif %}
+  </h1>
+  <a href="{{ url_for('admin.katalog') }}" class="btn btn-outline-secondary">
+    <i class="bi bi-arrow-left me-1"></i>Kataloğa Dön
+  </a>
+</div>
+
+<form method="POST"
+      action="{% if ku %}{{ url_for('admin.katalog_duzenle', id=ku.id) }}{% else %}{{ url_for('admin.katalog_yeni') }}{% endif %}"
+      enctype="multipart/form-data">
+  <div class="row g-4">
+
+    <!-- Sol kolon: temel bilgiler -->
+    <div class="col-lg-8">
+
+      <!-- Temel Bilgiler -->
+      <div class="card mb-4">
+        <div class="card-header"><i class="bi bi-info-circle me-2"></i>Temel Bilgiler</div>
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-sm-8">
+              <label class="form-label fw-semibold">Ürün Adı <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" name="ad" value="{{ ku.ad if ku else '' }}" required>
+            </div>
+            <div class="col-sm-4">
+              <label class="form-label fw-semibold">Ürün Kodu</label>
+              <input type="text" class="form-control" name="kod" value="{{ ku.kod if ku else '' }}" placeholder="Örn: SOL-001">
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label fw-semibold">Kategori</label>
+              <input type="text" class="form-control" name="kategori" value="{{ ku.kategori if ku else '' }}" placeholder="Yatak Odası, Oturma Odası...">
+            </div>
+            <div class="col-12">
+              <label class="form-label fw-semibold">Açıklama</label>
+              <textarea class="form-control" name="aciklama" rows="3" placeholder="Ürün hakkında açıklama...">{{ ku.aciklama if ku else '' }}</textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ölçüler -->
+      <div class="card mb-4">
+        <div class="card-header"><i class="bi bi-rulers me-2"></i>Ölçüler &amp; Ağırlık</div>
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-6 col-sm-3">
+              <label class="form-label fw-semibold">Boy (cm)</label>
+              <input type="number" class="form-control" name="boy" step="0.1" min="0" value="{{ ku.boy if ku else '' }}" placeholder="0">
+            </div>
+            <div class="col-6 col-sm-3">
+              <label class="form-label fw-semibold">En (cm)</label>
+              <input type="number" class="form-control" name="en" step="0.1" min="0" value="{{ ku.en if ku else '' }}" placeholder="0">
+            </div>
+            <div class="col-6 col-sm-3">
+              <label class="form-label fw-semibold">Derinlik (cm)</label>
+              <input type="number" class="form-control" name="derinlik" step="0.1" min="0" value="{{ ku.derinlik if ku else '' }}" placeholder="0">
+            </div>
+            <div class="col-6 col-sm-3">
+              <label class="form-label fw-semibold">Ağırlık (kg)</label>
+              <input type="number" class="form-control" name="agirlik" step="0.1" min="0" value="{{ ku.agirlik if ku else '' }}" placeholder="0">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Resimler -->
+      <div class="card mb-4">
+        <div class="card-header"><i class="bi bi-images me-2"></i>Ürün Resimleri</div>
+        <div class="card-body">
+          {% if ku and ku.resimler %}
+          <div class="row g-2 mb-3">
+            {% for r in ku.resimler %}
+            <div class="col-6 col-sm-4 col-md-3">
+              <div class="position-relative">
+                <img src="{{ url_for('static', filename='uploads/katalog/' ~ r.dosya_adi) }}"
+                     class="img-thumbnail w-100" style="height:100px;object-fit:cover" alt="">
+                <form method="POST" action="{{ url_for('admin.katalog_resim_sil', id=ku.id, rid=r.id) }}" class="d-inline">
+                  <button type="submit" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-1 p-0 px-1"
+                          style="font-size:.7rem;line-height:1.6"
+                          onclick="return confirm('Resmi silmek istediğinize emin misiniz?')">
+                    <i class="bi bi-x-lg"></i>
+                  </button>
+                </form>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% endif %}
+          <div>
+            <label class="form-label fw-semibold">
+              {% if ku and ku.resimler %}Yeni Resim Ekle{% else %}Resim Yükle{% endif %}
+            </label>
+            <input type="file" class="form-control" name="resimler" multiple
+                   accept=".jpg,.jpeg,.png,.webp,.gif">
+            <div class="form-text">JPG, PNG, WEBP veya GIF. Birden fazla dosya seçebilirsiniz.</div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /col-lg-8 -->
+
+    <!-- Sağ kolon: fiyat & görünürlük -->
+    <div class="col-lg-4">
+
+      <!-- Durum -->
+      <div class="card mb-4">
+        <div class="card-header"><i class="bi bi-toggles me-2"></i>Durum</div>
+        <div class="card-body">
+          <div class="form-check form-switch mb-3">
+            <input class="form-check-input" type="checkbox" role="switch" name="aktif" value="1"
+                   id="aktifSwitch"
+                   {% if not ku or ku.aktif %}checked{% endif %} style="width:2.5rem;height:1.25rem">
+            <label class="form-check-label fw-semibold" for="aktifSwitch">Aktif</label>
+            <div class="text-muted small">Pasif ürünler katalogda görünmez.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Fiyat -->
+      <div class="card mb-4">
+        <div class="card-header"><i class="bi bi-tag me-2"></i>Fiyat</div>
+        <div class="card-body">
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Fiyat (₺)</label>
+            <div class="input-group">
+              <input type="number" class="form-control" name="fiyat" step="0.01" min="0"
+                     value="{{ ku.fiyat if ku else '' }}" placeholder="0.00">
+              <span class="input-group-text">₺</span>
+            </div>
+          </div>
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" role="switch" name="fiyat_onaylandi" value="1"
+                   id="fiyatSwitch"
+                   {% if ku and ku.fiyat_onaylandi %}checked{% endif %} style="width:2.5rem;height:1.25rem">
+            <label class="form-check-label fw-semibold" for="fiyatSwitch">Fiyatı Göster</label>
+            <div class="text-muted small">Onaylanmayan fiyatlar mağazalara gösterilmez.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Görünürlük -->
+      <div class="card mb-4">
+        <div class="card-header"><i class="bi bi-eye me-2"></i>Görünürlük</div>
+        <div class="card-body">
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Görünürlük</label>
+            <select class="form-select" name="gorunurluk" id="gorunurlukSelect">
+              <option value="herkes" {% if not ku or ku.gorunurluk == 'herkes' %}selected{% endif %}>
+                Herkes (Tüm mağazalar)
+              </option>
+              <option value="secili" {% if ku and ku.gorunurluk == 'secili' %}selected{% endif %}>
+                Seçili Mağazalar
+              </option>
+              <option value="gizli" {% if ku and ku.gorunurluk == 'gizli' %}selected{% endif %}>
+                Gizli (Kimse göremez)
+              </option>
+            </select>
+          </div>
+
+          <!-- Seçili mağazalar (koşullu) -->
+          <div id="seciliMagazalar" class="{% if not ku or ku.gorunurluk != 'secili' %}d-none{% endif %}">
+            <label class="form-label fw-semibold">Mağaza Seçimi</label>
+            <div class="d-flex flex-column gap-2" style="max-height:300px;overflow-y:auto">
+              {% for m in magazalar %}
+              {% set izin = namespace(secili=false, fiyat=false) %}
+              {% if ku %}
+                {% for iz in ku.magaza_izinleri %}
+                  {% if iz.magaza_id == m.id %}
+                    {% set izin.secili = true %}
+                    {% set izin.fiyat = iz.fiyat_gorunsun %}
+                  {% endif %}
+                {% endfor %}
+              {% endif %}
+              <div class="border rounded p-2">
+                <div class="form-check mb-1">
+                  <input type="checkbox" class="form-check-input" name="magaza_ids[]"
+                         value="{{ m.id }}" id="mags{{ m.id }}"
+                         {% if izin.secili %}checked{% endif %}>
+                  <label class="form-check-label fw-semibold" for="mags{{ m.id }}">
+                    {{ m.ad }}
+                    <span class="text-muted small">{{ m.sehir.ad if m.sehir else '' }}</span>
+                  </label>
+                </div>
+                <div class="form-check form-switch ms-4" style="font-size:.8rem">
+                  <input type="checkbox" class="form-check-input" name="fiyat_gorunsun_{{ m.id }}"
+                         value="1" id="fg{{ m.id }}"
+                         {% if izin.fiyat %}checked{% endif %}>
+                  <label class="form-check-label text-muted" for="fg{{ m.id }}">Fiyat Göster</label>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /col-lg-4 -->
+
+  </div><!-- /row -->
+
+  <div class="d-flex gap-2 justify-content-end mt-2 mb-4">
+    <a href="{{ url_for('admin.katalog') }}" class="btn btn-secondary px-4">İptal</a>
+    <button type="submit" class="btn btn-primary px-5">
+      <i class="bi bi-floppy me-1"></i>{% if ku %}Güncelle{% else %}Kaydet{% endif %}
+    </button>
+  </div>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('gorunurlukSelect').addEventListener('change', function() {
+  const secili = document.getElementById('seciliMagazalar');
+  if (this.value === 'secili') {
+    secili.classList.remove('d-none');
+  } else {
+    secili.classList.add('d-none');
+  }
+});
+</script>
+{% endblock %}

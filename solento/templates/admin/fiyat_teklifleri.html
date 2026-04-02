@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+{% block title %}Fiyat Teklifleri{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1><i class="bi bi-tags me-2"></i>Fiyat Teklifleri</h1>
+  {% if bekleyen_sayi > 0 %}
+    <span class="badge bg-warning text-dark fs-6">{{ bekleyen_sayi }} beklemede</span>
+  {% endif %}
+</div>
+
+<!-- Filter Tabs -->
+<ul class="nav nav-tabs mb-4">
+  <li class="nav-item">
+    <a class="nav-link {% if durum_filter == 'beklemede' or not durum_filter %}active{% endif %}"
+       href="{{ url_for('admin.fiyat_teklifleri', durum='beklemede') }}">
+      Beklemede
+      {% if bekleyen_sayi > 0 %}
+        <span class="badge bg-warning text-dark rounded-pill ms-1">{{ bekleyen_sayi }}</span>
+      {% endif %}
+    </a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link {% if durum_filter == 'yanitlandi' %}active{% endif %}"
+       href="{{ url_for('admin.fiyat_teklifleri', durum='yanitlandi') }}">
+      Yanıtlandı
+    </a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link {% if durum_filter == 'tumu' %}active{% endif %}"
+       href="{{ url_for('admin.fiyat_teklifleri', durum='tumu') }}">
+      Tümü
+    </a>
+  </li>
+</ul>
+
+<div class="card">
+  <div class="card-body p-0">
+    {% if teklifler %}
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>Tarih</th>
+            <th>Mağaza</th>
+            <th>Ürün</th>
+            <th class="text-center">Miktar</th>
+            <th>Müşteri Notu</th>
+            <th class="text-end">Admin Fiyatı</th>
+            <th>Admin Notu</th>
+            <th>Durum</th>
+            <th class="text-center">İşlem</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for ft in teklifler %}
+          <tr>
+            <td class="text-muted small">{{ ft.tarih if ft.tarih else '-' }}</td>
+            <td class="fw-semibold small">
+              {{ ft.magaza.ad if ft.magaza else (ft.kullanici.magaza.ad if ft.kullanici and ft.kullanici.magaza else '-') }}
+            </td>
+            <td class="small">{{ ft.katalog_urun.ad if ft.katalog_urun else '-' }}</td>
+            <td class="text-center">
+              <span class="badge bg-secondary rounded-pill">{{ ft.miktar or 1 }}</span>
+            </td>
+            <td class="small text-muted" style="max-width:160px">
+              <span class="d-inline-block text-truncate" style="max-width:140px" title="{{ ft.musteri_notu }}">
+                {{ ft.musteri_notu or '—' }}
+              </span>
+            </td>
+            <td class="text-end fw-bold">
+              {% if ft.admin_teklif_fiyati %}
+                <span class="text-success">{{ "%.2f"|format(ft.admin_teklif_fiyati) }} ₺</span>
+              {% else %}
+                <span class="text-muted">—</span>
+              {% endif %}
+            </td>
+            <td class="small text-muted" style="max-width:160px">
+              <span class="d-inline-block text-truncate" style="max-width:140px" title="{{ ft.admin_notu }}">
+                {{ ft.admin_notu or '—' }}
+              </span>
+            </td>
+            <td>
+              {% if ft.durum == 'beklemede' %}
+                <span class="badge bg-warning text-dark">Beklemede</span>
+              {% elif ft.durum == 'yanitlandi' %}
+                <span class="badge bg-success">Yanıtlandı</span>
+              {% else %}
+                <span class="badge bg-secondary">{{ ft.durum or '—' }}</span>
+              {% endif %}
+            </td>
+            <td class="text-center">
+              {% if ft.durum == 'beklemede' %}
+              <button class="btn btn-sm btn-primary" data-bs-toggle="modal"
+                      data-bs-target="#yanitlaModal{{ ft.id }}">
+                <i class="bi bi-reply me-1"></i>Yanıtla
+              </button>
+              {% else %}
+              <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal"
+                      data-bs-target="#yanitlaModal{{ ft.id }}">
+                <i class="bi bi-pencil me-1"></i>Düzenle
+              </button>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="text-center py-5 text-muted">
+      <i class="bi bi-tags fs-1 opacity-25 d-block mb-2"></i>
+      Bu filtrede fiyat teklifi bulunamadı.
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Yanıtla Modals -->
+{% for ft in teklifler %}
+<div class="modal fade" id="yanitlaModal{{ ft.id }}" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title"><i class="bi bi-reply me-2"></i>Fiyat Teklifini Yanıtla</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="POST" action="{{ url_for('admin.fiyat_teklifi_yanitla', id=ft.id) }}">
+        <div class="modal-body">
+          <div class="alert alert-light border mb-3 small">
+            <strong>Mağaza:</strong> {{ ft.magaza.ad if ft.magaza else '-' }}<br>
+            <strong>Ürün:</strong> {{ ft.katalog_urun.ad if ft.katalog_urun else '-' }}<br>
+            <strong>Miktar:</strong> {{ ft.miktar or 1 }}<br>
+            {% if ft.musteri_notu %}
+              <strong>Müşteri Notu:</strong> {{ ft.musteri_notu }}
+            {% endif %}
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Teklif Fiyatı (₺) <span class="text-danger">*</span></label>
+            <div class="input-group">
+              <input type="number" class="form-control" name="admin_teklif_fiyati"
+                     step="0.01" min="0"
+                     value="{{ ft.admin_teklif_fiyati or '' }}"
+                     placeholder="0.00" required>
+              <span class="input-group-text">₺</span>
+            </div>
+          </div>
+          <div class="mb-1">
+            <label class="form-label fw-semibold">Admin Notu</label>
+            <textarea class="form-control" name="admin_notu" rows="3"
+                      placeholder="Mağazaya iletilecek not...">{{ ft.admin_notu or '' }}</textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+          <button type="submit" class="btn btn-primary"><i class="bi bi-reply me-1"></i>Yanıtla</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endfor %}
+{% endblock %}
