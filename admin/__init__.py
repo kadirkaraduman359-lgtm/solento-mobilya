@@ -93,9 +93,16 @@ def sehir_ekle():
 @admin_required
 def sehir_sil(id):
     s = Sehir.query.get_or_404(id)
-    db.session.delete(s)
-    db.session.commit()
-    flash("Sehir silindi.", "success")
+    if s.magazalar:
+        flash(f"'{s.ad}' şehrinde {len(s.magazalar)} mağaza var. Önce mağazaları silin.", "danger")
+        return redirect(url_for("admin.tanimlar"))
+    try:
+        db.session.delete(s)
+        db.session.commit()
+        flash(f"'{s.ad}' şehri silindi.", "success")
+    except Exception:
+        db.session.rollback()
+        flash("Şehir silinemedi. Bağlı kayıtlar mevcut.", "danger")
     return redirect(url_for("admin.tanimlar"))
 
 
@@ -122,9 +129,17 @@ def magaza_ekle():
 @admin_required
 def magaza_sil(id):
     m = Magaza.query.get_or_404(id)
-    db.session.delete(m)
-    db.session.commit()
-    flash("Magaza silindi.", "success")
+    bagli_kullanici = Kullanici.query.filter_by(magaza_id=id).count()
+    if bagli_kullanici > 0:
+        flash(f"'{m.ad}' mağazasına bağlı {bagli_kullanici} kullanıcı var. Önce kullanıcıları silin.", "danger")
+        return redirect(url_for("admin.tanimlar"))
+    try:
+        db.session.delete(m)
+        db.session.commit()
+        flash(f"'{m.ad}' mağazası silindi.", "success")
+    except Exception:
+        db.session.rollback()
+        flash("Mağaza silinemedi. Bağlı kayıtlar mevcut.", "danger")
     return redirect(url_for("admin.tanimlar"))
 
 
@@ -168,9 +183,13 @@ def paket_duzenle(id):
 @admin_required
 def urun_sil(id):
     u = Urun.query.get_or_404(id)
-    db.session.delete(u)
-    db.session.commit()
-    flash("Urun silindi.", "success")
+    try:
+        db.session.delete(u)
+        db.session.commit()
+        flash(f"'{u.ad}' ürünü silindi.", "success")
+    except Exception:
+        db.session.rollback()
+        flash(f"'{u.ad}' silinemedi. Stok veya sipariş kaydı mevcut.", "danger")
     return redirect(url_for("admin.tanimlar"))
 
 
@@ -903,6 +922,14 @@ def kullanicilar():
 def kullanici_onayla(id):
     u = Kullanici.query.get_or_404(id)
     u.onay_durumu = "onaylandi"
+    # Yetki kaydı yoksa oluştur
+    if not u.yetki:
+        from models import KullaniciYetki
+        db.session.add(KullaniciYetki(
+            kullanici_id=u.id,
+            stok=True, talepler=True, sevklerim=True,
+            ssh=True, katalog=True, satis=True, katalog_fiyat=False
+        ))
     db.session.commit()
     flash(f"'{u.kullanici_adi}' hesabı onaylandı.", "success")
     return redirect(url_for("admin.kullanicilar"))

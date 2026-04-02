@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, redirect, url_for, request, flash
 from flask_login import login_user, logout_user, login_required, current_user
-from models import db, Kullanici, Magaza, Sehir
+from models import db, Kullanici, Magaza, Sehir, KullaniciYetki
 from datetime import datetime
 
 auth_bp = Blueprint("auth", __name__)
@@ -92,6 +92,14 @@ def kayit():
     )
     u.set_sifre(sifre)
     db.session.add(u)
+    db.session.flush()
+    # Varsayılan yetkileri oluştur (admin onaylar, yetkiler hazır olsun)
+    yetki = KullaniciYetki(
+        kullanici_id=u.id,
+        stok=True, talepler=True, sevklerim=True,
+        ssh=True, katalog=True, satis=True, katalog_fiyat=False
+    )
+    db.session.add(yetki)
     db.session.commit()
 
     flash(f"Kayıt talebiniz alındı. Yönetici onayı bekleniyor.", "success")

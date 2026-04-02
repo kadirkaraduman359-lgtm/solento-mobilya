@@ -15,6 +15,12 @@ def magaza_required(f):
     def decorated(*args, **kwargs):
         if current_user.is_admin:
             return redirect(url_for("admin.dashboard"))
+        if not current_user.magaza_id:
+            flash("Hesabınıza bağlı mağaza bulunamadı. Yönetici ile iletişime geçin.", "danger")
+            return redirect(url_for("auth.login"))
+        if current_user.onay_durumu != "onaylandi":
+            flash("Hesabınız henüz onaylanmadı.", "warning")
+            return redirect(url_for("auth.login"))
         return f(*args, **kwargs)
     return decorated
 
@@ -68,46 +74,52 @@ def stok_gorunum():
     GIRIS_TURLERI = ["uretim_giris", "duzeltme_giris", "iade"]
     CIKIS_TURLERI = ["sevk_cikis", "duzeltme_cikis", "fire"]
 
-    # Tüm aktif taleplerdeki rezerveleri hesapla (bu mağaza DAHİL tüm mağazalar)
     rezerve_map = {}
-    aktif_kalemler = (
-        db.session.query(SiparisTalebiKalemi)
-        .join(SiparisTalebi, SiparisTalebiKalemi.talep_id == SiparisTalebi.id)
-        .filter(SiparisTalebi.durum.in_(["beklemede", "onaylandi"]))
-        .all()
-    )
-    for k in aktif_kalemler:
-        rezerve_map[k.urun_id] = rezerve_map.get(k.urun_id, 0) + k.miktar
+    try:
+        aktif_kalemler = (
+            db.session.query(SiparisTalebiKalemi)
+            .join(SiparisTalebi, SiparisTalebiKalemi.talep_id == SiparisTalebi.id)
+            .filter(SiparisTalebi.durum.in_(["beklemede", "onaylandi"]))
+            .all()
+        )
+        for k in aktif_kalemler:
+            rezerve_map[k.urun_id] = rezerve_map.get(k.urun_id, 0) + k.miktar
+    except Exception:
+        pass
 
-    # Ana depo stoku + kullanılabilir hesapla
     urunler = Urun.query.order_by(Urun.ad).all()
     depo_stok = []
-    stok_yok = []  # Stokta olmayan ama talep edilebilir ürünler
+    stok_yok = []
     for u in urunler:
-        giris = db.session.query(func.coalesce(func.sum(StokHareketi.miktar), 0))\
-            .filter(StokHareketi.urun_id == u.id,
-                    StokHareketi.hareket_turu.in_(GIRIS_TURLERI)).scalar() or 0
-        cikis = db.session.query(func.coalesce(func.sum(func.abs(StokHareketi.miktar)), 0))\
-            .filter(StokHareketi.urun_id == u.id,
-                    StokHareketi.hareket_turu.in_(CIKIS_TURLERI)).scalar() or 0
-        bakiye = int(giris) - int(cikis)
-        rezerve = rezerve_map.get(u.id, 0)
-        kullanilabilir = max(0, bakiye - rezerve)
-        if bakiye > 0:
-            depo_stok.append({
-                "urun": u,
-                "bakiye": bakiye,
-                "rezerve": rezerve,
-                "kullanilabilir": kullanilabilir
-            })
-        elif bakiye <= 0 and (giris > 0):
-            # Ürün daha önce stokta vardı ama bitti
-            stok_yok.append({"urun": u})
+        try:
+            giris = db.session.query(func.coalesce(func.sum(StokHareketi.miktar), 0))\
+                .filter(StokHareketi.urun_id == u.id,
+                        StokHareketi.hareket_turu.in_(GIRIS_TURLERI)).scalar() or 0
+            cikis = db.session.query(func.coalesce(func.sum(func.abs(StokHareketi.miktar)), 0))\
+                .filter(StokHareketi.urun_id == u.id,
+                        StokHareketi.hareket_turu.in_(CIKIS_TURLERI)).scalar() or 0
+            bakiye = int(giris) - int(cikis)
+            rezerve = rezerve_map.get(u.id, 0)
+            kullanilabilir = max(0, bakiye - rezerve)
+            if bakiye > 0:
+                depo_stok.append({"urun": u, "bakiye": bakiye, "rezerve": rezerve, "kullanilabilir": kullanilabilir})
+            elif giris > 0:
+                stok_yok.append({"urun": u})
+        except Exception:
+            continue
 
-    kendi_stok = magaza_stok_ozet(current_user.magaza_id)
-    bekleyen_talepler = SiparisTalebi.query.filter_by(
-        magaza_id=current_user.magaza_id
-    ).filter(SiparisTalebi.durum.in_(["beklemede", "onaylandi"])).order_by(SiparisTalebi.id.desc()).all()
+    try:
+        kendi_stok = magaza_stok_ozet(current_user.magaza_id)
+    except Exception:
+        kendi_stok = []
+
+    try:
+        bekleyen_talepler = SiparisTalebi.query.filter_by(
+            magaza_id=current_user.magaza_id
+        ).filter(SiparisTalebi.durum.in_(["beklemede", "onaylandi"])).order_by(SiparisTalebi.id.desc()).all()
+    except Exception:
+        bekleyen_talepler = []
+
     return render_template("magaza/stok.html",
                            depo_stok=depo_stok,
                            stok_yok=stok_yok,

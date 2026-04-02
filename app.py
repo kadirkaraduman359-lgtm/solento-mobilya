@@ -1,4 +1,4 @@
-from flask import Flask, redirect, url_for
+from flask import Flask, redirect, url_for, render_template
 from flask_login import LoginManager, current_user
 from datetime import datetime
 from config import Config
@@ -27,14 +27,32 @@ def create_app():
     app.register_blueprint(admin_bp, url_prefix="/admin")
     app.register_blueprint(magaza_bp, url_prefix="/m")
 
+    @app.after_request
+    def set_utf8(response):
+        if response.content_type.startswith("text/html"):
+            response.headers["Content-Type"] = "text/html; charset=utf-8"
+        return response
+
+    @app.errorhandler(404)
+    def not_found(e):
+        return render_template("errors/404.html"), 404
+
+    @app.errorhandler(500)
+    def server_error(e):
+        db.session.rollback()
+        return render_template("errors/500.html"), 500
+
     @app.context_processor
     def inject_globals():
         from models import SiparisTalebi, Kullanici
         bekleyen = 0
         bekleyen_kayit = 0
         if current_user.is_authenticated and current_user.is_admin:
-            bekleyen = SiparisTalebi.query.filter_by(durum="beklemede").count()
-            bekleyen_kayit = Kullanici.query.filter_by(onay_durumu="beklemede").count()
+            try:
+                bekleyen = SiparisTalebi.query.filter_by(durum="beklemede").count()
+                bekleyen_kayit = Kullanici.query.filter_by(onay_durumu="beklemede").count()
+            except Exception:
+                pass
         return {"now": datetime.now(), "bekleyen_badge": bekleyen, "bekleyen_kayit": bekleyen_kayit}
 
     @app.route("/")

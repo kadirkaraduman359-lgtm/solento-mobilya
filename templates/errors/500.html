@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container py-5 text-center">
+  <h1 class="display-1 fw-bold text-warning">500</h1>
+  <p class="lead">Bir hata oluştu. Lütfen tekrar deneyin.</p>
+  <p class="text-muted small">Sorun devam ederse yönetici ile iletişime geçin.</p>
+  <a href="{{ url_for('index') }}" class="btn btn-primary mt-3">Ana Sayfaya Dön</a>
+</div>
+{% endblock %}
