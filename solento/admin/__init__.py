@@ -1261,67 +1261,99 @@ def kullanici_yetki(id):
 @admin_required
 def raporlar():
     from sqlalchemy import func as sqlfunc
-    magazalar = Magaza.query.join(Sehir).order_by(Sehir.ad, Magaza.ad).all()
+    try:
+        magazalar = Magaza.query.join(Sehir).order_by(Sehir.ad, Magaza.ad).all()
+    except Exception:
+        magazalar = Magaza.query.all()
     sehirler = Sehir.query.order_by(Sehir.ad).all()
 
     # Sevk satırları (son 20)
-    sevkler = Sevk.query.order_by(Sevk.id.desc()).limit(20).all()
     sevk_satirlar = []
-    for s in sevkler:
-        ara = (s.nakliye_ucreti or 0) + (s.iscilik or 0) + sum(g.tutar for g in s.giderler)
-        kdv = ara * (s.kdv_oran or 0) / 100
-        magaza_adi = (
-            f"{s.magaza.ad}/{s.magaza.sehir.ad}"
-            if s.magaza
-            else (s.alici_adi or "Serbest")
-        )
-        sevk_satirlar.append({
-            "id": s.id,
-            "tarih": s.tarih,
-            "magaza": magaza_adi,
-            "urunler": [f"{k.urun.ad if k.urun else '?'} \u00d7{int(k.miktar)}" for k in s.kalemler],
-            "toplam": int(ara + kdv)
-        })
+    try:
+        sevkler = Sevk.query.order_by(Sevk.id.desc()).limit(20).all()
+        for s in sevkler:
+            try:
+                ara = (s.nakliye_ucreti or 0) + (s.iscilik or 0) + sum(g.tutar for g in (s.giderler or []))
+                kdv = ara * (s.kdv_oran or 0) / 100
+                if s.magaza and s.magaza.sehir:
+                    magaza_adi = f"{s.magaza.ad}/{s.magaza.sehir.ad}"
+                elif s.magaza:
+                    magaza_adi = s.magaza.ad
+                else:
+                    magaza_adi = s.alici_adi or "Serbest"
+                urunler_str = ", ".join(
+                    f"{k.urun.ad if k.urun else '?'} x{int(k.miktar)}"
+                    for k in (s.kalemler or [])
+                )
+                sevk_satirlar.append({
+                    "id": s.id,
+                    "tarih": str(s.tarih)[:10] if s.tarih else "",
+                    "magaza": magaza_adi,
+                    "urunler": urunler_str,
+                    "toplam": int(ara + kdv)
+                })
+            except Exception:
+                continue
+    except Exception:
+        pass
 
     # Stok satırları
-    urunler = Urun.query.order_by(Urun.ad).all()
     stok_satirlar = []
-    for u in urunler:
-        g = db.session.query(
-            sqlfunc.coalesce(sqlfunc.sum(StokHareketi.miktar), 0)
-        ).filter(
-            StokHareketi.urun_id == u.id,
-            StokHareketi.hareket_turu.in_(GIRIS_TURLERI)
-        ).scalar() or 0
-        c = db.session.query(
-            sqlfunc.coalesce(sqlfunc.sum(sqlfunc.abs(StokHareketi.miktar)), 0)
-        ).filter(
-            StokHareketi.urun_id == u.id,
-            StokHareketi.hareket_turu.in_(CIKIS_TURLERI)
-        ).scalar() or 0
-        stok_satirlar.append({"urun": u.ad, "adet": int(g - c)})
+    try:
+        urunler = Urun.query.order_by(Urun.ad).all()
+        for u in urunler:
+            try:
+                g = db.session.query(
+                    sqlfunc.coalesce(sqlfunc.sum(StokHareketi.miktar), 0)
+                ).filter(
+                    StokHareketi.urun_id == u.id,
+                    StokHareketi.hareket_turu.in_(GIRIS_TURLERI)
+                ).scalar() or 0
+                c = db.session.query(
+                    sqlfunc.coalesce(sqlfunc.sum(sqlfunc.abs(StokHareketi.miktar)), 0)
+                ).filter(
+                    StokHareketi.urun_id == u.id,
+                    StokHareketi.hareket_turu.in_(CIKIS_TURLERI)
+                ).scalar() or 0
+                stok_satirlar.append({"urun": u.ad, "adet": int(g - c)})
+            except Exception:
+                continue
+    except Exception:
+        pass
 
     # Mağaza maliyet satırları
     mag_maliyet = []
-    for m in magazalar:
-        toplam = sum(
-            (s.nakliye_ucreti or 0) + (s.iscilik or 0) + sum(gg.tutar for gg in s.giderler)
-            for s in m.sevkler
-        )
-        if toplam > 0:
-            mag_maliyet.append({"magaza": f"{m.ad}/{m.sehir.ad}", "toplam": int(toplam)})
-    mag_maliyet.sort(key=lambda x: x["toplam"], reverse=True)
+    try:
+        for m in magazalar:
+            try:
+                toplam = sum(
+                    (s.nakliye_ucreti or 0) + (s.iscilik or 0) + sum(gg.tutar for gg in (s.giderler or []))
+                    for s in (m.sevkler or [])
+                )
+                if toplam > 0:
+                    sehir_adi = m.sehir.ad if m.sehir else "?"
+                    mag_maliyet.append({"magaza": f"{m.ad}/{sehir_adi}", "toplam": int(toplam)})
+            except Exception:
+                continue
+        mag_maliyet.sort(key=lambda x: x["toplam"], reverse=True)
+    except Exception:
+        pass
 
     # SSH satırları (son 20)
-    ssh_liste = SshBildirimi.query.order_by(SshBildirimi.id.desc()).limit(20).all()
-    ssh_satirlar = [
-        {
-            "magaza": s.magaza.ad if s.magaza else "?",
-            "urun": s.urun.ad if s.urun else "?",
-            "durum": s.durum
-        }
-        for s in ssh_liste
-    ]
+    ssh_satirlar = []
+    try:
+        ssh_liste = SshBildirimi.query.order_by(SshBildirimi.id.desc()).limit(20).all()
+        for s in ssh_liste:
+            try:
+                ssh_satirlar.append({
+                    "magaza": s.magaza.ad if s.magaza else "?",
+                    "urun": s.urun.ad if s.urun else "?",
+                    "durum": s.durum or ""
+                })
+            except Exception:
+                continue
+    except Exception:
+        pass
 
     rapor_ozet = {
         "sevk": {"satirlar": sevk_satirlar},

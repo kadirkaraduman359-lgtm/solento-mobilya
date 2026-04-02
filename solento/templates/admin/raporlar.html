@@ -16,7 +16,7 @@
 {% set ns_sevk = namespace(lines=[]) %}
 {% set _ = ns_sevk.lines.append('*Solento Mobilya - Sevkiyat Raporu*') %}
 {% for r in sevk_rows[:5] %}
-  {% set _ = ns_sevk.lines.append('• ' ~ (r.tarih|string)[:10] ~ ' | ' ~ (r.alici or r.magaza or '-') ~ ' | ' ~ (r.urunler or '-') ~ ' | ' ~ (r.toplam|string if r.toplam else '-') ~ ' ₺') %}
+  {% set _ = ns_sevk.lines.append('• ' ~ (r.tarih|string)[:10] ~ ' | ' ~ (r.magaza or '-') ~ ' | ' ~ (r.urunler or '-') ~ ' | ' ~ (r.toplam|string if r.toplam else '-') ~ ' ₺') %}
 {% endfor %}
 {% set sevk_wa_text = ns_sevk.lines|join('\n') %}
 
