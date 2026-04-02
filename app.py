@@ -67,6 +67,7 @@ def create_app():
         db.create_all()
         _auto_migrate()
         _seed_admin()
+        _seed_yetki()
 
     return app
 
@@ -106,6 +107,28 @@ def _auto_migrate():
                 print(f"Migration: {tablo}.{sutun} eklendi")
         except Exception as e:
             print(f"Migration hatasi {tablo}.{sutun}: {e}")
+
+
+def _seed_yetki():
+    """Yetki kaydı olmayan onaylı mağaza kullanıcılarına varsayılan yetki oluştur."""
+    from models import KullaniciYetki
+    try:
+        eksik = Kullanici.query.filter_by(rol="magaza", onay_durumu="onaylandi").all()
+        created = 0
+        for u in eksik:
+            if not u.yetki:
+                db.session.add(KullaniciYetki(
+                    kullanici_id=u.id,
+                    stok=True, talepler=True, sevklerim=True,
+                    ssh=True, katalog=True, satis=True, katalog_fiyat=False
+                ))
+                created += 1
+        if created:
+            db.session.commit()
+            print(f"Yetki seed: {created} kullaniciya varsayilan yetki verildi")
+    except Exception as e:
+        db.session.rollback()
+        print(f"Yetki seed hatasi: {e}")
 
 
 def _seed_admin():
