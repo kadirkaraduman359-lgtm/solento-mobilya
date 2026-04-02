@@ -1279,7 +1279,7 @@ def raporlar():
             "id": s.id,
             "tarih": s.tarih,
             "magaza": magaza_adi,
-            "urunler": [f"{k.urun.ad} \u00d7{int(k.miktar)}" for k in s.kalemler],
+            "urunler": [f"{k.urun.ad if k.urun else '?'} \u00d7{int(k.miktar)}" for k in s.kalemler],
             "toplam": int(ara + kdv)
         })
 
@@ -1315,7 +1315,11 @@ def raporlar():
     # SSH satırları (son 20)
     ssh_liste = SshBildirimi.query.order_by(SshBildirimi.id.desc()).limit(20).all()
     ssh_satirlar = [
-        {"magaza": s.magaza.ad, "urun": s.urun.ad, "durum": s.durum}
+        {
+            "magaza": s.magaza.ad if s.magaza else "?",
+            "urun": s.urun.ad if s.urun else "?",
+            "durum": s.durum
+        }
         for s in ssh_liste
     ]
 
