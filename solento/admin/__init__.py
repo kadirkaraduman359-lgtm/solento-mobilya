@@ -1264,8 +1264,14 @@ def raporlar():
     try:
         magazalar = Magaza.query.join(Sehir).order_by(Sehir.ad, Magaza.ad).all()
     except Exception:
-        magazalar = Magaza.query.all()
-    sehirler = Sehir.query.order_by(Sehir.ad).all()
+        try:
+            magazalar = Magaza.query.all()
+        except Exception:
+            magazalar = []
+    try:
+        sehirler = Sehir.query.order_by(Sehir.ad).all()
+    except Exception:
+        sehirler = []
 
     # Sevk satırları (son 20)
     sevk_satirlar = []
@@ -1370,12 +1376,19 @@ def raporlar():
         "stok": {"satirlar": stok_satirlar},
         "ssh": {"satirlar": ssh_satirlar},
     }
-    return render_template(
-        "admin/raporlar.html",
-        magazalar=magazalar,
-        sehirler=sehirler,
-        rapor_ozet=rapor_ozet
-    )
+    try:
+        return render_template(
+            "admin/raporlar.html",
+            magazalar=magazalar,
+            sehirler=sehirler,
+            rapor_ozet=rapor_ozet
+        )
+    except Exception as e:
+        import traceback
+        app = admin_bp.import_name if hasattr(admin_bp, 'import_name') else 'admin'
+        print(f"RAPORLAR TEMPLATE HATA: {e}\n{traceback.format_exc()}")
+        flash(f"Rapor sayfası yüklenirken hata oluştu: {str(e)[:200]}", "danger")
+        return redirect(url_for("admin.dashboard"))
 
 
 # ─── 49. RAPOR EXCEL ──────────────────────────────────────────────────────────
