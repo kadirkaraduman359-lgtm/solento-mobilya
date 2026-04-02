@@ -94,7 +94,7 @@
       <div class="d-flex align-items-center justify-content-between mb-3">
         {% if ku.fiyat %}
         <div>
-          <span class="fw-bold text-success">{{ "{:,.0f}".format(ku.fiyat) }} â‚º</span>
+          <span class="fw-bold text-success">{{ "{:,.0f}".format(ku.fiyat) }} ₺</span>
           <form method="POST" action="{{ url_for('admin.katalog_fiyat_onayla', id=ku.id) }}" class="d-inline ms-2">
             {% if ku.fiyat_onaylandi %}
               <button class="btn btn-xs" style="font-size:11px;padding:2px 8px;background:#16a34a;color:#fff;border:none;border-radius:6px" title="Fiyat görünür â€” tıkla gizle">

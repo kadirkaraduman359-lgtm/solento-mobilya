@@ -44,7 +44,7 @@
             <td class="fw-semibold small">{{ t.magaza.ad if t.magaza else '—' }}</td>
             <td class="small">
               {% for k in t.kalemler %}
-                <div>{{ k.urun.ad if k.urun else '?' }} – <strong>{{ k.miktar }}</strong> adet</div>
+                <div>{{ k.urun.ad if k.urun else '?' }} – <strong>{{ k.miktar|int }}</strong> adet</div>
               {% else %}
                 <span class="text-muted">—</span>
               {% endfor %}
@@ -108,7 +108,7 @@
                       {% for k in t.kalemler %}
                       <div class="d-flex align-items-center gap-2 mb-2 p-2 bg-light rounded">
                         <span class="flex-grow-1">{{ k.urun.ad if k.urun else '?' }}</span>
-                        <span class="badge bg-primary">{{ k.miktar }} adet</span>
+                        <span class="badge bg-primary">{{ k.miktar|int }} adet</span>
                         {% if k.urun %}
                         <span class="text-muted small">Depoda: {{ kullanilabilir.get(k.urun.id, 0) }}</span>
                         {% endif %}

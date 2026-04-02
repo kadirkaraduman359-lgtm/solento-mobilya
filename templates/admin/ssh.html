@@ -54,7 +54,7 @@
         {% if b.talep_miktar %}
         <div class="mb-2">
           <small class="text-muted">Talep Miktar:</small>
-          <span class="small fw-bold text-danger">{{ b.talep_miktar }}</span>
+          <span class="small fw-bold text-danger">{{ b.talep_miktar|int }}</span>
         </div>
         {% endif %}
         <div class="mb-3">

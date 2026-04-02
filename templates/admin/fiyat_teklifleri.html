@@ -44,14 +44,14 @@
           <div class="text-muted" style="font-size:11px">{{ ft.urun.kategori }}</div>
         {% endif %}
       </td>
-      <td class="text-center"><span class="badge bg-dark">{{ ft.miktar }} adet</span></td>
+      <td class="text-center"><span class="badge bg-dark">{{ ft.miktar|int }} adet</span></td>
       <td class="small text-muted" style="max-width:200px">
         {{ ft.not_ or 'â€”' }}
         {% if ft.durum == 'yanitlandi' %}
           <div class="mt-1 p-1 rounded bg-light">
             <strong>Teklif:</strong>
             {% if ft.admin_teklif_fiyati %}
-              <span class="text-success fw-bold">{{ "{:,.0f}".format(ft.admin_teklif_fiyati) }} â‚º</span>
+              <span class="text-success fw-bold">{{ "{:,.0f}".format(ft.admin_teklif_fiyati) }} ₺</span>
             {% endif %}
             {% if ft.admin_notu %} â€” {{ ft.admin_notu }}{% endif %}
           </div>
@@ -100,7 +100,7 @@
         <div class="modal-body">
           <p class="fw-bold mb-3" id="yanit-urun-ad"></p>
           <div class="mb-3">
-            <label class="form-label fw-bold">Teklif Fiyatı (â‚º)</label>
+            <label class="form-label fw-bold">Teklif Fiyatı (₺)</label>
             <input type="number" name="admin_teklif_fiyati" id="yanit-fiyat"
                    class="form-control" step="0.01" min="0"
                    placeholder="0.00">

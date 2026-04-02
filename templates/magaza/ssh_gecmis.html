@@ -36,7 +36,7 @@
               {% endif %}
             </td>
             <td class="small">{{ b.hasar_aciklamasi or '—' }}</td>
-            <td class="text-end small">{{ b.talep_miktar or '—' }}</td>
+            <td class="text-end small">{{ b.talep_miktar|int if b.talep_miktar else '—' }}</td>
             <td>
               {% if b.durum == 'beklemede' %}
                 <span class="badge durum-beklemede">Beklemede</span>
