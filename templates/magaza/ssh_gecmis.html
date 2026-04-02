@@ -39,11 +39,11 @@
             <td class="text-end small">{{ b.talep_miktar|int if b.talep_miktar else '—' }}</td>
             <td>
               {% if b.durum == 'beklemede' %}
-                <span class="badge durum-beklemede">Beklemede</span>
+                <span class="badge bg-warning text-dark">Beklemede</span>
               {% elif b.durum == 'islemde' %}
-                <span class="badge durum-islemde">İşlemde</span>
+                <span class="badge bg-info text-dark">İşlemde</span>
               {% elif b.durum == 'teslim_edildi' %}
-                <span class="badge durum-teslim_edildi">Teslim Edildi</span>
+                <span class="badge bg-success">Teslim Edildi</span>
               {% else %}
                 <span class="badge bg-secondary">{{ b.durum }}</span>
               {% endif %}

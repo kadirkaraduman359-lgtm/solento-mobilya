@@ -1,90 +1,118 @@
 {% extends "base.html" %}
-{% block title %}Mağaza Stok Durumu{% endblock %}
+{% block title %}Mağaza Stok Durumu – Solento Mobilya{% endblock %}
 {% block page_title %}Mağaza Stok Durumu{% endblock %}
 {% block content %}
 
-<!-- Filtre -->
-<form method="GET" class="card p-3 mb-4">
-  <div class="row g-2 align-items-end">
-    <div class="col-md-3">
-      <label class="form-label small fw-semibold">Şehir</label>
-      <select name="sehir_id" class="form-select form-select-sm">
-        <option value="">Tüm Şehirler</option>
-        {% for s in sehirler %}
-        <option value="{{ s.id }}" {% if secili_sehir_id==s.id %}selected{% endif %}>{{ s.ad }}</option>
-        {% endfor %}
-      </select>
-    </div>
-    <div class="col-md-4">
-      <label class="form-label small fw-semibold">Mağaza</label>
-      <select name="magaza_id" class="form-select form-select-sm">
-        <option value="">Tüm Mağazalar</option>
-        {% for m in magazalar %}
-        <option value="{{ m.id }}" {% if secili_magaza_id==m.id %}selected{% endif %}>
-          {{ m.sehir.ad if m.sehir else "-" }} / {{ m.ad }}
-        </option>
-        {% endfor %}
-      </select>
-    </div>
-    <div class="col-md-2">
-      <button type="submit" class="btn btn-primary btn-sm w-100">Filtrele</button>
-    </div>
-    <div class="col-md-2">
-      <a href="{{ url_for('admin.magaza_stok') }}" class="btn btn-secondary btn-sm w-100">Temizle</a>
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-body py-3">
+    <form method="GET" class="row g-2 align-items-end">
+      <div class="col-md-3">
+        <label class="form-label small fw-semibold mb-1">Şehir</label>
+        <select name="sehir_id" class="form-select form-select-sm">
+          <option value="">Tüm Şehirler</option>
+          {% for s in sehirler %}
+          <option value="{{ s.id }}" {% if secili_sehir_id==s.id %}selected{% endif %}>{{ s.ad }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label small fw-semibold mb-1">Mağaza</label>
+        <select name="magaza_id" class="form-select form-select-sm">
+          <option value="">Tüm Mağazalar</option>
+          {% for m in magazalar %}
+          <option value="{{ m.id }}" {% if secili_magaza_id==m.id %}selected{% endif %}>
+            {{ m.ad }} ({{ m.sehir.ad if m.sehir else "-" }})
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-auto">
+        <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-funnel me-1"></i>Filtrele</button>
+      </div>
+      <div class="col-auto">
+        <a href="{{ url_for('admin.magaza_stok') }}" class="btn btn-outline-secondary btn-sm">Temizle</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% set aktif_magazalar = magaza_ozetleri|selectattr("stok")|list %}
+
+{% if not aktif_magazalar and not magaza_ozetleri %}
+<div class="card border-0 shadow-sm">
+  <div class="card-body text-center py-5 text-muted">
+    <i class="bi bi-inbox" style="font-size:2.5rem"></i>
+    <p class="mt-2 mb-0">Filtreye uygun mağaza bulunamadı.</p>
+  </div>
+</div>
+{% else %}
+
+<div class="card border-0 shadow-sm">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0 align-middle">
+        <thead class="table-light">
+          <tr>
+            <th class="ps-3">Mağaza</th>
+            <th>Şehir</th>
+            <th class="text-center">Ürün Çeşidi</th>
+            <th class="text-end">Toplam Gelen</th>
+            <th class="text-end">Satılan</th>
+            <th class="text-end pe-3">Eldeki</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in magaza_ozetleri %}
+          {% if item.stok %}
+          <tr class="table-group-divider" style="cursor:pointer" data-bs-toggle="collapse" data-bs-target="#mag{{ item.magaza.id if item.magaza else loop.index }}">
+            <td class="ps-3">
+              <i class="bi bi-chevron-right me-1 text-muted" style="font-size:.7rem"></i>
+              <strong>{{ item.magaza.ad if item.magaza else "-" }}</strong>
+            </td>
+            <td class="text-muted small">{{ item.magaza.sehir.ad if item.magaza and item.magaza.sehir else "-" }}</td>
+            <td class="text-center"><span class="badge bg-primary bg-opacity-10 text-primary">{{ item.stok|length }}</span></td>
+            <td class="text-end">{{ item.stok|sum(attribute='gelen')|int }}</td>
+            <td class="text-end text-muted">{{ item.stok|sum(attribute='satilan')|int }}</td>
+            <td class="text-end pe-3 fw-bold text-success">{{ item.stok|sum(attribute='eldeki')|int }}</td>
+          </tr>
+          <tr class="collapse" id="mag{{ item.magaza.id if item.magaza else loop.index }}">
+            <td colspan="6" class="p-0">
+              <table class="table table-sm mb-0" style="background:#f8fafc">
+                {% for s in item.stok %}
+                <tr>
+                  <td class="ps-5 small">{{ s.urun.ad if s.urun else "Silinmis" }}</td>
+                  <td></td>
+                  <td></td>
+                  <td class="text-end small">{{ s.gelen|int }}</td>
+                  <td class="text-end small text-muted">{{ s.satilan|int }}</td>
+                  <td class="text-end pe-3 small fw-semibold {% if s.eldeki <= 0 %}text-danger{% elif s.eldeki < 5 %}text-warning{% else %}text-success{% endif %}">{{ s.eldeki|int }}</td>
+                </tr>
+                {% endfor %}
+              </table>
+            </td>
+          </tr>
+          {% endif %}
+          {% endfor %}
+
+          {% set bos_magazalar = magaza_ozetleri|rejectattr("stok")|list %}
+          {% if bos_magazalar %}
+          <tr><td colspan="6" class="ps-3 pt-3 pb-1"><small class="text-muted fw-semibold">Henüz sevk yapılmamış mağazalar</small></td></tr>
+          {% for item in bos_magazalar %}
+          <tr>
+            <td class="ps-3 text-muted small">{{ item.magaza.ad if item.magaza else "-" }}</td>
+            <td class="text-muted small">{{ item.magaza.sehir.ad if item.magaza and item.magaza.sehir else "-" }}</td>
+            <td class="text-center"><span class="badge bg-secondary bg-opacity-10 text-secondary">0</span></td>
+            <td class="text-end text-muted small">0</td>
+            <td class="text-end text-muted small">0</td>
+            <td class="text-end pe-3 text-muted small">0</td>
+          </tr>
+          {% endfor %}
+          {% endif %}
+        </tbody>
+      </table>
     </div>
   </div>
-</form>
-
-{% if not magaza_ozetleri %}
-  <div class="alert alert-info">Görüntülenecek mağaza bulunamadı.</div>
+</div>
 {% endif %}
 
-{% for item in magaza_ozetleri %}
-<div class="card mb-3">
-  <div class="card-header d-flex justify-content-between align-items-center py-2">
-    <div>
-      <strong>{{ item.magaza.ad if item.magaza else "-" }}</strong>
-      <span class="text-muted ms-2 small">{{ item.magaza.sehir.ad if item.magaza and item.magaza.sehir else "-" }}</span>
-    </div>
-    <div class="small text-muted">
-      {{ item.stok|length }} ürün çeşidi
-      &nbsp;|&nbsp;
-      Toplam Eldeki:
-      <strong class="text-success">{{ item.stok|sum(attribute='eldeki')|int }}</strong>
-      &nbsp;|&nbsp;
-      Toplam Satılan:
-      <strong class="text-danger">{{ item.stok|sum(attribute='satilan')|int }}</strong>
-    </div>
-  </div>
-  {% if item.stok %}
-  <div class="card-body p-0">
-    <table class="table table-sm table-hover mb-0">
-      <thead class="table-light">
-        <tr>
-          <th class="ps-3">Ürün</th>
-          <th class="text-end text-primary">Toplam Gelen</th>
-          <th class="text-end text-danger">Satılan</th>
-          <th class="text-end text-success">Eldeki</th>
-        </tr>
-      </thead>
-      <tbody>
-      {% for s in item.stok %}
-      <tr>
-        <td class="ps-3">{{ s.urun.ad if s.urun else "Silinmis" }}</td>
-        <td class="text-end">{{ s.gelen|int }}</td>
-        <td class="text-end text-danger">{{ s.satilan|int }}</td>
-        <td class="text-end fw-bold {% if s.eldeki <= 0 %}text-danger{% elif s.eldeki < 5 %}text-warning{% else %}text-success{% endif %}">
-          {{ s.eldeki|int }}
-        </td>
-      </tr>
-      {% endfor %}
-      </tbody>
-    </table>
-  </div>
-  {% else %}
-  <div class="card-body text-muted small">Bu mağazaya henüz sevk yapılmamış.</div>
-  {% endif %}
-</div>
-{% endfor %}
 {% endblock %}
-
