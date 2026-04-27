@@ -3,7 +3,7 @@ from flask_login import login_required, current_user
 from functools import wraps
 from models import (db, Sehir, Magaza, Urun, UrunPaketi, Siparis, UretimPaketGirisi,
                     StokHareketi, Sevk, SevkKalemi, GenelGider,
-                    SiparisTalebi, SshBildirimi, Kullanici, KullaniciYetki,
+                    SiparisTalebi, SiparisTalebiKalemi, SshBildirimi, Kullanici, KullaniciYetki,
                     KatalogUrun, KatalogResim, KatalogMagazaIzin, SatisHareketi, FiyatTeklifi)
 from datetime import datetime
 import os, uuid
@@ -36,7 +36,6 @@ def dashboard():
     bekleyen_talepler = SiparisTalebi.query.filter_by(durum="beklemede").count()
     acik_ssh = SshBildirimi.query.filter(SshBildirimi.durum != "teslim_edildi").count()
     aktif_siparisler = Siparis.query.filter(Siparis.durum != "tamamlandi").all()
-    # Şablon için hesaplanmış değerleri ekle
     for s in aktif_siparisler:
         s._sevk_edilebilir = s.sevk_edilebilir_takim()
         s._eksikler = s.eksik_paketler()
@@ -59,8 +58,7 @@ def _stok_ozet():
         giris = sum(h.miktar for h in u.stok_hareketleri if h.hareket_turu in GIRIS)
         cikis = sum(abs(h.miktar) for h in u.stok_hareketleri if h.hareket_turu in CIKIS)
         bakiye = giris - cikis
-        if bakiye > 0:
-            ozet.append({"urun": u, "bakiye": bakiye})
+        ozet.append({"urun": u, "bakiye": bakiye})
     return ozet
 
 
@@ -139,6 +137,9 @@ def urun_ekle():
         if Urun.query.filter_by(kod=kod).first():
             flash("Bu urun kodu zaten mevcut.", "warning")
             return redirect(url_for("admin.tanimlar"))
+        if Urun.query.filter(db.func.upper(Urun.ad) == ad.upper()).first():
+            flash("Bu urun adi zaten mevcut.", "warning")
+            return redirect(url_for("admin.tanimlar"))
         urun = Urun(kod=kod, ad=ad, birim=birim)
         db.session.add(urun)
         db.session.flush()
@@ -168,6 +169,12 @@ def paket_duzenle(id):
 @admin_required
 def urun_sil(id):
     u = Urun.query.get_or_404(id)
+    stok_var = StokHareketi.query.filter_by(urun_id=id).first()
+    sevk_var = SevkKalemi.query.filter_by(urun_id=id).first()
+    talep_var = SiparisTalebiKalemi.query.filter_by(urun_id=id).first()
+    if stok_var or sevk_var or talep_var:
+        flash(f"'{u.ad}' silinemedi. Bu urune ait stok veya sevkiyat kaydi mevcut. Once ilgili kayitlari silin.", "danger")
+        return redirect(url_for("admin.tanimlar"))
     db.session.delete(u)
     db.session.commit()
     flash("Urun silindi.", "success")
@@ -208,16 +215,12 @@ def uretim_yeni():
     if not urun_ad or not siparis_adeti:
         flash("Urun adi ve siparis adeti zorunludur.", "warning")
         return redirect(url_for("admin.uretim"))
-
     urun = _urun_bul_veya_olustur(urun_ad)
-
-    # Paket sayısı değiştiyse yeni paketleri ekle
     mevcut_paket = len(urun.paketler)
     if mevcut_paket < paket_sayisi:
         for i in range(mevcut_paket + 1, paket_sayisi + 1):
             db.session.add(UrunPaketi(urun_id=urun.id, paket_no=i, paket_adi=f"Paket {i}"))
         db.session.flush()
-
     s = Siparis(tarih=tarih, urun_id=urun.id, siparis_adeti=siparis_adeti, notlar=notlar)
     db.session.add(s)
     db.session.commit()
@@ -256,12 +259,10 @@ def paket_gir(id):
 def uretim_tamamla(id):
     siparis = Siparis.query.get_or_404(id)
     siparis.durum = "tamamlandi"
-    # Paket miktarlarını sıfırla
     for g in siparis.uretim_girisleri:
         g.uretilen_miktar = 0
-    # Stok hareketini de sıfırla (sipariş tamamlandı, stok zaten düşmüş olmalı)
     db.session.commit()
-    flash(f"'{siparis.urun.ad}' üretim siparişi tamamlandı olarak işaretlendi.", "success")
+    flash(f"'{siparis.urun.ad}' uretim siparisi tamamlandi olarak isaretlendi.", "success")
     return redirect(url_for("admin.uretim"))
 
 
@@ -271,7 +272,7 @@ def uretim_tekrar_ac(id):
     siparis = Siparis.query.get_or_404(id)
     siparis.durum = "uretimde"
     db.session.commit()
-    flash("Sipariş tekrar aktife alındı.", "success")
+    flash("Siparis tekrar aktife alindi.", "success")
     return redirect(url_for("admin.uretim", durum="aktif"))
 
 
@@ -279,12 +280,11 @@ def uretim_tekrar_ac(id):
 @admin_required
 def uretim_sil(id):
     siparis = Siparis.query.get_or_404(id)
-    # İlgili stok hareketini sil
     StokHareketi.query.filter_by(kaynak="uretim", referans_id=id).delete()
     UretimPaketGirisi.query.filter_by(siparis_id=id).delete()
     db.session.delete(siparis)
     db.session.commit()
-    flash("Üretim siparişi silindi.", "success")
+    flash("Uretim siparisi silindi.", "success")
     return redirect(url_for("admin.uretim"))
 
 
@@ -334,7 +334,6 @@ def stok_manuel_giris():
     hareket_turu = request.form.get("hareket_turu", "duzeltme_giris")
     aciklama = request.form.get("aciklama", "").strip()
     if urun_id and miktar and miktar != 0:
-        from datetime import datetime
         h = StokHareketi(
             tarih=datetime.now(),
             urun_id=urun_id,
@@ -347,7 +346,7 @@ def stok_manuel_giris():
         db.session.commit()
         flash(f"Manuel stok hareketi eklendi: {miktar:+} adet.", "success")
     else:
-        flash("Ürün ve miktar zorunlu.", "warning")
+        flash("Urun ve miktar zorunlu.", "warning")
     return redirect(url_for("admin.stok"))
 
 
@@ -357,7 +356,7 @@ def stok_hareket_sil(id):
     h = StokHareketi.query.get_or_404(id)
     db.session.delete(h)
     db.session.commit()
-    flash("Hareket kaydı silindi.", "success")
+    flash("Hareket kaydi silindi.", "success")
     return redirect(url_for("admin.stok"))
 
 
@@ -372,18 +371,13 @@ def stok_hareket_duzenle(id):
     if aciklama:
         h.kaynak = aciklama
     db.session.commit()
-    flash("Hareket kaydı güncellendi.", "success")
+    flash("Hareket kaydi guncellendi.", "success")
     return redirect(url_for("admin.stok"))
 
 
-# ─── STOK ─────────────────────────────────────────────────────────────────────
-
 def _urun_bul_veya_olustur(ad):
-    """Ürün adına göre mevcut kaydı bul; yoksa otomatik oluştur."""
     ad_temiz = ad.strip().upper()
-    urun = Urun.query.filter(
-        db.func.upper(Urun.ad) == ad_temiz
-    ).first()
+    urun = Urun.query.filter(db.func.upper(Urun.ad) == ad_temiz).first()
     if not urun:
         import re
         kod = re.sub(r"[^A-Z0-9]", "_", ad_temiz)[:20]
@@ -397,8 +391,6 @@ def _urun_bul_veya_olustur(ad):
 
 
 def _rezerve_ozet():
-    """Beklemede veya onaylanmış (henüz sevk edilmemiş) taleplerdeki ürün miktarlarını topla."""
-    from models import SiparisTalebiKalemi
     sonuc = {}
     aktif_durumlar = ("beklemede", "onaylandi")
     kalemler = (
@@ -449,7 +441,7 @@ def sevk_hizli(talep_id):
                     g.uretilen_miktar = 0
     talep.durum = "sevk_edildi"
     db.session.commit()
-    flash(f"Sevk oluşturuldu (#{sevk.id}).", "success")
+    flash(f"Sevk olusturuldu (#{sevk.id}).", "success")
     return redirect(url_for("admin.talepler"))
 
 
@@ -474,15 +466,11 @@ def sevk_duzenle(sevk_id):
     sevk.kdv_oran = request.form.get("kdv_oran", type=int, default=0)
     sevk.notlar = request.form.get("notlar", "").strip()
     sevk.nakliye_goster = bool(request.form.get("nakliye_goster"))
-
     urun_ids = request.form.getlist("urun_id[]")
     miktarlar = request.form.getlist("miktar[]")
-
-    # Eski stok hareketlerini sil
     StokHareketi.query.filter_by(referans_id=sevk.id, hareket_turu="sevk_cikis").delete()
     SevkKalemi.query.filter_by(sevk_id=sevk.id).delete()
     db.session.flush()
-
     tarih = sevk.tarih
     for uid, mkt in zip(urun_ids, miktarlar):
         try:
@@ -499,9 +487,8 @@ def sevk_duzenle(sevk_id):
             tarih=tarih, urun_id=urun.id, hareket_turu="sevk_cikis",
             miktar=mkt_f, kaynak="sevk", referans_id=sevk.id, depo="ana_depo"
         ))
-
     db.session.commit()
-    flash(f"Sevk #{sevk_id} güncellendi.", "success")
+    flash(f"Sevk #{sevk_id} guncellendi.", "success")
     return redirect(url_for("admin.sevk_listesi"))
 
 
@@ -511,7 +498,6 @@ def sevk_listesi():
     sevkler = Sevk.query.order_by(Sevk.id.desc()).all()
     magazalar = Magaza.query.join(Sehir).order_by(Sehir.ad, Magaza.ad).all()
     urunler = Urun.query.order_by(Urun.ad).all()
-    # Talep bazlı ön doldurma
     talep_id = request.args.get("talep_id", type=int)
     talep = SiparisTalebi.query.get(talep_id) if talep_id else None
     return render_template("admin/sevk.html", sevkler=sevkler,
@@ -531,22 +517,17 @@ def sevk_yeni():
     kdv_oran = request.form.get("kdv_oran", type=int, default=0)
     notlar = request.form.get("notlar", "").strip()
     talep_id = request.form.get("talep_id", type=int)
-
     if alici_turu == "serbest":
         magaza_id = None
         if not alici_adi:
-            flash("Serbest alıcı adı giriniz.", "warning")
+            flash("Serbest alici adi giriniz.", "warning")
             return redirect(url_for("admin.sevk_listesi"))
-
-    # Hem urun_id[] hem urun_ad[] destekle (sevk formundan id gelir, eski uyumluluk için ad da kabul et)
     urun_ids = request.form.getlist("urun_id[]")
     urun_adlar = request.form.getlist("urun_ad[]")
     miktarlar = request.form.getlist("miktar[]")
     gider_turler = request.form.getlist("gider_tur[]")
     gider_tutarlar = request.form.getlist("gider_tutar[]")
     gider_aciklamalar = request.form.getlist("gider_aciklama[]")
-
-    # urun_id varsa kullan, yoksa ada göre bul
     kalemler = []
     for i, mkt in enumerate(miktarlar):
         try:
@@ -562,35 +543,28 @@ def sevk_yeni():
             urun = _urun_bul_veya_olustur(urun_adlar[i])
         if urun:
             kalemler.append((urun, mkt_f))
-
     if (alici_turu == "magaza" and not magaza_id) or not kalemler:
         flash("Magaza ve en az bir urun girmelisiniz.", "warning")
         return redirect(url_for("admin.sevk_listesi"))
-
     sevk = Sevk(tarih=tarih, magaza_id=magaza_id, nakliye_ucreti=nakliye,
                 iscilik=iscilik, kdv_oran=kdv_oran, notlar=notlar, talep_id=talep_id,
                 alici_turu=alici_turu, alici_adi=alici_adi if alici_turu == "serbest" else None)
     db.session.add(sevk)
     db.session.flush()
-
     for urun, mkt in kalemler:
         db.session.add(SevkKalemi(sevk_id=sevk.id, urun_id=urun.id, miktar=mkt))
         db.session.add(StokHareketi(
             tarih=tarih, urun_id=urun.id, hareket_turu="sevk_cikis",
             miktar=mkt, kaynak="sevk", referans_id=sevk.id, depo="ana_depo"
         ))
-
     for tur, tutar, aciklama in zip(gider_turler, gider_tutarlar, gider_aciklamalar):
         tutar = float(tutar or 0)
         if tur and tutar > 0:
             db.session.add(GenelGider(sevk_id=sevk.id, gider_turu=tur, tutar=tutar, aciklama=aciklama))
-
     if talep_id:
         t = SiparisTalebi.query.get(talep_id)
         if t:
             t.durum = "sevk_edildi"
-
-    # Stok sıfırlandıysa ilgili aktif siparişleri otomatik tamamla
     for urun_obj, mkt in kalemler:
         from sqlalchemy import func as sqlfunc
         giris = db.session.query(sqlfunc.coalesce(sqlfunc.sum(StokHareketi.miktar), 0))\
@@ -606,7 +580,6 @@ def sevk_yeni():
                 sp.durum = "tamamlandi"
                 for g in sp.uretim_girisleri:
                     g.uretilen_miktar = 0
-
     db.session.commit()
     flash("Sevk kaydedildi.", "success")
     return redirect(url_for("admin.sevk_listesi"))
@@ -635,7 +608,6 @@ def talepler():
     talepler_listesi = q.order_by(SiparisTalebi.id.desc()).all()
     stok = {item["urun"].id: item["bakiye"] for item in _stok_ozet()}
     rezerve = _rezerve_ozet()
-    # Kullanılabilir = bakiye - rezerve
     kullanilabilir = {uid: stok.get(uid, 0) - rezerve.get(uid, 0) for uid in set(list(stok.keys()) + list(rezerve.keys()))}
     return render_template("admin/talepler.html", talepler=talepler_listesi,
                            durum_filter=durum_filter, stok=stok,
@@ -695,8 +667,6 @@ def raporlar():
     from sqlalchemy import func as sqlfunc
     magazalar = Magaza.query.join(Sehir).order_by(Sehir.ad, Magaza.ad).all()
     sehirler = Sehir.query.order_by(Sehir.ad).all()
-
-    # WhatsApp için özet veri
     sevkler = Sevk.query.order_by(Sevk.id.desc()).limit(20).all()
     sevk_satirlar = []
     for s in sevkler:
@@ -705,10 +675,9 @@ def raporlar():
         sevk_satirlar.append({
             "id": s.id, "tarih": s.tarih,
             "magaza": f"{s.magaza.ad}/{s.magaza.sehir.ad}",
-            "urunler": [f"{k.urun.ad} ×{int(k.miktar)}" for k in s.kalemler],
+            "urunler": [f"{k.urun.ad} x{int(k.miktar)}" for k in s.kalemler],
             "toplam": int(ara + kdv)
         })
-
     GIRIS = ["uretim_giris", "duzeltme_giris", "iade"]
     CIKIS = ["sevk_cikis", "duzeltme_cikis", "fire"]
     urunler = Urun.query.order_by(Urun.ad).all()
@@ -719,7 +688,6 @@ def raporlar():
         c = db.session.query(sqlfunc.coalesce(sqlfunc.sum(sqlfunc.abs(StokHareketi.miktar)), 0))\
             .filter(StokHareketi.urun_id == u.id, StokHareketi.hareket_turu.in_(CIKIS)).scalar() or 0
         stok_satirlar.append({"urun": u.ad, "adet": int(g - c)})
-
     mag_maliyet = []
     for m in magazalar:
         toplam = sum(
@@ -729,11 +697,8 @@ def raporlar():
         if toplam > 0:
             mag_maliyet.append({"magaza": f"{m.ad}/{m.sehir.ad}", "toplam": int(toplam)})
     mag_maliyet.sort(key=lambda x: x["toplam"], reverse=True)
-
     ssh_liste = SshBildirimi.query.order_by(SshBildirimi.id.desc()).limit(20).all()
-    ssh_satirlar = [{"magaza": s.magaza.ad, "urun": s.urun.ad,
-                     "durum": s.durum} for s in ssh_liste]
-
+    ssh_satirlar = [{"magaza": s.magaza.ad, "urun": s.urun.ad, "durum": s.durum} for s in ssh_liste]
     rapor_ozet = {
         "sevk": {"satirlar": sevk_satirlar},
         "maliyet": {"satirlar": mag_maliyet},
@@ -751,7 +716,6 @@ def rapor_excel(tur):
                                     export_stok, export_ssh)
     import io
     from flask import send_file
-
     buf = io.BytesIO()
     if tur == "sevk":
         sevkler = Sevk.query.order_by(Sevk.id.desc()).all()
@@ -772,13 +736,12 @@ def rapor_excel(tur):
     else:
         flash("Gecersiz rapor turu.", "danger")
         return redirect(url_for("admin.raporlar"))
-
     buf.seek(0)
     return send_file(buf, as_attachment=True, download_name=fname,
                      mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
 
-# ─── MAĞAZA STOK & SATIŞ (Admin Görünümü) ────────────────────────────────────
+# ─── MAĞAZA STOK ─────────────────────────────────────────────────────────────
 
 @admin_bp.route("/magaza-stok")
 @admin_required
@@ -788,8 +751,6 @@ def magaza_stok():
     sehirler = Sehir.query.order_by(Sehir.ad).all()
     secili_magaza_id = request.args.get("magaza_id", type=int)
     secili_sehir_id = request.args.get("sehir_id", type=int)
-
-    # Tüm mağazaların özetini hesapla
     magaza_ozetleri = []
     for m in magazalar:
         if secili_sehir_id and m.sehir_id != secili_sehir_id:
@@ -798,7 +759,6 @@ def magaza_stok():
             continue
         stok = magaza_stok_ozet(m.id)
         magaza_ozetleri.append({"magaza": m, "stok": stok})
-
     return render_template("admin/magaza_stok.html",
                            magaza_ozetleri=magaza_ozetleri,
                            magazalar=magazalar,
@@ -810,12 +770,10 @@ def magaza_stok():
 @admin_bp.route("/magaza-satis")
 @admin_required
 def magaza_satis():
-    from models import SatisHareketi
     sehir_id = request.args.get("sehir_id", type=int)
     magaza_id = request.args.get("magaza_id", type=int)
     tarih_bas = request.args.get("tarih_bas", "")
     tarih_bit = request.args.get("tarih_bit", "")
-
     q = SatisHareketi.query.join(Magaza).join(Sehir)
     if sehir_id:
         q = q.filter(Magaza.sehir_id == sehir_id)
@@ -826,7 +784,6 @@ def magaza_satis():
     if tarih_bit:
         q = q.filter(SatisHareketi.tarih <= tarih_bit)
     satirlar = q.order_by(SatisHareketi.id.desc()).all()
-
     magazalar = Magaza.query.join(Sehir).order_by(Sehir.ad, Magaza.ad).all()
     sehirler = Sehir.query.order_by(Sehir.ad).all()
     return render_template("admin/magaza_satis.html",
@@ -853,7 +810,7 @@ def kullanici_onayla(id):
     u = Kullanici.query.get_or_404(id)
     u.onay_durumu = "onaylandi"
     db.session.commit()
-    flash(f"'{u.kullanici_adi}' hesabı onaylandı.", "success")
+    flash(f"'{u.kullanici_adi}' hesabi onaylandi.", "success")
     return redirect(url_for("admin.kullanicilar"))
 
 
@@ -863,7 +820,7 @@ def kullanici_reddet(id):
     u = Kullanici.query.get_or_404(id)
     db.session.delete(u)
     db.session.commit()
-    flash("Kayıt talebi reddedildi ve silindi.", "warning")
+    flash("Kayit talebi reddedildi ve silindi.", "warning")
     return redirect(url_for("admin.kullanicilar"))
 
 
@@ -901,14 +858,13 @@ def kullanici_sil(id):
     if u.rol == "admin" and Kullanici.query.filter_by(rol="admin").count() == 1:
         flash("Son admin silinemez.", "danger")
         return redirect(url_for("admin.kullanicilar"))
-    # İlişkili kayıtları temizle
     SatisHareketi.query.filter_by(kullanici_id=id).delete()
     SiparisTalebi.query.filter_by(kullanici_id=id).delete()
     SshBildirimi.query.filter_by(kullanici_id=id).delete()
     KullaniciYetki.query.filter_by(kullanici_id=id).delete()
     db.session.delete(u)
     db.session.commit()
-    flash("Kullanıcı silindi.", "success")
+    flash("Kullanici silindi.", "success")
     return redirect(url_for("admin.kullanicilar"))
 
 
@@ -944,7 +900,7 @@ def kullanici_yetki(id):
         y.katalog = "katalog" in request.form
         y.katalog_fiyat = "katalog_fiyat" in request.form
         db.session.commit()
-        flash(f"'{u.kullanici_adi}' yetkileri güncellendi.", "success")
+        flash(f"'{u.kullanici_adi}' yetkileri guncellendi.", "success")
         return redirect(url_for("admin.kullanicilar"))
     return render_template("admin/kullanici_yetki.html", u=u)
 
@@ -956,7 +912,6 @@ def kullanici_yetki(id):
 def katalog():
     urunler = KatalogUrun.query.order_by(KatalogUrun.id.desc()).all()
     bekleyen_teklifler = FiyatTeklifi.query.filter_by(durum="beklemede").count()
-    # Katalog üzerinden gelen bekleyen siparişler
     katalog_siparisler = (
         SiparisTalebi.query
         .filter(SiparisTalebi.notlar.like('[Katalog:%'))
@@ -989,7 +944,6 @@ def katalog_yeni():
         )
         db.session.add(ku)
         db.session.flush()
-        # Seçili mağaza izinleri
         if ku.gorunurluk == "secili":
             for mid in request.form.getlist("magaza_ids"):
                 izin = KatalogMagazaIzin(
@@ -998,7 +952,6 @@ def katalog_yeni():
                     fiyat_gorunsun=f"fiyat_{mid}" in request.form
                 )
                 db.session.add(izin)
-        # Resimler
         from flask import current_app
         upload_dir = os.path.join(current_app.root_path, "static", "katalog")
         os.makedirs(upload_dir, exist_ok=True)
@@ -1009,7 +962,7 @@ def katalog_yeni():
                 f.save(os.path.join(upload_dir, dosya_adi))
                 db.session.add(KatalogResim(urun_id=ku.id, dosya_adi=dosya_adi, sira=i))
         db.session.commit()
-        flash("Katalog ürünü eklendi.", "success")
+        flash("Katalog urunu eklendi.", "success")
         return redirect(url_for("admin.katalog"))
     return render_template("admin/katalog_form.html", ku=None, magazalar=magazalar)
 
@@ -1032,7 +985,6 @@ def katalog_duzenle(id):
         ku.fiyat_onaylandi = "fiyat_onaylandi" in request.form
         ku.gorunurluk = request.form.get("gorunurluk", "herkes")
         ku.aktif = "aktif" in request.form
-        # Mağaza izinlerini yenile
         KatalogMagazaIzin.query.filter_by(katalog_urun_id=ku.id).delete()
         if ku.gorunurluk == "secili":
             for mid in request.form.getlist("magaza_ids"):
@@ -1042,7 +994,6 @@ def katalog_duzenle(id):
                     fiyat_gorunsun=f"fiyat_{mid}" in request.form
                 )
                 db.session.add(izin)
-        # Yeni resimler
         from flask import current_app
         upload_dir = os.path.join(current_app.root_path, "static", "katalog")
         os.makedirs(upload_dir, exist_ok=True)
@@ -1054,7 +1005,7 @@ def katalog_duzenle(id):
                 f.save(os.path.join(upload_dir, dosya_adi))
                 db.session.add(KatalogResim(urun_id=ku.id, dosya_adi=dosya_adi, sira=mevcut_sira + i))
         db.session.commit()
-        flash("Katalog ürünü güncellendi.", "success")
+        flash("Katalog urunu guncellendi.", "success")
         return redirect(url_for("admin.katalog"))
     return render_template("admin/katalog_form.html", ku=ku, magazalar=magazalar)
 
@@ -1085,7 +1036,7 @@ def katalog_sil(id):
             os.remove(dosya)
     db.session.delete(ku)
     db.session.commit()
-    flash("Katalog ürünü silindi.", "success")
+    flash("Katalog urunu silindi.", "success")
     return redirect(url_for("admin.katalog"))
 
 
@@ -1095,8 +1046,8 @@ def katalog_fiyat_onayla(id):
     ku = KatalogUrun.query.get_or_404(id)
     ku.fiyat_onaylandi = not ku.fiyat_onaylandi
     db.session.commit()
-    durum = "onaylandı" if ku.fiyat_onaylandi else "geri alındı"
-    flash(f"Fiyat görünürlüğü {durum}.", "success")
+    durum = "onaylandi" if ku.fiyat_onaylandi else "geri alindi"
+    flash(f"Fiyat gorunurlugu {durum}.", "success")
     return redirect(url_for("admin.katalog"))
 
 
@@ -1124,5 +1075,5 @@ def fiyat_teklifi_yanitla(id):
     ft.durum = "yanitlandi"
     ft.yanitlama_tarihi = datetime.now().strftime("%Y-%m-%d %H:%M")
     db.session.commit()
-    flash("Fiyat teklifi yanıtlandı.", "success")
+    flash("Fiyat teklifi yanitlandi.", "success")
     return redirect(url_for("admin.fiyat_teklifleri"))
